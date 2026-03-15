@@ -44,4 +44,12 @@
 [Result "*"]
 [Orientation "black"]
 
-1. e4 d5 2. Nc3 {Defends e4 but doesn't take d5. THEORY: inferior to 2.exd5. Played sometimes at lower levels.} dxe4 {Take! We win the center.} 3. Nxe4 Nf6 {Develop while attacking the Knight. THEORY: main move.} 4. Nxf6+ exf6 {We have the bishop pair and the open e-file for our Rook. The f6-f7 structure looks ugly but the Bishops compensate amply. Plan: ...Bd6, ...O-O, ...Re8 with initiative.} (1. e4 d5 2. d3 {Ultra-passive. THEORY: White gives up all ambition in the opening.} e5 {Big center e5+d5! We dominate. Develop: ...Nf6, ...Nc6, ...Bc5. White has no initiative.}) *
+1. e4 d5 2. Nc3 {Defends e4 but doesn't take d5. THEORY: inferior to 2.exd5. Played sometimes at lower levels.} dxe4 {Take! We win the center.} 3. Nxe4 Nf6 {Develop while attacking the Knight. THEORY: main move.} 4. Nxf6+ exf6 {We have the bishop pair and the open e-file for our Rook. The f6-f7 structure looks ugly but the Bishops compensate amply. Plan: ...Bd6, ...O-O, ...Re8 with initiative.} *
+
+[Event "2.d3 - ultra passive"]
+[White "Adversaire"]
+[Black "Modern Scandinavian"]
+[Result "*"]
+[Orientation "black"]
+
+1. e4 d5 2. d3 {Ultra-passive. THEORY: White gives up all ambition in the opening.} e5 {Big center e5+d5! We dominate. Develop: ...Nf6, ...Nc6, ...Bc5. White has no initiative. Plan: complete development and enjoy the space advantage.} *

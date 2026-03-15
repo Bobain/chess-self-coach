@@ -28,7 +28,7 @@
 [Result "*"]
 [Orientation "black"]
 
-1. d4 d5 2. Nf3 {White waits before choosing their system. THEORY: very common, allows White to avoid certain variations.} Nf6 3. c4 c6 {Transposes into the Slav! Our repertoire applies normally. That's the advantage of a coherent repertoire: transpositions work in our favor.} (3. Bf4 {Late London - same response!} c5 {THEORY: always counter-attack with ...c5 against the London, regardless of the move order.} 4. e3 Nc6 {Same anti-London plan: ...e6, ...Bd6, offer the trade of Bishops.}) (3. e3 {Colle System (ECO D05). Passive - White locks in the c1 Bishop.} Bf5 {Develop the Bishop WHILE you can! SLAV REFLEX.} 4. Bd3 e6 5. O-O Bd6 {Harmonious development. Plan: ...O-O, ...Nbd7, ...c5.}) *
+1. d4 d5 2. Nf3 {White waits before choosing their system. THEORY: very common, allows White to avoid certain variations.} Nf6 3. c4 (3. Bf4 {Late London - same response!} c5 {THEORY: always counter-attack with ...c5 against the London, regardless of the move order.} 4. e3 Nc6 {Same anti-London plan: ...e6, ...Bd6, offer the trade of Bishops.}) (3. e3 {Colle System (ECO D05). Passive - White locks in the c1 Bishop.} Bf5 {Develop the Bishop WHILE you can! SLAV REFLEX.} 4. Bd3 e6 5. O-O Bd6 {Harmonious development. Plan: ...O-O, ...Nbd7, ...c5.}) c6 {Transposes into the Slav! Our repertoire applies normally. That's the advantage of a coherent repertoire: transpositions work in our favor.} *
 
 [Event "vs passive moves - 2.e3, 2.c3, 2.g3"]
 [White "Adversaire"]
@@ -36,4 +36,28 @@
 [Result "*"]
 [Orientation "black"]
 
-1. d4 d5 2. e3 {Passive. THEORY: White voluntarily locks in the c1 Bishop! Positional mistake.} Nf6 3. Nf3 Bf5 {SLAV REFLEX: as soon as White doesn't threaten the center, DEVELOP THE BISHOP! This theme recurs in every variation of our repertoire.} 4. Bd3 e6 5. O-O Bd6 {Harmonious development. Plan: ...O-O, ...Nbd7, ...c5. Position at least equal because White played too passively.} (1. d4 d5 2. c3 {Prepares e4? But it's slow.} Nf6 3. Nf3 Bf5 {Same reflex: Bishop out!}) (1. d4 d5 2. g3 {Catalan Fianchetto. THEORY: respectable but slow system.} Nf6 3. Bg2 Bf5 {Again and always: Bishop out! The Bg2 is strong but our rapid development compensates.}) *
+1. d4 d5 2. e3 {Passive. THEORY: White voluntarily locks in the c1 Bishop! Positional mistake.} Nf6 3. Nf3 Bf5 {SLAV REFLEX: as soon as White doesn't threaten the center, DEVELOP THE BISHOP! This theme recurs in every variation of our repertoire.} 4. Bd3 e6 5. O-O Bd6 {Harmonious development. Plan: ...O-O, ...Nbd7, ...c5. Position at least equal because White played too passively.} *
+
+[Event "vs 2.c3 - slow preparation"]
+[White "Adversaire"]
+[Black "Slav Defense"]
+[Result "*"]
+[Orientation "black"]
+
+1. d4 d5 2. c3 {Prepares e4? But it's slow.} Nf6 3. Nf3 Bf5 {SLAV REFLEX: Bishop out! White hasn't threatened the center so we develop freely. Plan: ...e6, ...Bd6, ...O-O, ...Nbd7, ...c5.} *
+
+[Event "vs 2.g3 - Catalan Fianchetto"]
+[White "Adversaire"]
+[Black "Slav Defense"]
+[Result "*"]
+[Orientation "black"]
+
+1. d4 d5 2. g3 {Catalan Fianchetto. THEORY: respectable but slow system.} Nf6 3. Bg2 Bf5 {Again and always: SLAV REFLEX — Bishop out! The Bg2 is strong but our rapid development compensates. Plan: ...e6, ...Bd6, ...O-O, ...Nbd7, ...c5.} *
+
+[Event "vs English Opening (1.c4) - SLAV TRANSPOSITION"]
+[White "Adversaire"]
+[Black "Slav Defense"]
+[Result "*"]
+[Orientation "black"]
+
+1. c4 {English Opening (ECO A10-A39). Rare below 1500 Elo but important to know. White controls d5 without committing to d4 yet. Don't panic — we have a simple plan that uses our Slav knowledge.} c6 {THE KEY MOVE for Slav players! We prepare ...d5 exactly like in the Slav. If White plays d4, we transpose directly into our repertoire. THEORY: solid and practical, recommended by multiple repertoire authors for d5/Slav players.} 2. d4 (2. Nf3 {White avoids d4.} d5 {Take the center! We now have a strong d5 pawn supported by c6.} 3. cxd5 cxd5 {Symmetrical but we're fine. This is like an Exchange Slav where White hasn't played d4. Plan: ...Nf6, ...Bf5 (SLAV REFLEX — Bishop out before e6!), ...e6, ...Bd6, ...O-O.} 4. d4 {White plays d4 later — transposition to Exchange Slav.} Nf6 5. Nc3 Bf5 {SLAV REFLEX again. Bishop out BEFORE e6. Same principle as every Slav variation.}) (2. e4 {Aggressive — White grabs the center.} d5 {Challenge immediately!} 3. cxd5 cxd5 4. exd5 Nf6 {We sacrifice a pawn temporarily for rapid development. Similar idea to the Scandinavian — develop the Knight toward d5.} 5. Nc3 Nxd5 {Pawn recovered. Plan: ...e6, ...Bd6, ...O-O. THEORY: equal position, Black has no problems.}) (2. g3 {Fianchetto English.} d5 {Take the center!} 3. cxd5 cxd5 {Same idea. Solid central pawn on d5.} 4. Bg2 Nf6 5. Nf3 Bf5 {SLAV REFLEX. Our Bishop is active while White's fianchetto doesn't challenge our center directly. Plan: ...e6, ...Bd6, ...O-O, ...Nbd7.}) {Most common — White plays d4 anyway.} d5 {We're now in a Slav! 1.d4 d5 2.c4 c6 with colors swapped in move order. Our entire Slav repertoire applies. THEORY: direct transposition.} *
