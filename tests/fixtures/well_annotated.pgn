@@ -1,0 +1,7 @@
+[Event "vs QGD - Harrwitz Attack (ECO D37)"]
+[White "Repertoire"]
+[Black "Opponent"]
+[Result "*"]
+[Orientation "white"]
+
+1. d4 {Control the center with the queen's pawn. THEORY: main move at all levels.} d5 {Symmetrical center.} 2. c4 {Queen's Gambit (ECO D06). Attack d5 to unbalance Black's center.} e6 {QGD - Queen's Gambit Declined. THEORY: most popular response. WARNING: this locks in the c8 Bishop behind e6-d5.} 3. Nc3 {Develop and attack d5 again.} Nf6 4. Nf3 {THEORY: modern move order.} Be7 5. Bf4 {HARRWITZ ATTACK (ECO D37). Played by Carlsen, Ding Liren. THEORY: consensus modern line. Plan: O-O, e3, Bd3, Rc1 for c-file pressure.} *

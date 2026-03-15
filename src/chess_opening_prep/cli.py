@@ -1,6 +1,6 @@
 """Command-line interface for chess-opening-prep.
 
-Entry point for the CLI. Dispatches to subcommands: analyze, setup, push, pull, status.
+Entry point for the CLI. Dispatches to subcommands: analyze, validate, import, setup, push, pull, status.
 """
 
 from __future__ import annotations
@@ -100,6 +100,49 @@ def main(argv: list[str] | None = None) -> None:
         help="PGN file to clean up (default: all configured studies)",
     )
 
+    # --- validate ---
+    p_validate = subparsers.add_parser(
+        "validate",
+        help="Validate PGN annotations against mandatory conventions",
+    )
+    p_validate.add_argument("pgn_file", help="Path to the PGN file to validate")
+
+    # --- import ---
+    p_import = subparsers.add_parser(
+        "import",
+        help="Import games from Lichess/chess.com and analyze deviations from repertoire",
+    )
+    p_import.add_argument("username", help="Lichess username")
+    p_import.add_argument(
+        "--chesscom",
+        type=str,
+        default=None,
+        help="Chess.com username (to also fetch games from chess.com)",
+    )
+    p_import.add_argument(
+        "--masters",
+        action="store_true",
+        help="Also query the Lichess masters database",
+    )
+    p_import.add_argument(
+        "--max",
+        type=int,
+        default=100,
+        dest="max_games",
+        help="Maximum number of games to fetch per source (default: 100)",
+    )
+    p_import.add_argument(
+        "--enrich",
+        action="store_true",
+        help="Enrich repertoire PGN with deviation statistics",
+    )
+    p_import.add_argument(
+        "--rating",
+        type=str,
+        default=None,
+        help="Rating bracket filter (e.g. '800-1200')",
+    )
+
     # --- status ---
     subparsers.add_parser(
         "status",
@@ -161,6 +204,25 @@ def main(argv: list[str] | None = None) -> None:
             print("  ✓ No empty default chapters found")
         else:
             print(f"\n  ✓ Cleaned up {total} empty chapter(s) total")
+
+    elif args.command == "validate":
+        from chess_opening_prep.validate import print_report, validate_pgn
+
+        results = validate_pgn(args.pgn_file)
+        has_errors = print_report(results)
+        if has_errors:
+            sys.exit(1)
+
+    elif args.command == "import":
+        from chess_opening_prep.importer import import_games
+
+        import_games(
+            args.username,
+            chesscom=args.chesscom,
+            masters=args.masters,
+            max_games=args.max_games,
+            enrich=args.enrich,
+        )
 
     elif args.command == "status":
         from chess_opening_prep.status import show_status
