@@ -350,10 +350,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-set-up-chessdriller" class="md-nav__link">
+  <a href="#3-create-lichess-studies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Set Up Chessdriller
+        3. Create Lichess Studies
       
     </span>
   </a>
@@ -361,10 +361,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-install-en-croissant-optional" class="md-nav__link">
+  <a href="#4-set-up-chessdriller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Install En-Croissant (Optional)
+        4. Set Up Chessdriller
       
     </span>
   </a>
@@ -372,10 +372,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-install-chess-opening-prep" class="md-nav__link">
+  <a href="#5-install-en-croissant-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Install chess-opening-prep
+        5. Install En-Croissant (Optional)
       
     </span>
   </a>
@@ -383,10 +383,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-configure" class="md-nav__link">
+  <a href="#6-install-chess-opening-prep" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Configure
+        6. Install chess-opening-prep
       
     </span>
   </a>
@@ -394,10 +394,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-verify" class="md-nav__link">
+  <a href="#7-configure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Verify
+        7. Configure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Verify
       
     </span>
   </a>
@@ -532,10 +543,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-set-up-chessdriller" class="md-nav__link">
+  <a href="#3-create-lichess-studies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Set Up Chessdriller
+        3. Create Lichess Studies
       
     </span>
   </a>
@@ -543,10 +554,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-install-en-croissant-optional" class="md-nav__link">
+  <a href="#4-set-up-chessdriller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Install En-Croissant (Optional)
+        4. Set Up Chessdriller
       
     </span>
   </a>
@@ -554,10 +565,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-install-chess-opening-prep" class="md-nav__link">
+  <a href="#5-install-en-croissant-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Install chess-opening-prep
+        5. Install En-Croissant (Optional)
       
     </span>
   </a>
@@ -565,10 +576,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-configure" class="md-nav__link">
+  <a href="#6-install-chess-opening-prep" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Configure
+        6. Install chess-opening-prep
       
     </span>
   </a>
@@ -576,10 +587,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-verify" class="md-nav__link">
+  <a href="#7-configure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Verify
+        7. Configure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Verify
       
     </span>
   </a>
@@ -627,13 +649,31 @@
 <h3 id="test-your-token">Test your token</h3>
 <pre><code class="language-bash">curl -H &quot;Authorization: Bearer lip_your_token&quot; https://lichess.org/api/account
 </code></pre>
-<h2 id="3-set-up-chessdriller">3. Set Up Chessdriller</h2>
+<h2 id="3-create-lichess-studies">3. Create Lichess Studies</h2>
+<p>The CLI cannot create studies via the API (Lichess limitation), so you must create them manually. This is a one-time step.</p>
+<ol>
+<li>Go to <a href="https://lichess.org/study">lichess.org/study</a></li>
+<li>Click <strong>"+ Create a study"</strong></li>
+<li>Set the <strong>Name</strong> to one of these exact names (so the CLI can auto-detect them):<ul>
+<li><code>Whites - Queen's Gambit</code></li>
+<li><code>Black vs e4 - Scandinavian</code></li>
+<li><code>Black vs d4 - Slav</code></li>
+</ul>
+</li>
+<li><strong>Visibility</strong>: leave as <code>Unlisted</code> (default)</li>
+<li>Leave all other settings as defaults</li>
+<li>Click <strong>START</strong></li>
+<li>A "New chapter" dialog will appear — <strong>close it</strong> (click ✕). The CLI will create chapters automatically when you push PGN files.</li>
+<li>Repeat for the other 2 studies</li>
+</ol>
+<p>After creating all 3 studies, run <code>chess-opening-prep setup</code> to auto-detect them.</p>
+<h2 id="4-set-up-chessdriller">4. Set Up Chessdriller</h2>
 <ol>
 <li>Go to <a href="https://chessdriller.org/">chessdriller.org</a></li>
 <li>Log in with your Lichess account (OAuth — no separate account needed)</li>
 <li>Chessdriller reads directly from your Lichess Studies</li>
 </ol>
-<h2 id="4-install-en-croissant-optional">4. Install En-Croissant (Optional)</h2>
+<h2 id="5-install-en-croissant-optional">5. Install En-Croissant (Optional)</h2>
 <p><a href="https://encroissant.org/">En-Croissant</a> is a desktop chess GUI for visual validation.</p>
 <ol>
 <li>Download and install from <a href="https://encroissant.org/">encroissant.org</a></li>
@@ -642,7 +682,7 @@
 </ol>
 <p>!!! warning
     En-Croissant modifies PGN files while they're open. Always <strong>close files</strong> in En-Croissant before running CLI commands.</p>
-<h2 id="5-install-chess-opening-prep">5. Install chess-opening-prep</h2>
+<h2 id="6-install-chess-opening-prep">6. Install chess-opening-prep</h2>
 <pre><code class="language-bash"># From PyPI
 pip install chess-opening-prep
 
@@ -651,7 +691,7 @@ git clone https://github.com/Bobain/chess-opening-prep.git
 cd chess-opening-prep
 uv venv &amp;&amp; uv sync
 </code></pre>
-<h2 id="6-configure">6. Configure</h2>
+<h2 id="7-configure">7. Configure</h2>
 <pre><code class="language-bash"># Save your Lichess token
 echo &quot;LICHESS_API_TOKEN=lip_your_token_here&quot; &gt; .env
 
@@ -666,7 +706,7 @@ chess-opening-prep setup
 <li>Auto-match studies to PGN files</li>
 <li>Save the configuration to <code>config.json</code></li>
 </ol>
-<h2 id="7-verify">7. Verify</h2>
+<h2 id="8-verify">8. Verify</h2>
 <pre><code class="language-bash">chess-opening-prep status
 </code></pre>
 <p>This shows the current state of all files, Stockfish, and Lichess configuration.</p>
