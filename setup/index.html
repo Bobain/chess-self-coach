@@ -692,10 +692,14 @@ cd chess-opening-prep
 uv venv &amp;&amp; uv sync
 </code></pre>
 <h2 id="7-configure">7. Configure</h2>
-<pre><code class="language-bash"># Save your Lichess token
-echo &quot;LICHESS_API_TOKEN=lip_your_token_here&quot; &gt; .env
+<pre><code class="language-bash"># Create your personal config from the template
+cp config.example.json config.json
 
-# Run interactive setup
+# Save your Lichess token
+cp .env.example .env
+# Edit .env and replace lip_your_token_here with your actual token
+
+# Run interactive setup (verifies auth, finds studies, saves config)
 chess-opening-prep setup
 </code></pre>
 <p>The <code>setup</code> command will:</p>
@@ -703,9 +707,11 @@ chess-opening-prep setup
 <li>Verify your Lichess authentication</li>
 <li>Check Stockfish availability</li>
 <li>List your existing Lichess studies</li>
-<li>Auto-match studies to PGN files</li>
-<li>Save the configuration to <code>config.json</code></li>
+<li>Auto-match studies to PGN files by name</li>
+<li>Save your personal configuration to <code>config.json</code></li>
 </ol>
+<p>!!! note
+    Both <code>config.json</code> and <code>.env</code> are gitignored — they contain your personal data (study IDs, API token) and will never be pushed to the repository. Each user has their own.</p>
 <h2 id="8-verify">8. Verify</h2>
 <pre><code class="language-bash">chess-opening-prep status
 </code></pre>
