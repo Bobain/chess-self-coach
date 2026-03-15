@@ -1,7 +1,7 @@
 """Stockfish analysis of PGN files.
 
 Walks the full game tree (mainline + variations), adds [%eval] annotations
-in En-Croissant format, and detects blunders.
+in standard PGN format, and detects blunders.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ _EVAL_PATTERN = re.compile(r"\[%eval\s+[^\]]+\]")
 
 
 def _format_score(score: chess.engine.PovScore, turn: chess.Color) -> str:
-    """Format an engine score as an En-Croissant compatible string.
+    """Format an engine score as a standard PGN eval string.
 
     Args:
         score: The engine's point-of-view score.
@@ -157,7 +157,7 @@ def analyze_pgn(
     """Analyze a PGN file with Stockfish and add score annotations.
 
     Walks every game and every variation in the PGN, adds [%eval] annotations
-    in En-Croissant format, skips positions that already have annotations.
+    in standard PGN format, skips positions that already have annotations.
 
     Args:
         pgn_path: Path to the PGN file.

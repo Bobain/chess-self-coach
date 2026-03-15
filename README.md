@@ -39,21 +39,20 @@ Automates the workflow between local PGN files, Stockfish engine analysis, and L
 2. Log in with your Lichess account (OAuth — no separate account needed)
 3. Chessdriller reads directly from your Lichess Studies — no additional configuration
 
-### 3. En-Croissant (Optional — for visual validation)
-
-1. Install [En-Croissant](https://encroissant.org/) (desktop chess GUI)
-2. Stockfish 18 should be bundled automatically
-3. Open PGN files in En-Croissant to visually review positions and engine evaluations
-4. **Note**: En-Croissant modifies PGN files while they're open — always close files before running CLI commands
-
-### 4. Stockfish
+### 3. Stockfish
 
 The CLI uses Stockfish for position analysis. It searches for Stockfish in this order:
-1. Path specified in `config.json` (default: En-Croissant's bundled Stockfish 18)
+1. Path specified in `config.json`
 2. System Stockfish (`/usr/games/stockfish` or in `$PATH`)
 3. Custom path via `--engine` flag
 
 To install system Stockfish: `sudo apt install stockfish`
+
+### 4. En-Croissant (Optional)
+
+[En-Croissant](https://encroissant.org/) is a desktop chess GUI for offline visual review of PGN files. It is **not required** — Lichess Study provides the same interactive study features online.
+
+If used, note that En-Croissant modifies PGN files while they're open — always close files before running CLI commands.
 
 ## Installation
 
@@ -81,7 +80,7 @@ chess-opening-prep setup
 
 ### `chess-opening-prep analyze <file.pgn>`
 
-Analyze a PGN file with Stockfish. Adds `[%eval]` annotations in En-Croissant format.
+Analyze a PGN file with Stockfish. Adds `[%eval]` annotations in standard PGN format.
 
 ```bash
 chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn
@@ -101,7 +100,7 @@ Interactive setup wizard. Verifies Lichess authentication, finds existing studie
 
 ### `chess-opening-prep push <file.pgn>`
 
-Push a local PGN file to its mapped Lichess study.
+Push a local PGN file to its mapped Lichess study. Automatically cleans up empty default chapters.
 
 ```bash
 chess-opening-prep push pgn/repertoire_blancs_gambit_dame_annote.pgn
@@ -129,28 +128,28 @@ chess-opening-prep cleanup pgn/repertoire_blancs_gambit_dame_annote.pgn # one st
 
 Show sync status of all repertoire files, Stockfish availability, and Lichess configuration.
 
-## 3-Zone Workflow
+## Workflow
 
 ```
-Zone 1: Local Files      →  Zone 2: En-Croissant     →  Zone 3: Lichess Study
-  (CLI prepares)              + Stockfish 18 local        (source of truth)
-  *_annote.pgn                (user validates)            → Chessdriller (drill)
+Zone 1: Local Files           →  Zone 2: Lichess Study
+  (CLI prepares + analyzes)        (source of truth + interactive study)
+  *_annote.pgn                     → Chessdriller (spaced-repetition drill)
 
-  chess-opening-prep           Visual review               chess-opening-prep
-  analyze                      in En-Croissant              push / pull
+  chess-opening-prep                chess-opening-prep
+  analyze                           push / pull
 ```
 
 ## PGN File Structure
 
 Two versions per opening:
 - `*_annote.pgn` — Annotated reference version with comments, variation names, theoretical notes
-- `*.pgn` — Working copy (may contain En-Croissant Stockfish annotations)
+- `*.pgn` — Working copy (may contain Stockfish annotations)
 
 ## Tool Versions
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| Stockfish | 18 | Bundled with En-Croissant; system package is v16 |
+| Stockfish | 18 | System package is v16; v18 available via En-Croissant or direct download |
 | python-chess | >=1.11.0 | PGN parsing + UCI protocol |
 | berserk | >=0.14.0 | Official Lichess Python client |
 | Python | >=3.12 | Required |

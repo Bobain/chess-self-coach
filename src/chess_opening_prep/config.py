@@ -146,7 +146,7 @@ def load_lichess_token() -> str:
 def find_stockfish(config: dict[str, Any] | None = None) -> Path:
     """Find a working Stockfish binary.
 
-    Search order: config.json path → En-Croissant bundled → system → $PATH.
+    Search order: config.json path → common install locations → system → $PATH.
 
     Args:
         config: Optional loaded config dict.
