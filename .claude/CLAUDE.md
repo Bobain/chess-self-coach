@@ -113,6 +113,16 @@ If used, note:
 - Always **close the file** in En-Croissant before running CLI commands
 - En-Croissant modifies PGN continuously (adding evals, reformatting headers)
 
+## Coaching Journal (MANDATORY)
+
+After EVERY chess theory discussion (Q&A about openings, style, move choices, repertoire decisions):
+1. Create or update a topic file in `coaching/topics/YYYY-MM-DD-slug.md`
+2. Update `coaching/INDEX.md` with the new entry (categorized by opening)
+3. This is **AUTOMATIC** — do NOT wait for the user to ask
+4. Format: frontmatter (date, topic, opening, eco, status) + Question + Discussion + Actions Taken + Key Takeaways
+5. If the discussion leads to PGN changes, document those in "Actions Taken"
+6. Update "Principles Learned" in INDEX.md when a pattern emerges across multiple discussions
+
 ## UI Documentation
 - Step-by-step UI guides are in `guides/`
 - These guides are **evolutionary**: marked `[TO CONFIRM]` until validated by user
