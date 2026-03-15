@@ -1148,7 +1148,7 @@ Every error produces a clear message with the exact command to fix it.</p>
     <div class="doc doc-contents ">
 
         <p>Find a working Stockfish binary.</p>
-<p>Search order: config.json path → En-Croissant bundled → system → $PATH.</p>
+<p>Search order: config.json path → common install locations → system → $PATH.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1282,7 +1282,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 <span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_stockfish</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a working Stockfish binary.</span>
 
-<span class="sd">    Search order: config.json path → En-Croissant bundled → system → $PATH.</span>
+<span class="sd">    Search order: config.json path → common install locations → system → $PATH.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        config: Optional loaded config dict.</span>
@@ -1854,7 +1854,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 
         <p>Stockfish analysis of PGN files.</p>
 <p>Walks the full game tree (mainline + variations), adds [%eval] annotations
-in En-Croissant format, and detects blunders.</p>
+in standard PGN format, and detects blunders.</p>
 
 
 
@@ -1889,7 +1889,7 @@ in En-Croissant format, and detects blunders.</p>
 
         <p>Analyze a PGN file with Stockfish and add score annotations.</p>
 <p>Walks every game and every variation in the PGN, adds [%eval] annotations
-in En-Croissant format, skips positions that already have annotations.</p>
+in standard PGN format, skips positions that already have annotations.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2085,7 +2085,7 @@ in En-Croissant format, skips positions that already have annotations.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Analyze a PGN file with Stockfish and add score annotations.</span>
 
 <span class="sd">    Walks every game and every variation in the PGN, adds [%eval] annotations</span>
-<span class="sd">    in En-Croissant format, skips positions that already have annotations.</span>
+<span class="sd">    in standard PGN format, skips positions that already have annotations.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pgn_path: Path to the PGN file.</span>
