@@ -47,7 +47,7 @@ Located in `pgn/`. Two versions per opening:
 - `*.pgn` — Working copy (may contain Stockfish annotations)
 
 ### Structure
-- `repertoire_blancs_gambit_dame_annote.pgn` — 6 chapters: QGD (Harrwitz), QGA, Slav (Czech), Nimzo-Indian (Rubinstein), Albin (Lasker Trap), Dutch
+- `repertoire_blancs_gambit_dame_annote.pgn` — 7 chapters: QGD (Harrwitz), QGA, Slav (Czech), Nimzo-Indian (Rubinstein), Albin (Lasker Trap), Budapest (Rubinstein/Fajarowicz), Dutch
 - `repertoire_noirs_vs_e4_scandinave_annote.pgn` — 6 chapters: Marshall Fianchetto (4.c4 Nb6), 4.Nf3, 3.Nf3, Icelandic Gambit, 2.e5 (Advance), 2.Nc3/d3
 - `repertoire_noirs_vs_d4_slave_annote.pgn` — 5 chapters: Classical Czech, Exchange, Anti-London, Transpositions, Passive moves
 
