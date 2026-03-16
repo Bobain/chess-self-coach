@@ -15,7 +15,7 @@ import chess
 import chess.engine
 import chess.pgn
 
-from chess_opening_prep.config import check_stockfish_version, find_stockfish, load_config
+from chess_self_coach.config import check_stockfish_version, find_stockfish, load_config
 
 # Regex to detect existing evaluation annotations
 _EVAL_PATTERN = re.compile(r"\[%eval\s+[^\]]+\]")

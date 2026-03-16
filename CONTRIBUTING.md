@@ -1,4 +1,4 @@
-# Contributing to chess-opening-prep
+# Contributing to chess-self-coach
 
 ## Code Guidelines (Karpathy Principles)
 
@@ -52,8 +52,8 @@ See `.claude/CLAUDE.md` for PGN annotation conventions (THEORY markers, trap war
 ## Development Setup
 
 ```bash
-git clone https://github.com/Bobain/chess-opening-prep.git
-cd chess-opening-prep
+git clone https://github.com/Bobain/chess-self-coach.git
+cd chess-self-coach
 uv venv && uv sync
-chess-opening-prep --help
+chess-self-coach --help
 ```

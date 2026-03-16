@@ -1,4 +1,4 @@
-"""Command-line interface for chess-opening-prep.
+"""Command-line interface for chess-self-coach.
 
 Entry point for the CLI. Dispatches to subcommands: analyze, validate, import, setup, push, pull, status, train.
 """
@@ -9,7 +9,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from chess_opening_prep import __version__
+from chess_self_coach import __version__
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> None:
         argv: Command-line arguments (defaults to sys.argv[1:]).
     """
     parser = argparse.ArgumentParser(
-        prog="chess-opening-prep",
+        prog="chess-self-coach",
         description="Manage a chess opening repertoire: Stockfish analysis + Lichess Study sync.",
     )
     parser.add_argument(
@@ -196,7 +196,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(0)
 
     if args.command == "analyze":
-        from chess_opening_prep.analyze import analyze_pgn
+        from chess_self_coach.analyze import analyze_pgn
 
         analyze_pgn(
             args.pgn_file,
@@ -207,23 +207,23 @@ def main(argv: list[str] | None = None) -> None:
         )
 
     elif args.command == "setup":
-        from chess_opening_prep.lichess import setup
+        from chess_self_coach.lichess import setup
 
         setup()
 
     elif args.command == "push":
-        from chess_opening_prep.lichess import push_pgn
+        from chess_self_coach.lichess import push_pgn
 
         push_pgn(args.pgn_file, replace=not args.no_replace)
 
     elif args.command == "pull":
-        from chess_opening_prep.lichess import pull_pgn
+        from chess_self_coach.lichess import pull_pgn
 
         pull_pgn(args.pgn_file, in_place=args.in_place)
 
     elif args.command == "cleanup":
-        from chess_opening_prep.lichess import cleanup_study
-        from chess_opening_prep.config import load_config, get_study_mapping
+        from chess_self_coach.lichess import cleanup_study
+        from chess_self_coach.config import load_config, get_study_mapping
 
         config = load_config()
         studies = config.get("studies", {})
@@ -246,7 +246,7 @@ def main(argv: list[str] | None = None) -> None:
             print(f"\n  ✓ Cleaned up {total} empty chapter(s) total")
 
     elif args.command == "validate":
-        from chess_opening_prep.validate import print_report, validate_pgn
+        from chess_self_coach.validate import print_report, validate_pgn
 
         results = validate_pgn(args.pgn_file)
         has_errors = print_report(results)
@@ -254,7 +254,7 @@ def main(argv: list[str] | None = None) -> None:
             sys.exit(1)
 
     elif args.command == "import":
-        from chess_opening_prep.importer import import_games
+        from chess_self_coach.importer import import_games
 
         import_games(
             args.username,
@@ -265,12 +265,12 @@ def main(argv: list[str] | None = None) -> None:
         )
 
     elif args.command == "status":
-        from chess_opening_prep.status import show_status
+        from chess_self_coach.status import show_status
 
         show_status()
 
     elif args.command == "train":
-        from chess_opening_prep.trainer import (
+        from chess_self_coach.trainer import (
             prepare_training_data,
             print_stats,
             serve_pwa,
@@ -287,8 +287,8 @@ def main(argv: list[str] | None = None) -> None:
         elif args.stats:
             print_stats()
         else:
-            print("Usage: chess-opening-prep train [--prepare|--serve|--stats]")
-            print("Run 'chess-opening-prep train -h' for details.")
+            print("Usage: chess-self-coach train [--prepare|--serve|--stats]")
+            print("Run 'chess-self-coach train -h' for details.")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import io
 
 import chess.pgn
 
-from chess_opening_prep.importer import find_deviation, match_game_to_repertoire
+from chess_self_coach.importer import find_deviation, match_game_to_repertoire
 
 
 def _make_game(pgn_text: str) -> chess.pgn.Game:

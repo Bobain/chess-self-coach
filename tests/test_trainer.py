@@ -8,7 +8,7 @@ import chess
 import chess.engine
 import chess.pgn
 
-from chess_opening_prep.trainer import (
+from chess_self_coach.trainer import (
     BLUNDER_THRESHOLD,
     INACCURACY_THRESHOLD,
     MISTAKE_THRESHOLD,

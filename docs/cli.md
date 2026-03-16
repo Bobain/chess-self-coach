@@ -5,7 +5,7 @@
 Analyze a PGN file with Stockfish and add `[%eval]` annotations.
 
 ```bash
-chess-opening-prep analyze <file.pgn> [options]
+chess-self-coach analyze <file.pgn> [options]
 ```
 
 ### Options
@@ -21,16 +21,16 @@ chess-opening-prep analyze <file.pgn> [options]
 
 ```bash
 # Analyze with default settings (depth 18)
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn
 
 # Quick analysis at depth 12
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --depth 12
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --depth 12
 
 # Overwrite original file
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
 
 # Use a specific Stockfish binary
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --engine /usr/games/stockfish
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --engine /usr/games/stockfish
 ```
 
 ## setup
@@ -38,7 +38,7 @@ chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --engine
 Interactive setup wizard.
 
 ```bash
-chess-opening-prep setup
+chess-self-coach setup
 ```
 
 Verifies Lichess authentication, finds existing studies, and configures `config.json`.
@@ -48,7 +48,7 @@ Verifies Lichess authentication, finds existing studies, and configures `config.
 Push a local PGN file to its mapped Lichess study.
 
 ```bash
-chess-opening-prep push <file.pgn>
+chess-self-coach push <file.pgn>
 ```
 
 !!! warning
@@ -59,7 +59,7 @@ chess-opening-prep push <file.pgn>
 Pull the latest PGN from a Lichess study to a local file.
 
 ```bash
-chess-opening-prep pull <file.pgn> [--in-place]
+chess-self-coach pull <file.pgn> [--in-place]
 ```
 
 By default, writes to `*_from_lichess.pgn`. Use `--in-place` to overwrite.
@@ -70,10 +70,10 @@ Remove empty default chapters (e.g. "Chapter 1") from Lichess studies.
 
 ```bash
 # Clean up all configured studies
-chess-opening-prep cleanup
+chess-self-coach cleanup
 
 # Clean up a specific study
-chess-opening-prep cleanup pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach cleanup pgn/repertoire_blancs_gambit_dame_annote.pgn
 ```
 
 Lichess auto-creates an empty "Chapter 1" when a study is created. After importing PGN via `push`, this leaves a stale empty chapter. The `cleanup` command removes these.
@@ -86,7 +86,7 @@ Lichess auto-creates an empty "Chapter 1" when a study is created. After importi
 Show sync status of all repertoire files.
 
 ```bash
-chess-opening-prep status
+chess-self-coach status
 ```
 
 Displays: file modification times, chapter counts, Stockfish availability, Lichess configuration, and suggested next actions.

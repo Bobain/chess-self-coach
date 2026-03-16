@@ -12,7 +12,7 @@ from pathlib import Path
 
 import chess.pgn
 
-from chess_opening_prep.config import (
+from chess_self_coach.config import (
     _find_project_root,
     check_stockfish_version,
     find_stockfish,
@@ -56,7 +56,7 @@ def _format_timestamp(path: Path) -> str:
 
 def show_status() -> None:
     """Display the current status of all repertoire files and integrations."""
-    print("\n📊 chess-opening-prep status\n")
+    print("\n📊 chess-self-coach status\n")
 
     root = _find_project_root()
     pgn_dir = root / "pgn"
@@ -65,7 +65,7 @@ def show_status() -> None:
     try:
         config = load_config()
     except SystemExit:
-        print("  ❌ config.json not found. Run 'chess-opening-prep setup' first.\n")
+        print("  ❌ config.json not found. Run 'chess-self-coach setup' first.\n")
         return
 
     # Stockfish check
@@ -76,7 +76,7 @@ def show_status() -> None:
         version = check_stockfish_version(sf_path, expected)
         print(f"  ✓ {version} at {sf_path}")
     except SystemExit:
-        print("  ❌ Not found (run 'chess-opening-prep setup')")
+        print("  ❌ Not found (run 'chess-self-coach setup')")
 
     # Lichess token check
     print("\nLichess token:")
@@ -119,12 +119,12 @@ def show_status() -> None:
     suggestions = []
 
     if not token:
-        suggestions.append("  - Create a Lichess token: chess-opening-prep setup")
+        suggestions.append("  - Create a Lichess token: chess-self-coach setup")
 
     for pgn_file, study_info in studies.items():
         study_id = study_info.get("study_id", "")
         if study_id.startswith("STUDY_ID"):
-            suggestions.append(f"  - Configure study for {pgn_file}: chess-opening-prep setup")
+            suggestions.append(f"  - Configure study for {pgn_file}: chess-self-coach setup")
             break
 
     for pgn_file in studies:
@@ -135,7 +135,7 @@ def show_status() -> None:
                 content = f.read()
             if "[%eval" not in content:
                 suggestions.append(
-                    f"  - Analyze {pgn_file}: chess-opening-prep analyze pgn/{pgn_file}"
+                    f"  - Analyze {pgn_file}: chess-self-coach analyze pgn/{pgn_file}"
                 )
 
     if not suggestions:

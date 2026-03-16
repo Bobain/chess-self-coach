@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chess_opening_prep.lichess import _get_chapters, cleanup_study
+from chess_self_coach.lichess import _get_chapters, cleanup_study
 
 
 def test_get_chapters_parses_response(mocker):
@@ -28,7 +28,7 @@ def test_get_chapters_parses_response(mocker):
     mock_resp = MagicMock()
     mock_resp.status_code = 200
     mock_resp.text = pgn_response
-    mocker.patch("chess_opening_prep.lichess.requests.get", return_value=mock_resp)
+    mocker.patch("chess_self_coach.lichess.requests.get", return_value=mock_resp)
 
     chapters = _get_chapters("abc123", "fake_token")
 
@@ -46,14 +46,14 @@ def test_cleanup_study_removes_empty(mocker):
         {"name": "Chapter 1", "id": "ch001", "has_moves": "False"},
         {"name": "Real Chapter", "id": "ch002", "has_moves": "True"},
     ]
-    mocker.patch("chess_opening_prep.lichess.load_lichess_token", return_value="lip_fake")
-    mocker.patch("chess_opening_prep.lichess._get_chapters", return_value=mock_chapters)
-    mocker.patch("chess_opening_prep.lichess._delete_chapter", return_value=True)
+    mocker.patch("chess_self_coach.lichess.load_lichess_token", return_value="lip_fake")
+    mocker.patch("chess_self_coach.lichess._get_chapters", return_value=mock_chapters)
+    mocker.patch("chess_self_coach.lichess._delete_chapter", return_value=True)
 
     deleted = cleanup_study("abc123", "Test Study")
 
     assert deleted == 1
-    from chess_opening_prep.lichess import _delete_chapter
+    from chess_self_coach.lichess import _delete_chapter
     _delete_chapter.assert_called_once_with("abc123", "ch001", "lip_fake")
 
 
@@ -63,12 +63,12 @@ def test_cleanup_study_keeps_real_chapters(mocker):
         {"name": "QGD Harrwitz", "id": "ch001", "has_moves": "True"},
         {"name": "Scandinavian", "id": "ch002", "has_moves": "True"},
     ]
-    mocker.patch("chess_opening_prep.lichess.load_lichess_token", return_value="lip_fake")
-    mocker.patch("chess_opening_prep.lichess._get_chapters", return_value=mock_chapters)
-    mocker.patch("chess_opening_prep.lichess._delete_chapter", return_value=True)
+    mocker.patch("chess_self_coach.lichess.load_lichess_token", return_value="lip_fake")
+    mocker.patch("chess_self_coach.lichess._get_chapters", return_value=mock_chapters)
+    mocker.patch("chess_self_coach.lichess._delete_chapter", return_value=True)
 
     deleted = cleanup_study("abc123", "Test Study")
 
     assert deleted == 0
-    from chess_opening_prep.lichess import _delete_chapter
+    from chess_self_coach.lichess import _delete_chapter
     _delete_chapter.assert_not_called()

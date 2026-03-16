@@ -27,7 +27,7 @@
    - Fields: **Name** ("Chapter 1"), tabs: Empty / Editor / URL / FEN / **PGN**
    - **Variant**: Standard, **Orientation**: White, **Analysis mode**: Normal analysis
 6. **Close this dialog** (click ✕) — do NOT create a chapter manually [CONFIRMED — 2026-03-15]
-   - The CLI will create chapters automatically via `chess-opening-prep push`
+   - The CLI will create chapters automatically via `chess-self-coach push`
    - If you accidentally create a default chapter, that's fine — it will be replaced by the push
 7. The study is now created. You can see its name at the bottom of the page. [CONFIRMED — 2026-03-15]
 
@@ -52,7 +52,7 @@
 ### Notes
 - Create one study per PGN file (3 studies total)
 - After creation, the study URL contains the study ID (e.g., `lichess.org/study/AbCdEfGh`)
-- The CLI (`chess-opening-prep setup`) auto-detects studies by name
+- The CLI (`chess-self-coach setup`) auto-detects studies by name
 - You do NOT need to create chapters manually — the CLI handles this
 
 ### History
@@ -65,7 +65,7 @@
 
 ### Via CLI (recommended)
 ```bash
-chess-opening-prep push pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach push pgn/repertoire_blancs_gambit_dame_annote.pgn
 ```
 
 ### Via web UI
@@ -114,7 +114,7 @@ chess-opening-prep push pgn/repertoire_blancs_gambit_dame_annote.pgn
 
 ### Via CLI (recommended)
 ```bash
-chess-opening-prep pull pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach pull pgn/repertoire_blancs_gambit_dame_annote.pgn
 ```
 
 ### Via web UI

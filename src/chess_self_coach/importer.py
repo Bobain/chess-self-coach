@@ -14,7 +14,7 @@ import berserk
 import chess
 import chess.pgn
 
-from chess_opening_prep.config import (
+from chess_self_coach.config import (
     _find_project_root,
     error_exit,
     load_config,

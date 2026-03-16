@@ -1,4 +1,4 @@
-"""Shared test fixtures for chess-opening-prep."""
+"""Shared test fixtures for chess-self-coach."""
 
 from __future__ import annotations
 

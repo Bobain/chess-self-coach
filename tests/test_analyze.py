@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import chess.engine
 
-from chess_opening_prep.analyze import (
+from chess_self_coach.analyze import (
     _add_annotation_to_comment,
     _extract_score_value,
     _format_score,

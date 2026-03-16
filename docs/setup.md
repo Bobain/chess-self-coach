@@ -8,7 +8,7 @@
 ## 2. Create a Lichess API Token
 
 1. Go to [lichess.org/account/oauth/token/create](https://lichess.org/account/oauth/token/create)
-2. **Token description**: `chess-opening-prep`
+2. **Token description**: `chess-self-coach`
 3. Under **STUDIES & BROADCASTS**, check:
     - "Read private studies and broadcasts" (`study:read`)
     - "Create, update, delete studies and broadcasts" (`study:write`)
@@ -37,7 +37,7 @@ The CLI cannot create studies via the API (Lichess limitation), so you must crea
 7. A "New chapter" dialog will appear — **close it** (click ✕). The CLI will create chapters automatically when you push PGN files.
 8. Repeat for the other 2 studies
 
-After creating all 3 studies, run `chess-opening-prep setup` to auto-detect them.
+After creating all 3 studies, run `chess-self-coach setup` to auto-detect them.
 
 ## 4. Set Up Chessdriller
 
@@ -56,15 +56,15 @@ After creating all 3 studies, run `chess-opening-prep setup` to auto-detect them
 !!! warning
     En-Croissant modifies PGN files while they're open. Always **close files** in En-Croissant before running CLI commands.
 
-## 6. Install chess-opening-prep
+## 6. Install chess-self-coach
 
 ```bash
 # From PyPI
-pip install chess-opening-prep
+pip install chess-self-coach
 
 # From source
-git clone https://github.com/Bobain/chess-opening-prep.git
-cd chess-opening-prep
+git clone https://github.com/Bobain/chess-self-coach.git
+cd chess-self-coach
 uv venv && uv sync
 ```
 
@@ -79,7 +79,7 @@ cp .env.example .env
 # Edit .env and replace lip_your_token_here with your actual token
 
 # Run interactive setup (verifies auth, finds studies, saves config)
-chess-opening-prep setup
+chess-self-coach setup
 ```
 
 The `setup` command will:
@@ -96,7 +96,7 @@ The `setup` command will:
 ## 8. Verify
 
 ```bash
-chess-opening-prep status
+chess-self-coach status
 ```
 
 This shows the current state of all files, Stockfish, and Lichess configuration.

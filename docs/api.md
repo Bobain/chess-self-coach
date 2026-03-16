@@ -2,12 +2,12 @@
 
 Auto-generated from source code docstrings.
 
-::: chess_opening_prep.config
+::: chess_self_coach.config
 
-::: chess_opening_prep.analyze
+::: chess_self_coach.analyze
 
-::: chess_opening_prep.lichess
+::: chess_self_coach.lichess
 
-::: chess_opening_prep.status
+::: chess_self_coach.status
 
-::: chess_opening_prep.cli
+::: chess_self_coach.cli

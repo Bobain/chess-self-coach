@@ -1,7 +1,7 @@
 /**
  * Find the Better Move — Training PWA
  *
- * Loads pre-generated training data (from chess-opening-prep train --prepare),
+ * Loads pre-generated training data (from chess-self-coach train --prepare),
  * displays mistake positions on a chessground board, and uses SM-2 spaced
  * repetition to schedule reviews.
  */
@@ -336,7 +336,7 @@ async function init() {
     trainingData = await resp.json();
   } catch (err) {
     document.getElementById('prompt').textContent =
-      'Could not load training data. Run: chess-opening-prep train --prepare';
+      'Could not load training data. Run: chess-self-coach train --prepare';
     console.error('Training data load failed:', err);
     return;
   }

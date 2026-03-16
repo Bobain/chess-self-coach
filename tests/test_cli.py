@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from chess_opening_prep.cli import main
+from chess_self_coach.cli import main
 
 
 def test_cli_help():
@@ -27,7 +27,7 @@ def test_cli_no_command(capsys):
         main([])
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
-    assert "chess-opening-prep" in captured.out
+    assert "chess-self-coach" in captured.out
 
 
 def test_cli_validate_present(capsys):

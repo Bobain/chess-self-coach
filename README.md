@@ -1,4 +1,4 @@
-# chess-opening-prep
+# chess-self-coach
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -22,7 +22,7 @@ Automates the workflow between local PGN files, Stockfish engine analysis, and L
 1. Create an account at [lichess.org/signup](https://lichess.org/signup) (free)
 2. Create an API token:
    - Go to [lichess.org/account/oauth/token/create](https://lichess.org/account/oauth/token/create)
-   - **Token description**: `chess-opening-prep`
+   - **Token description**: `chess-self-coach`
    - Under **STUDIES & BROADCASTS**, check:
      - "Read private studies and broadcasts" (`study:read`)
      - "Create, update, delete studies and broadcasts" (`study:write`)
@@ -58,11 +58,11 @@ If used, note that En-Croissant modifies PGN files while they're open — always
 
 ```bash
 # From PyPI
-pip install chess-opening-prep
+pip install chess-self-coach
 
 # From source (development)
-git clone https://github.com/Bobain/chess-opening-prep.git
-cd chess-opening-prep
+git clone https://github.com/Bobain/chess-self-coach.git
+cd chess-self-coach
 uv venv && uv sync
 ```
 
@@ -73,19 +73,19 @@ uv venv && uv sync
 echo "LICHESS_API_TOKEN=lip_your_token_here" > .env
 
 # Run interactive setup (verifies auth, finds studies, configures config.json)
-chess-opening-prep setup
+chess-self-coach setup
 ```
 
 ## CLI Reference
 
-### `chess-opening-prep analyze <file.pgn>`
+### `chess-self-coach analyze <file.pgn>`
 
 Analyze a PGN file with Stockfish. Adds `[%eval]` annotations in standard PGN format.
 
 ```bash
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --depth 12
-chess-opening-prep analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --depth 12
+chess-self-coach analyze pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
 ```
 
 Options:
@@ -94,65 +94,65 @@ Options:
 - `--engine PATH` — Override Stockfish binary path
 - `--in-place` — Overwrite original file (default: writes to `*_analyzed.pgn`)
 
-### `chess-opening-prep setup`
+### `chess-self-coach setup`
 
 Interactive setup wizard. Verifies Lichess authentication, finds existing studies, and configures `config.json`.
 
-### `chess-opening-prep push <file.pgn>`
+### `chess-self-coach push <file.pgn>`
 
 Push a local PGN file to its mapped Lichess study. Automatically cleans up empty default chapters.
 
 ```bash
-chess-opening-prep push pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach push pgn/repertoire_blancs_gambit_dame_annote.pgn
 ```
 
-### `chess-opening-prep pull <file.pgn>`
+### `chess-self-coach pull <file.pgn>`
 
 Pull the latest PGN from a Lichess study to a local file.
 
 ```bash
-chess-opening-prep pull pgn/repertoire_blancs_gambit_dame_annote.pgn
-chess-opening-prep pull pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
+chess-self-coach pull pgn/repertoire_blancs_gambit_dame_annote.pgn
+chess-self-coach pull pgn/repertoire_blancs_gambit_dame_annote.pgn --in-place
 ```
 
-### `chess-opening-prep cleanup [file.pgn]`
+### `chess-self-coach cleanup [file.pgn]`
 
 Remove empty default chapters (e.g. "Chapter 1") from Lichess studies. Runs automatically after `push`.
 
 ```bash
-chess-opening-prep cleanup                                              # all studies
-chess-opening-prep cleanup pgn/repertoire_blancs_gambit_dame_annote.pgn # one study
+chess-self-coach cleanup                                              # all studies
+chess-self-coach cleanup pgn/repertoire_blancs_gambit_dame_annote.pgn # one study
 ```
 
-### `chess-opening-prep status`
+### `chess-self-coach status`
 
 Show sync status of all repertoire files, Stockfish availability, and Lichess configuration.
 
-### `chess-opening-prep train --prepare`
+### `chess-self-coach train --prepare`
 
 Analyze your recent games (Lichess + chess.com), find mistakes with Stockfish, and export `training_data.json`.
 
 ```bash
-chess-opening-prep train --prepare                    # 20 games, depth 18
-chess-opening-prep train --prepare --games 10         # fewer games (faster)
-chess-opening-prep train --prepare --depth 12         # lower depth (faster)
-chess-opening-prep train --prepare --engine /path/sf   # custom Stockfish
+chess-self-coach train --prepare                    # 20 games, depth 18
+chess-self-coach train --prepare --games 10         # fewer games (faster)
+chess-self-coach train --prepare --depth 12         # lower depth (faster)
+chess-self-coach train --prepare --engine /path/sf   # custom Stockfish
 ```
 
-### `chess-opening-prep train --serve`
+### `chess-self-coach train --serve`
 
 Open the training PWA in the browser. Starts a local HTTP server and copies the training data.
 
 ```bash
-chess-opening-prep train --serve
+chess-self-coach train --serve
 ```
 
-### `chess-opening-prep train --stats`
+### `chess-self-coach train --stats`
 
 Show training data statistics (positions by category and source).
 
 ```bash
-chess-opening-prep train --stats
+chess-self-coach train --stats
 ```
 
 ## Training Mode: Find the Better Move
@@ -164,7 +164,7 @@ Review your own games, find your mistakes, and drill the correct moves with spac
 ```
 PREPARATION (your PC, once)              DRILL (browser, daily)
 ┌─────────────────────────────┐         ┌──────────────────────────────┐
-│ chess-opening-prep train    │         │ PWA in browser               │
+│ chess-self-coach train    │         │ PWA in browser               │
 │           --prepare         │  JSON   │                              │
 │                             │ ─────→  │ 1. Shows your mistake        │
 │ 1. Fetches your games       │         │ 2. "Find a better move"      │
@@ -181,13 +181,13 @@ PREPARATION (your PC, once)              DRILL (browser, daily)
 
 ```bash
 # 1. Prepare training data (takes a few minutes — Stockfish analyzes each game)
-chess-opening-prep train --prepare --games 10
+chess-self-coach train --prepare --games 10
 
 # 2. Open the training interface
-chess-opening-prep train --serve
+chess-self-coach train --serve
 
 # 3. Check your stats
-chess-opening-prep train --stats
+chess-self-coach train --stats
 ```
 
 ### Mistake categories
@@ -218,7 +218,7 @@ Zone 1: Local Files           →  Zone 2: Lichess Study      →  Zone 3: Train
   (CLI prepares + analyzes)        (source of truth)              (drill mistakes)
   *_annote.pgn                     → Chessdriller (openings)      PWA (own games)
 
-  chess-opening-prep                chess-opening-prep             chess-opening-prep
+  chess-self-coach                chess-self-coach             chess-self-coach
   analyze                           push / pull                    train
 ```
 

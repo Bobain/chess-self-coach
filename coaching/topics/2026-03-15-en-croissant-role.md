@@ -12,7 +12,7 @@ En-Croissant was originally Zone 2 of the workflow (validation before Lichess). 
 
 ## Discussion
 
-With the CLI (`chess-opening-prep analyze`) handling batch Stockfish analysis and Lichess Study providing interactive board + SF18 in browser, En-Croissant's role was questioned step by step:
+With the CLI (`chess-self-coach analyze`) handling batch Stockfish analysis and Lichess Study providing interactive board + SF18 in browser, En-Croissant's role was questioned step by step:
 
 1. **Stockfish analysis**: CLI does this now (batch mode, depth 18) → En-Croissant not needed
 2. **Visual validation**: Lichess Study provides the same interactive board → En-Croissant not needed

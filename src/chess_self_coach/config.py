@@ -1,4 +1,4 @@
-"""Configuration loading for chess-opening-prep.
+"""Configuration loading for chess-self-coach.
 
 Loads config.json (study mappings, Stockfish path) and .env (Lichess token).
 Every error produces a clear message with the exact command to fix it.
@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 # Resolve project root: walk up from this file to find config.json,
 # or fall back to cwd.
 _THIS_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = _THIS_DIR.parent.parent  # src/chess_opening_prep -> src -> root
+PROJECT_ROOT = _THIS_DIR.parent.parent  # src/chess_self_coach -> src -> root
 
 CONFIG_FILE = "config.json"
 ENV_FILE = ".env"
@@ -74,7 +74,7 @@ def load_config() -> dict[str, Any]:
     if not config_path.exists():
         error_exit(
             "config.json not found.",
-            hint=f"Run 'chess-opening-prep setup' to create it,\n"
+            hint=f"Run 'chess-self-coach setup' to create it,\n"
             f"  or copy config.json.example to {config_path}",
         )
 
@@ -190,7 +190,7 @@ def find_stockfish(config: dict[str, Any] | None = None) -> Path:
             + "\n".join(tested)
             + "\n\n  To fix:\n"
             "  - Install Stockfish: sudo apt install stockfish\n"
-            "  - Or specify the path: chess-opening-prep analyze --engine /path/to/stockfish file.pgn"
+            "  - Or specify the path: chess-self-coach analyze --engine /path/to/stockfish file.pgn"
         ),
     )
     return Path()  # unreachable
@@ -248,7 +248,7 @@ def get_study_mapping(config: dict[str, Any], pgn_file: str) -> dict[str, str]:
     if not mapping or mapping.get("study_id", "").startswith("STUDY_ID"):
         error_exit(
             f"No Lichess study configured for '{pgn_file}'.",
-            hint="Run 'chess-opening-prep setup' to configure study mappings.",
+            hint="Run 'chess-self-coach setup' to configure study mappings.",
         )
 
     return mapping

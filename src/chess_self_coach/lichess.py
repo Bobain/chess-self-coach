@@ -15,7 +15,7 @@ from pathlib import Path
 import berserk
 import requests
 
-from chess_opening_prep.config import (
+from chess_self_coach.config import (
     error_exit,
     load_config,
     load_lichess_token,
@@ -159,7 +159,7 @@ def setup() -> None:
     Guides the user through connecting their Lichess account and mapping
     PGN files to Lichess Studies.
     """
-    print("\n🔧 chess-opening-prep setup\n")
+    print("\n🔧 chess-self-coach setup\n")
 
     # Step 1: Verify auth
     print("Step 1: Checking Lichess authentication...")
@@ -167,7 +167,7 @@ def setup() -> None:
 
     # Step 2: Check Stockfish
     print("\nStep 2: Checking Stockfish...")
-    from chess_opening_prep.config import find_stockfish, check_stockfish_version
+    from chess_self_coach.config import find_stockfish, check_stockfish_version
 
     try:
         config = load_config()
@@ -283,7 +283,7 @@ def setup() -> None:
         except Exception:
             print("  Could not open browser. Go to: https://lichess.org/study")
         print(
-            "\n  After creating the studies, run 'chess-opening-prep setup' again\n"
+            "\n  After creating the studies, run 'chess-self-coach setup' again\n"
             "  to auto-detect them, or edit config.json manually."
         )
     else:
@@ -334,7 +334,7 @@ def push_pgn(pgn_path: str | Path, *, replace: bool = True) -> None:
         sys.exit(1)
 
     config = load_config()
-    from chess_opening_prep.config import get_study_mapping
+    from chess_self_coach.config import get_study_mapping
 
     mapping = get_study_mapping(config, pgn_path.name)
     study_id = mapping["study_id"]
@@ -397,7 +397,7 @@ def pull_pgn(pgn_path: str | Path, *, in_place: bool = False) -> None:
     """
     pgn_path = Path(pgn_path)
     config = load_config()
-    from chess_opening_prep.config import get_study_mapping
+    from chess_self_coach.config import get_study_mapping
 
     mapping = get_study_mapping(config, pgn_path.name)
     study_id = mapping["study_id"]

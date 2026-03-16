@@ -1,6 +1,6 @@
 Analyze a PGN file with Stockfish 18 and add [%eval] annotations.
 
-Run: chess-opening-prep analyze $ARGUMENTS
+Run: chess-self-coach analyze $ARGUMENTS
 
 If no file is specified, ask which file to analyze from the pgn/ directory.
 After the script runs, summarize the results: positions analyzed, blunders found.

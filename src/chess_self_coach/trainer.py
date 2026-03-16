@@ -18,13 +18,13 @@ import chess
 import chess.engine
 import chess.pgn
 
-from chess_opening_prep.config import (
+from chess_self_coach.config import (
     _find_project_root,
     check_stockfish_version,
     find_stockfish,
     load_config,
 )
-from chess_opening_prep.importer import fetch_chesscom_games, fetch_lichess_games
+from chess_self_coach.importer import fetch_chesscom_games, fetch_lichess_games
 
 # Centipawn loss thresholds
 BLUNDER_THRESHOLD = 200
@@ -476,7 +476,7 @@ def print_stats() -> None:
 
     if not data_path.exists():
         print(
-            "No training data found. Run: chess-opening-prep train --prepare",
+            "No training data found. Run: chess-self-coach train --prepare",
             file=sys.stderr,
         )
         sys.exit(1)

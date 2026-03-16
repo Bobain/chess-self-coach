@@ -1,10 +1,10 @@
-# chess-opening-prep
+# chess-self-coach
 
 CLI to manage a chess opening repertoire: Stockfish analysis + Lichess Study sync.
 
 ## Overview
 
-chess-opening-prep automates the workflow between:
+chess-self-coach automates the workflow between:
 
 1. **Local PGN files** — annotated opening repertoire
 2. **Stockfish 18** — engine analysis and blunder detection
@@ -22,9 +22,9 @@ chess-opening-prep automates the workflow between:
 ## Quick Start
 
 ```bash
-pip install chess-opening-prep
-chess-opening-prep setup
-chess-opening-prep status
+pip install chess-self-coach
+chess-self-coach setup
+chess-self-coach status
 ```
 
 See the [Setup Guide](setup.md) for detailed instructions.

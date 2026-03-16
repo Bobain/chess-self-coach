@@ -1,6 +1,6 @@
 {
-  "name": "Find the Better Move",
-  "short_name": "BetterMove",
+  "name": "Chess Self-Coach",
+  "short_name": "SelfCoach",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#1a1a2e",

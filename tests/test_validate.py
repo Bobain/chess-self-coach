@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from chess_opening_prep.validate import validate_pgn
+from chess_self_coach.validate import validate_pgn
 
 
 def test_validate_well_annotated(fixtures_dir):
