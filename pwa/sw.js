@@ -1,4 +1,4 @@
-const CACHE_NAME = 'better-move-v1';
+const CACHE_NAME = 'chess-self-coach-0.1.10';
 
 const LOCAL_ASSETS = [
   './',
