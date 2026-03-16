@@ -1,10 +1,14 @@
-# chess-self-coach
+# Chess Self-Coach
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-CLI to manage a chess opening repertoire: Stockfish analysis + Lichess Study sync.
+Opening repertoire manager + mistake trainer with spaced repetition.
 
-Automates the workflow between local PGN files, Stockfish engine analysis, and Lichess Studies for spaced-repetition drilling via [Chessdriller](https://chessdriller.org/).
+Two tools in one:
+1. **Repertoire manager** — Stockfish analysis of PGN files + sync with Lichess Studies for drilling via [Chessdriller](https://chessdriller.org/)
+2. **Mistake trainer** — Analyze your own games, extract mistakes, drill the correct moves in a [PWA](https://bobain.github.io/chess-self-coach/train/)
+
+**[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Training PWA](https://bobain.github.io/chess-self-coach/train/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
 
 ## Openings Covered
 
@@ -244,6 +248,28 @@ If you use [Claude Code](https://claude.ai/claude-code), slash commands are avai
 - `/push-lichess` — Push to Lichess study
 - `/pull-lichess` — Pull from Lichess study
 - `/sync-status` — Show sync status
+
+## GitHub Pages
+
+The project is hosted on GitHub Pages with three sections:
+
+| URL | Content |
+|-----|---------|
+| [bobain.github.io/chess-self-coach/](https://bobain.github.io/chess-self-coach/) | Landing page |
+| [bobain.github.io/chess-self-coach/docs/](https://bobain.github.io/chess-self-coach/docs/) | Documentation (MkDocs + auto-generated API) |
+| [bobain.github.io/chess-self-coach/train/](https://bobain.github.io/chess-self-coach/train/) | Training PWA (installable on mobile) |
+
+## CI/CD
+
+| Workflow | Trigger | Steps |
+|----------|---------|-------|
+| **CI** (`ci.yml`) | PR to `main` | Unit tests + Playwright e2e tests |
+| **Test & Deploy** (`deploy.yml`) | Push to `main` (merge) | Tests → Build docs (mkdocstrings + jsdoc-to-markdown) → Assemble site → Deploy to GitHub Pages |
+
+Branch protection on `main`:
+- Direct push forbidden (PR required)
+- Tests must pass before merge
+- Re-runs on every push to the PR branch
 
 ## Contributing
 

@@ -1,5 +1,5 @@
 site_name: chess-self-coach
-site_url: https://bobain.github.io/chess-self-coach/
+site_url: https://bobain.github.io/chess-self-coach/docs/
 repo_url: https://github.com/Bobain/chess-self-coach
 theme:
   name: material
