@@ -1,6 +1,6 @@
 """Command-line interface for chess-opening-prep.
 
-Entry point for the CLI. Dispatches to subcommands: analyze, validate, import, setup, push, pull, status.
+Entry point for the CLI. Dispatches to subcommands: analyze, validate, import, setup, push, pull, status, train.
 """
 
 from __future__ import annotations
@@ -150,6 +150,45 @@ def main(argv: list[str] | None = None) -> None:
         help="Show sync status of all repertoire files",
     )
 
+    # --- train ---
+    p_train = subparsers.add_parser(
+        "train",
+        help="Training mode: extract mistakes from games and drill with spaced repetition",
+    )
+    p_train.add_argument(
+        "--prepare",
+        action="store_true",
+        help="Analyze games and export training_data.json",
+    )
+    p_train.add_argument(
+        "--serve",
+        action="store_true",
+        help="Open the training PWA in the browser",
+    )
+    p_train.add_argument(
+        "--stats",
+        action="store_true",
+        help="Show training progress statistics",
+    )
+    p_train.add_argument(
+        "--games",
+        type=int,
+        default=20,
+        help="Maximum games to fetch per source (default: 20)",
+    )
+    p_train.add_argument(
+        "--depth",
+        type=int,
+        default=18,
+        help="Stockfish analysis depth (default: 18)",
+    )
+    p_train.add_argument(
+        "--engine",
+        type=str,
+        default=None,
+        help="Path to the Stockfish binary (overrides config.json)",
+    )
+
     args = parser.parse_args(argv)
 
     if args.command is None:
@@ -229,6 +268,27 @@ def main(argv: list[str] | None = None) -> None:
         from chess_opening_prep.status import show_status
 
         show_status()
+
+    elif args.command == "train":
+        from chess_opening_prep.trainer import (
+            prepare_training_data,
+            print_stats,
+            serve_pwa,
+        )
+
+        if args.prepare:
+            prepare_training_data(
+                max_games=args.games,
+                depth=args.depth,
+                engine_path=args.engine,
+            )
+        elif args.serve:
+            serve_pwa()
+        elif args.stats:
+            print_stats()
+        else:
+            print("Usage: chess-opening-prep train [--prepare|--serve|--stats]")
+            print("Run 'chess-opening-prep train -h' for details.")
 
 
 if __name__ == "__main__":

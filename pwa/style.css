@@ -1,0 +1,232 @@
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --primary: #0f3460;
+  --accent: #e94560;
+  --success: #4ecca3;
+  --text: #eee;
+  --text-dim: #999;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#session-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+#settings-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* Board sizing: square, responsive */
+#board-container {
+  width: min(88vw, 480px);
+  aspect-ratio: 1;
+}
+
+#board {
+  width: 100%;
+  height: 100%;
+}
+
+/* Override chessground dimensions */
+cg-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#info-panel {
+  width: min(88vw, 480px);
+  text-align: center;
+}
+
+#prompt {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+#game-info {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+#feedback {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.correct {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.incorrect {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.try-again {
+  color: #f0a500;
+  font-weight: 600;
+}
+
+#explanation {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+#controls {
+  margin-top: 0.75rem;
+}
+
+#next-btn,
+#new-session {
+  background: var(--primary);
+  color: var(--text);
+  border: none;
+  padding: 0.6rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#next-btn:hover,
+#new-session:hover {
+  background: #1a4a8a;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: min(90vw, 400px);
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.modal-content input[type="number"],
+.modal-content select {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+
+.modal-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+}
+
+#reset-progress {
+  background: var(--accent);
+  color: white;
+}
+
+#close-settings {
+  background: var(--primary);
+  color: white;
+}
+
+#summary-stats {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Desktop: side-by-side layout */
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  #info-panel {
+    text-align: left;
+    max-width: 360px;
+  }
+}

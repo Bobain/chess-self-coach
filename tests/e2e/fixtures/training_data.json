@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "generated": "2026-03-16T00:00:00Z",
+  "player": {
+    "lichess": "testplayer",
+    "chesscom": ""
+  },
+  "positions": [
+    {
+      "id": "test_pos_001",
+      "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "player_color": "white",
+      "player_move": "a3",
+      "best_move": "d4",
+      "score_before": "+0.30",
+      "score_after": "-0.20",
+      "cp_loss": 250,
+      "category": "blunder",
+      "explanation": "You played a3 (blunder, -250 cp). A better move was d4.",
+      "acceptable_moves": ["d4", "e4"],
+      "game": {
+        "source": "lichess",
+        "opponent": "opponent1",
+        "date": "2026-03-10",
+        "result": "0-1",
+        "opening": "Test Opening"
+      },
+      "srs": { "interval": 0, "ease": 2.5, "next_review": "2026-03-16", "history": [] }
+    },
+    {
+      "id": "test_pos_002",
+      "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
+      "player_color": "white",
+      "player_move": "a3",
+      "best_move": "Nf3",
+      "score_before": "+0.30",
+      "score_after": "-0.10",
+      "cp_loss": 120,
+      "category": "mistake",
+      "explanation": "You played a3 (mistake, -120 cp). A better move was Nf3.",
+      "acceptable_moves": ["Nf3"],
+      "game": {
+        "source": "chess.com",
+        "opponent": "opponent2",
+        "date": "2026-03-12",
+        "result": "1-0",
+        "opening": "King's Pawn"
+      },
+      "srs": { "interval": 0, "ease": 2.5, "next_review": "2026-03-16", "history": [] }
+    },
+    {
+      "id": "test_pos_003",
+      "fen": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1",
+      "player_color": "black",
+      "player_move": "a6",
+      "best_move": "d5",
+      "score_before": "+0.30",
+      "score_after": "+0.80",
+      "cp_loss": 50,
+      "category": "inaccuracy",
+      "explanation": "You played a6 (inaccuracy, -50 cp). A better move was d5.",
+      "acceptable_moves": ["d5"],
+      "game": {
+        "source": "lichess",
+        "opponent": "opponent3",
+        "date": "2026-03-14",
+        "result": "0-1",
+        "opening": "Queen's Pawn"
+      },
+      "srs": { "interval": 0, "ease": 2.5, "next_review": "2026-03-16", "history": [] }
+    }
+  ]
+}

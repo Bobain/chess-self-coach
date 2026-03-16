@@ -1,6 +1,6 @@
 [project]
 name = "chess-opening-prep"
-version = "0.1.8"
+version = "0.1.9"
 description = "CLI to manage a chess opening repertoire: Stockfish analysis + Lichess Study sync"
 readme = "README.md"
 license = "MIT"
@@ -16,7 +16,7 @@ dependencies = [
 chess-opening-prep = "chess_opening_prep.cli:main"
 
 [dependency-groups]
-test = ["pytest", "pytest-mock"]
+test = ["pytest", "pytest-mock", "pytest-playwright"]
 docs = ["mkdocs-material", "mkdocstrings[python]"]
 
 [build-system]
