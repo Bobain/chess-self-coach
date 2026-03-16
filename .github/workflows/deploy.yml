@@ -61,6 +61,11 @@ jobs:
       - name: Build documentation
         run: uv run mkdocs build
 
+      - name: Inject version into service worker
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          sed -i "s/__VERSION__/$VERSION/g" pwa/sw.js
+
       - name: Assemble site
         run: |
           mv site docs_build

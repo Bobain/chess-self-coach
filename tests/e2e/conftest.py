@@ -33,6 +33,11 @@ def pwa_url(tmp_path_factory):
         if f.is_file() and f.name != "training_data.json":
             shutil.copy2(f, tmp_dir / f.name)
 
+    # Inject version placeholder into service worker (matches CI behavior)
+    sw_path = tmp_dir / "sw.js"
+    sw_text = sw_path.read_text()
+    sw_path.write_text(sw_text.replace("__VERSION__", "test"))
+
     # Copy test fixture data (NOT the real training data)
     shutil.copy2(
         FIXTURES_DIR / "training_data.json",

@@ -515,24 +515,43 @@ def print_stats() -> None:
 
 
 def serve_pwa() -> None:
-    """Start a local HTTP server and open the training PWA in the browser."""
+    """Start a local HTTP server and open the training PWA in the browser.
+
+    Copies PWA files + training data to a temp directory and injects the
+    project version into the service worker cache name. Source files are
+    never modified.
+    """
     import http.server
     import shutil
+    import tempfile
     import threading
     import webbrowser
 
-    root = _find_project_root()
-    pwa_dir = root / "pwa"
+    from chess_self_coach import __version__
 
-    if not pwa_dir.exists():
+    root = _find_project_root()
+    pwa_src = root / "pwa"
+
+    if not pwa_src.exists():
         print("PWA directory not found at pwa/", file=sys.stderr)
         sys.exit(1)
 
-    # Copy training data to PWA directory for serving
+    # Copy PWA files to a temp directory (never modify source files)
+    serve_dir = Path(tempfile.mkdtemp(prefix="chess-self-coach-"))
+    for f in pwa_src.iterdir():
+        if f.is_file() and f.name != "training_data.json":
+            shutil.copy2(f, serve_dir / f.name)
+
+    # Inject version into service worker
+    sw_path = serve_dir / "sw.js"
+    sw_text = sw_path.read_text()
+    sw_path.write_text(sw_text.replace("__VERSION__", __version__))
+
+    # Copy training data
     data_path = root / "training_data.json"
     if data_path.exists():
-        shutil.copy2(data_path, pwa_dir / "training_data.json")
-        print("  Copied training_data.json to pwa/")
+        shutil.copy2(data_path, serve_dir / "training_data.json")
+        print("  Copied training_data.json")
     else:
         print(
             "  Warning: No training_data.json found. Run --prepare first.",
@@ -543,14 +562,14 @@ def serve_pwa() -> None:
 
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **kw):
-            super().__init__(*a, directory=str(pwa_dir), **kw)
+            super().__init__(*a, directory=str(serve_dir), **kw)
 
         def log_message(self, format, *args):
             pass  # suppress request logs
 
     server = http.server.HTTPServer(("localhost", port), Handler)
     url = f"http://localhost:{port}"
-    print(f"  Serving PWA at {url}")
+    print(f"  Serving PWA at {url} (v{__version__})")
     print("  Press Ctrl+C to stop\n")
 
     threading.Timer(0.5, lambda: webbrowser.open(url)).start()
@@ -560,3 +579,4 @@ def serve_pwa() -> None:
     except KeyboardInterrupt:
         print("\n  Server stopped.")
         server.shutdown()
+        shutil.rmtree(serve_dir, ignore_errors=True)
