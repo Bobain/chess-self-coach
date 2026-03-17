@@ -140,13 +140,17 @@ def generate_explanation(
         Explanation string.
     """
     score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= _MATE_CP
-    any_mate = was_mate or score_after_is_mate
-    loss_str = _format_cp_loss_human(cp_loss, was_mate=any_mate)
-    parts = [f"You played {actual_san} ({category}, lost {loss_str})."]
 
-    # Detect mate → draw transition (stalemate or fortress)
+    # Build opening sentence with appropriate phrasing
     if was_mate and score_after_cp is not None and abs(score_after_cp) < 50:
-        parts.append("You had a winning position but the game is now a draw.")
+        parts = [f"You played {actual_san} ({category}). You had a forced mate but threw it away — the game is now a draw."]
+    elif was_mate:
+        parts = [f"You played {actual_san} ({category}). You had a forced mate but lost it."]
+    elif score_after_is_mate:
+        parts = [f"You played {actual_san} ({category}). This allowed your opponent to force checkmate."]
+    else:
+        loss_str = _format_cp_loss_human(cp_loss)
+        parts = [f"You played {actual_san} ({category}, lost {loss_str})."]
 
     # Analyze the actual move for immediate stalemate detection
     board_after_actual = None
@@ -694,14 +698,19 @@ def refresh_explanations() -> None:
     updated = 0
     for pos in positions:
         board = chess.Board(pos["fen"])
-        was_mate = abs(pos["cp_loss"]) >= _MATE_CP or "forced mate" in pos.get("explanation", "")
-
-        # Parse score_after to cp
+        # Parse scores to cp
+        score_before_str = pos.get("score_before", "+0.00")
         score_after_str = pos.get("score_after", "+0.00")
+        try:
+            score_before_cp = int(float(score_before_str) * 100)
+        except (ValueError, TypeError):
+            score_before_cp = None
         try:
             score_after_cp = int(float(score_after_str) * 100)
         except (ValueError, TypeError):
             score_after_cp = None
+
+        was_mate = score_before_cp is not None and abs(score_before_cp) >= _MATE_CP
 
         new_explanation = generate_explanation(
             board, pos["player_move"], pos["best_move"],
