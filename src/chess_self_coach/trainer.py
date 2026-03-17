@@ -439,6 +439,10 @@ def extract_mistakes(
         if category is None or not pos["best_san"]:
             continue
 
+        # Skip if player already played the best move (Stockfish PV ambiguity)
+        if pos["actual_san"] == pos["best_san"]:
+            continue
+
         was_mate = pos.get("is_mate", False)
         score_after_cp = next_pos["score_cp"]
         board = chess.Board(pos["fen"])
@@ -735,6 +739,15 @@ def refresh_explanations() -> None:
         data = json.load(f)
 
     positions = data.get("positions", [])
+
+    # Remove invalid positions (player_move == best_move)
+    before_count = len(positions)
+    positions = [p for p in positions if p["player_move"] != p["best_move"]]
+    removed = before_count - len(positions)
+    if removed:
+        data["positions"] = positions
+        print(f"  Removed {removed} invalid position(s) (player_move == best_move)")
+
     updated = 0
     for pos in positions:
         board = chess.Board(pos["fen"])

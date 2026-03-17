@@ -72,6 +72,12 @@ def test_no_question_marks_in_game_info(positions):
     assert not bad, f"{len(bad)} position(s) with '?' in game info: {bad[:5]}"
 
 
+def test_player_move_differs_from_best(positions):
+    """Player move and best move must be different."""
+    dupes = [p["id"] for p in positions if p["player_move"] == p["best_move"]]
+    assert not dupes, f"{len(dupes)} position(s) where player_move == best_move: {dupes[:5]}"
+
+
 def test_cp_loss_matches_category(positions):
     """cp_loss must be consistent with the category classification."""
     thresholds = {"blunder": 200, "mistake": 100, "inaccuracy": 50}
