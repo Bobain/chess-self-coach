@@ -196,6 +196,61 @@ function getLegalDests(fen) {
 }
 
 /**
+ * Compute material balance from a FEN string and display captured pieces.
+ * Shows advantage like chess.com/Lichess: captured pieces + point difference.
+ * @param {string} fen - FEN position string.
+ * @param {string} orientation - Board orientation ("white" or "black").
+ */
+function updateMaterialBalance(fen, orientation) {
+  const pieces = fen.split(' ')[0];
+  const count = { K: 0, Q: 0, R: 0, B: 0, N: 0, P: 0, k: 0, q: 0, r: 0, b: 0, n: 0, p: 0 };
+  for (const ch of pieces) {
+    if (ch in count) count[ch]++;
+  }
+
+  // Starting material
+  const start = { K: 1, Q: 1, R: 2, B: 2, N: 2, P: 8 };
+  const values = { q: 9, r: 5, b: 3, n: 3, p: 1 };
+  const symbols = { q: '\u2655', r: '\u2656', b: '\u2657', n: '\u2658', p: '\u2659' };
+  const symbolsBlack = { q: '\u265B', r: '\u265C', b: '\u265D', n: '\u265E', p: '\u265F' };
+
+  // Captured pieces: what's missing from starting position
+  let whiteAdv = 0;  // positive = white has more material
+  let whiteCaptured = '';  // pieces white captured (black pieces missing)
+  let blackCaptured = '';  // pieces black captured (white pieces missing)
+
+  for (const type of ['q', 'r', 'b', 'n', 'p']) {
+    const upper = type.toUpperCase();
+    const whiteMissing = start[upper] - count[upper];
+    const blackMissing = start[upper] - count[type];
+
+    // White pieces missing = captured by black
+    for (let i = 0; i < whiteMissing; i++) {
+      blackCaptured += symbols[type];
+    }
+    // Black pieces missing = captured by white
+    for (let i = 0; i < blackMissing; i++) {
+      whiteCaptured += symbolsBlack[type];
+    }
+
+    whiteAdv += (count[upper] - count[type]) * values[type];
+  }
+
+  const topEl = document.getElementById('material-top');
+  const bottomEl = document.getElementById('material-bottom');
+
+  // Top = opponent, bottom = player (depends on orientation)
+  const diffStr = Math.abs(whiteAdv) > 0 ? ` +${Math.abs(whiteAdv)}` : '';
+  if (orientation === 'white') {
+    topEl.textContent = whiteCaptured + (whiteAdv > 0 ? '' : diffStr);
+    bottomEl.textContent = blackCaptured + (whiteAdv > 0 ? diffStr : '');
+  } else {
+    topEl.textContent = blackCaptured + (whiteAdv > 0 ? diffStr : '');
+    bottomEl.textContent = whiteCaptured + (whiteAdv > 0 ? '' : diffStr);
+  }
+}
+
+/**
  * Initialize the chessground board for a training position.
  * Destroys any existing board, sets orientation to the player's color,
  * and configures legal move destinations.
@@ -223,6 +278,8 @@ function setupBoard(position) {
     draggable: { enabled: true },
     highlight: { lastMove: true, check: true },
   });
+
+  updateMaterialBalance(fen, color);
 }
 
 /**

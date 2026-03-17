@@ -74,6 +74,15 @@ main {
   position: relative;
 }
 
+.material-balance {
+  height: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  padding-left: 0.2rem;
+  white-space: nowrap;
+}
+
 /* Override chessground dimensions */
 cg-container {
   width: 100% !important;

@@ -275,7 +275,7 @@ def _determine_player_color(
 
 def _detect_source(game: chess.pgn.Game) -> str:
     """Detect whether a game is from Lichess or chess.com."""
-    site = game.headers.get("Site", "")
+    site = game.headers.get("Site", "").lower()
     if "lichess.org" in site:
         return "lichess"
     if "chess.com" in site:
@@ -428,7 +428,7 @@ def extract_mistakes(
             "acceptable_moves": [pos["best_san"]],
             "pv": pos.get("pv", []),
             "game": {
-                "id": game.headers.get("Site", ""),
+                "id": game.headers.get("Link", game.headers.get("Site", "")),
                 "source": _detect_source(game),
                 "opponent": _get_opponent(game, player_color),
                 "date": game.headers.get("Date", "?"),
@@ -576,7 +576,7 @@ def prepare_training_data(
     # Filter out already-analyzed games
     new_games = []
     for game in all_games:
-        game_id = game.headers.get("Site", "")
+        game_id = game.headers.get("Link", game.headers.get("Site", ""))
         if game_id and game_id in existing_game_ids:
             continue
         new_games.append(game)
@@ -720,6 +720,15 @@ def refresh_explanations() -> None:
         new_context = _generate_context(
             pos["category"], pos["cp_loss"], was_mate, score_after_cp,
         )
+        # Fix source if "unknown" and game.id hints at the platform
+        game = pos.get("game", {})
+        game_id = game.get("id", "")
+        if game.get("source") == "unknown":
+            if "lichess.org" in game_id.lower():
+                game["source"] = "lichess"
+            elif "chess.com" in game_id.lower():
+                game["source"] = "chess.com"
+
         if new_explanation != pos.get("explanation") or new_context != pos.get("context"):
             pos["explanation"] = new_explanation
             pos["context"] = new_context
