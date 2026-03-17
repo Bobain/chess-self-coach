@@ -20,7 +20,7 @@ let Chess;
 let trainingData = null;
 /** @type {Object.<string, SRSState>} SRS state keyed by position ID */
 let srsState = {};
-/** @type {Array.<Object>} Positions selected for the current session */
+/** @type {Array.<Object>} Positions queue for the current session */
 let session = [];
 /** @type {number} Index of the current position in the session */
 let currentIndex = 0;
@@ -30,6 +30,12 @@ let attempts = 0;
 let sessionResults = [];
 /** @type {?Object} Current chessground instance */
 let cg = null;
+/** @type {Map.<string, number>} Number of times each position appeared in this session */
+let sessionAppearances = new Map();
+/** @type {number} Count of unique positions completed (for progress display) */
+let completedCount = 0;
+/** @type {number} Total unique positions in original session */
+let sessionOriginalSize = 0;
 
 /**
  * @typedef {Object} SRSState
@@ -267,9 +273,12 @@ function showFeedback(correct, position, gaveUp = false) {
   const nextBtn = document.getElementById('next-btn');
   const showPosBtn = document.getElementById('show-position-btn');
 
+  const dismissBtn = document.getElementById('dismiss-btn');
+
   feedbackEl.classList.remove('hidden');
   nextBtn.classList.remove('hidden');
   showPosBtn.classList.remove('hidden');
+  dismissBtn.classList.remove('hidden');
 
   // Compute the FEN after best move for toggle
   let bestMoveFen = null;
@@ -409,6 +418,52 @@ function recordResult(correct) {
   srsState[position.id] = updateSRS(state, correct);
   saveSRSState();
   sessionResults.push({ id: position.id, correct, attempts });
+
+  const appearances = sessionAppearances.get(position.id) || 1;
+
+  // Decide whether to reinsert for intra-session repetition
+  let shouldReinsert = false;
+  if (correct && appearances === 1) {
+    // First success: reinsert to confirm learning
+    shouldReinsert = true;
+  } else if (!correct) {
+    // Failed: reinsert for retry
+    shouldReinsert = true;
+  }
+  // 2nd+ success: position is acquired, don't reinsert
+
+  if (shouldReinsert) {
+    const offset = correct ? 5 : 3;
+    const insertAt = Math.min(currentIndex + 1 + offset, session.length);
+    session.splice(insertAt, 0, position);
+  } else {
+    completedCount++;
+  }
+}
+
+/**
+ * Permanently dismiss a position — it will never appear again.
+ * Sets an extremely long SRS interval so it's never selected.
+ */
+function dismissPosition() {
+  const position = session[currentIndex];
+  srsState[position.id] = {
+    interval: 99999,
+    ease: 2.5,
+    repetitions: 0,
+    next_review: '9999-12-31',
+    history: [{ date: new Date().toISOString().split('T')[0], correct: false, dismissed: true }],
+  };
+  saveSRSState();
+
+  // Remove all future occurrences of this position from the session
+  for (let i = session.length - 1; i > currentIndex; i--) {
+    if (session[i].id === position.id) {
+      session.splice(i, 1);
+    }
+  }
+  completedCount++;
+  showPosition(currentIndex + 1);
 }
 
 // --- Session flow ---
@@ -428,7 +483,11 @@ function showPosition(index) {
   attempts = 0;
   const position = session[index];
 
-  document.getElementById('progress').textContent = `${index + 1} / ${session.length}`;
+  // Track appearances
+  const count = (sessionAppearances.get(position.id) || 0) + 1;
+  sessionAppearances.set(position.id, count);
+
+  document.getElementById('progress').textContent = `${completedCount + 1} / ${sessionOriginalSize}`;
   document.getElementById('prompt').textContent =
     `You played ${position.player_move}. Can you find a better move?`;
   document.getElementById('game-info').textContent =
@@ -436,6 +495,10 @@ function showPosition(index) {
 
   document.getElementById('feedback').classList.add('hidden');
   document.getElementById('next-btn').classList.add('hidden');
+  document.getElementById('show-position-btn').classList.add('hidden');
+  document.getElementById('play-line-btn').classList.add('hidden');
+  document.getElementById('pv-line').classList.add('hidden');
+  document.getElementById('dismiss-btn').classList.add('hidden');
 
   setupBoard(position);
 }
@@ -472,6 +535,9 @@ function startSession() {
   const settings = loadSettings();
   session = selectPositions(trainingData.positions, settings.sessionSize);
   sessionResults = [];
+  sessionAppearances = new Map();
+  completedCount = 0;
+  sessionOriginalSize = session.length;
 
   if (session.length === 0) {
     document.getElementById('prompt').textContent =
@@ -526,6 +592,10 @@ async function init() {
   // Wire up controls
   document.getElementById('next-btn').addEventListener('click', () => {
     showPosition(currentIndex + 1);
+  });
+
+  document.getElementById('dismiss-btn').addEventListener('click', () => {
+    dismissPosition();
   });
 
   document.getElementById('settings-btn').addEventListener('click', () => {

@@ -104,44 +104,85 @@ def test_next_button_advances_position(page, pwa_url):
     """Clicking Next loads the next position."""
     _wait_for_board(page, pwa_url)
 
+    # Solve position 1 correctly (1st appearance → reinserted, not yet completed)
+    make_move(page, "d2", "d4", "white")
+    page.wait_for_timeout(300)
+
+    page.locator("#next-btn").click()
+    page.wait_for_timeout(500)
+
+    # Progress stays at 1/3 (position not yet acquired — needs 2nd success)
+    expect(page.locator("#progress")).to_contain_text("1 / 3")
+    expect(page.locator("#prompt")).to_contain_text("You played")
+
+
+def _solve_current_position(page, from_sq, to_sq, orientation):
+    """Solve one position: make the correct move, wait, click Next."""
+    page.wait_for_selector("cg-board piece", timeout=5000)
+    make_move(page, from_sq, to_sq, orientation)
+    page.wait_for_timeout(300)
+    page.locator("#next-btn").click()
+    page.wait_for_timeout(500)
+
+
+def test_session_completion_shows_summary(page, pwa_url):
+    """Completing all positions (including intra-session repeats) shows summary."""
+    _wait_for_board(page, pwa_url)
+
+    # With intra-session repetition, each position appears twice:
+    # 1st pass: positions 1, 2, 3 (each reinserted after first success)
+    # 2nd pass: positions 1, 2, 3 again (acquired, not reinserted)
+
+    # Pass 1: original positions
+    _solve_current_position(page, "d2", "d4", "white")   # Pos 1 (1st time)
+    _solve_current_position(page, "g1", "f3", "white")   # Pos 2 (1st time)
+    _solve_current_position(page, "d7", "d5", "black")   # Pos 3 (1st time)
+
+    # Pass 2: reinserted positions (confirm learning)
+    _solve_current_position(page, "d2", "d4", "white")   # Pos 1 (2nd time)
+    _solve_current_position(page, "g1", "f3", "white")   # Pos 2 (2nd time)
+    _solve_current_position(page, "d7", "d5", "black")   # Pos 3 (2nd time)
+
+    # Summary modal should appear — all 6 answers correct
+    expect(page.locator("#summary-modal")).to_be_visible()
+    expect(page.locator("#summary-stats")).to_contain_text("6 / 6")
+
+
+def test_intra_session_repetition_on_correct(page, pwa_url):
+    """A correct answer on first appearance reinserts the position later."""
+    _wait_for_board(page, pwa_url)
+
     # Solve position 1 correctly
     make_move(page, "d2", "d4", "white")
     page.wait_for_timeout(300)
 
+    expect(page.locator("#feedback-text")).to_contain_text("Correct")
     page.locator("#next-btn").click()
     page.wait_for_timeout(500)
 
-    expect(page.locator("#progress")).to_contain_text("2 /")
+    # We should see position 2 next (not position 1 again immediately)
     expect(page.locator("#prompt")).to_contain_text("You played")
 
 
-def test_session_completion_shows_summary(page, pwa_url):
-    """Completing all positions shows the session summary modal."""
+def test_failed_position_returns_in_session(page, pwa_url):
+    """A failed position is reinserted closer in the session queue."""
     _wait_for_board(page, pwa_url)
 
-    # Position 1: white, d2→d4
-    make_move(page, "d2", "d4", "white")
-    page.wait_for_timeout(300)
+    # Fail position 1 three times to exhaust attempts
+    for _ in range(3):
+        page.wait_for_selector("cg-board piece", timeout=5000)
+        page.wait_for_timeout(200)
+        make_move(page, "a2", "a3", "white")
+        page.wait_for_timeout(700)
+
+    expect(page.locator("#feedback-text")).to_contain_text("answer was")
     page.locator("#next-btn").click()
     page.wait_for_timeout(500)
 
-    # Position 2: white, g1→f3 (Nf3)
+    # Position 1 was reinserted — it will appear again later in the session
+    # For now, we should be on position 2
     page.wait_for_selector("cg-board piece", timeout=5000)
-    make_move(page, "g1", "f3", "white")
-    page.wait_for_timeout(300)
-    page.locator("#next-btn").click()
-    page.wait_for_timeout(500)
-
-    # Position 3: black, d7→d5
-    page.wait_for_selector("cg-board piece", timeout=5000)
-    make_move(page, "d7", "d5", "black")
-    page.wait_for_timeout(300)
-    page.locator("#next-btn").click()
-    page.wait_for_timeout(500)
-
-    # Summary modal should appear with 3/3 correct
-    expect(page.locator("#summary-modal")).to_be_visible()
-    expect(page.locator("#summary-stats")).to_contain_text("3 / 3")
+    expect(page.locator("#prompt")).to_contain_text("You played")
 
 
 # --- Settings ---

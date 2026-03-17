@@ -381,6 +381,7 @@ def extract_mistakes(
             "acceptable_moves": [pos["best_san"]],
             "pv": pos.get("pv", []),
             "game": {
+                "id": game.headers.get("Site", ""),
                 "source": _detect_source(game),
                 "opponent": _get_opponent(game, player_color),
                 "date": game.headers.get("Date", "?"),
@@ -442,18 +443,34 @@ def _analyze_game_worker(
     return idx, total, label, mistakes, elapsed
 
 
+def _load_existing_training_data(path: Path) -> dict | None:
+    """Load existing training_data.json if it exists."""
+    if not path.exists():
+        return None
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, KeyError):
+        return None
+
+
 def prepare_training_data(
     *,
     max_games: int = 20,
     depth: int = 18,
     engine_path: str | None = None,
+    fresh: bool = False,
 ) -> None:
     """Fetch games, analyze with Stockfish, extract mistakes, export training JSON.
+
+    By default, merges with existing training data (incremental mode).
+    Only new games are analyzed. SRS progress is preserved.
 
     Args:
         max_games: Maximum games to fetch per source.
         depth: Stockfish analysis depth.
         engine_path: Override path to Stockfish binary.
+        fresh: If True, discard existing data and start from scratch.
     """
     config = load_config()
     players = config.get("players", {})
@@ -478,6 +495,22 @@ def prepare_training_data(
         version = check_stockfish_version(sf_path, expected)
         print(f"  Using {version} at {sf_path}")
 
+    root = _find_project_root()
+    output_path = root / "training_data.json"
+
+    # Load existing data (incremental mode)
+    existing_data = None if fresh else _load_existing_training_data(output_path)
+    existing_game_ids: set[str] = set()
+    existing_positions: dict[str, dict] = {}  # id -> position (preserves SRS)
+    if existing_data:
+        for pos in existing_data.get("positions", []):
+            existing_positions[pos["id"]] = pos
+            game_id = pos.get("game", {}).get("id", "")
+            if game_id:
+                existing_game_ids.add(game_id)
+        if existing_game_ids:
+            print(f"  Loaded {len(existing_positions)} existing position(s) from {len(existing_game_ids)} game(s)")
+
     # Fetch games
     print("\n  Fetching games...")
     all_games: list[chess.pgn.Game] = []
@@ -493,25 +526,41 @@ def prepare_training_data(
         print("  No games found.")
         return
 
-    # Analyze each game
+    # Filter out already-analyzed games
+    new_games = []
+    for game in all_games:
+        game_id = game.headers.get("Site", "")
+        if game_id and game_id in existing_game_ids:
+            continue
+        new_games.append(game)
+
+    skipped = len(all_games) - len(new_games)
+    if skipped:
+        print(f"  Skipped {skipped} already-analyzed game(s)")
+
+    if not new_games:
+        print("  No new games to analyze.")
+        if existing_data:
+            print(f"  Existing training data unchanged ({len(existing_positions)} positions)")
+        return
+
+    # Analyze new games
     workers = _physical_core_count()
-    workers = min(workers, len(all_games))
-    print(f"\n  Analyzing {len(all_games)} game(s) with Stockfish (depth {depth}, {workers} workers)...")
+    workers = min(workers, len(new_games))
+    print(f"\n  Analyzing {len(new_games)} new game(s) with Stockfish (depth {depth}, {workers} workers)...")
     print("  This may take several minutes...\n")
     all_mistakes: list[dict] = []
 
-    # Build tasks: (game_pgn_str, depth, player_color, index, label)
     tasks = []
-    for i, game in enumerate(all_games):
+    for i, game in enumerate(new_games):
         player_color = _determine_player_color(game, lichess_user, chesscom_user)
         if player_color is None:
             continue
         white = game.headers.get("White", "?")
         black = game.headers.get("Black", "?")
-        # Serialize game to PGN string for pickling
         exporter = chess.pgn.StringExporter(headers=True, variations=True, comments=True)
         pgn_str = game.accept(exporter)
-        tasks.append((pgn_str, str(sf_path), depth, player_color, i + 1, len(all_games), f"{white} vs {black}"))
+        tasks.append((pgn_str, str(sf_path), depth, player_color, i + 1, len(new_games), f"{white} vs {black}"))
 
     with ProcessPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_analyze_game_worker, *t): t for t in tasks}
@@ -523,7 +572,6 @@ def prepare_training_data(
             done_count += 1
             all_mistakes.extend(mistakes)
 
-            # ETA based on wall-clock time
             wall_elapsed = time.time() - wall_start
             avg_per_game = wall_elapsed / done_count
             remaining = avg_per_game * (total_tasks - done_count)
@@ -536,29 +584,27 @@ def prepare_training_data(
                 f"— ETA {eta_str}"
             )
 
-    # Deduplicate by position ID (same mistake in multiple games)
-    seen: set[str] = set()
-    unique_mistakes: list[dict] = []
-    for m in all_mistakes:
-        if m["id"] not in seen:
-            seen.add(m["id"])
-            unique_mistakes.append(m)
-
-    # Sort: blunders first, then by cp_loss descending
-    severity = {"blunder": 0, "mistake": 1, "inaccuracy": 2}
-    unique_mistakes.sort(
-        key=lambda m: (severity.get(m["category"], 3), -m["cp_loss"])
-    )
-
-    # Add initial SRS data
+    # Merge new positions with existing (preserve SRS data)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    for m in unique_mistakes:
+    new_count = 0
+    for m in all_mistakes:
+        if m["id"] in existing_positions:
+            continue  # already exists, keep the one with SRS progress
         m["srs"] = {
             "interval": 0,
             "ease": 2.5,
             "next_review": today,
             "history": [],
         }
+        existing_positions[m["id"]] = m
+        new_count += 1
+
+    # Sort: blunders first, then by cp_loss descending
+    severity = {"blunder": 0, "mistake": 1, "inaccuracy": 2}
+    all_positions = sorted(
+        existing_positions.values(),
+        key=lambda m: (severity.get(m["category"], 3), -m["cp_loss"]),
+    )
 
     # Build and write output
     training_data = {
@@ -568,20 +614,18 @@ def prepare_training_data(
             "lichess": lichess_user,
             "chesscom": chesscom_user or "",
         },
-        "positions": unique_mistakes,
+        "positions": all_positions,
     }
-
-    root = _find_project_root()
-    output_path = root / "training_data.json"
     with open(output_path, "w") as f:
         json.dump(training_data, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
+    total = len(all_positions)
     print(f"\n  Training data exported: {output_path}")
-    print(f"  Total positions: {len(unique_mistakes)}")
-    blunders = sum(1 for m in unique_mistakes if m["category"] == "blunder")
-    mistake_count = sum(1 for m in unique_mistakes if m["category"] == "mistake")
-    inaccuracies = sum(1 for m in unique_mistakes if m["category"] == "inaccuracy")
+    print(f"  Total positions: {total} ({new_count} new)")
+    blunders = sum(1 for m in all_positions if m["category"] == "blunder")
+    mistake_count = sum(1 for m in all_positions if m["category"] == "mistake")
+    inaccuracies = sum(1 for m in all_positions if m["category"] == "inaccuracy")
     print(f"    Blunders: {blunders}")
     print(f"    Mistakes: {mistake_count}")
     print(f"    Inaccuracies: {inaccuracies}")

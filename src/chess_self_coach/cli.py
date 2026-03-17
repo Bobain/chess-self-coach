@@ -188,6 +188,11 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="Path to the Stockfish binary (overrides config.json)",
     )
+    p_train.add_argument(
+        "--fresh",
+        action="store_true",
+        help="Discard existing training data and start from scratch",
+    )
 
     args = parser.parse_args(argv)
 
@@ -281,6 +286,7 @@ def main(argv: list[str] | None = None) -> None:
                 max_games=args.games,
                 depth=args.depth,
                 engine_path=args.engine,
+                fresh=args.fresh,
             )
         elif args.serve:
             serve_pwa()
