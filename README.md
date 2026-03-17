@@ -50,10 +50,13 @@ For each mistake in your games, the trainer shows:
 ## Installation
 
 ```bash
-# From PyPI
+# Recommended: install as isolated CLI tool
+pipx install chess-self-coach
+
+# Or with pip
 pip install chess-self-coach
 
-# From source
+# From source (development)
 git clone https://github.com/Bobain/chess-self-coach.git
 cd chess-self-coach
 uv venv && uv sync
