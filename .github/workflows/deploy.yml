@@ -73,6 +73,7 @@ jobs:
           cp landing/index.html site/
           cp -r docs_build/* site/docs/
           cp pwa/index.html pwa/app.js pwa/style.css pwa/manifest.json pwa/sw.js site/train/
+          if [ -f training_data.json ]; then cp training_data.json site/train/; fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
