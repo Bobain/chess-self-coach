@@ -739,6 +739,8 @@ def refresh_explanations() -> None:
         f.write("\n")
 
     print(f"  Refreshed {updated}/{len(positions)} explanation(s) in {data_path}")
+    if updated:
+        print("  💡 Run /review-training to verify text quality")
 
 
 def print_stats() -> None:
