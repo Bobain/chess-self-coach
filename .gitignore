@@ -5,6 +5,7 @@ config.json
 # Claude Code local settings
 .claude/settings.local.json
 .claude/.pending-*
+.pending-*
 
 # Python
 __pycache__/

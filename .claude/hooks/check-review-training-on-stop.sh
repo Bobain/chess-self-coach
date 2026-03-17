@@ -11,12 +11,12 @@ if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
 fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-MARKER="$REPO_ROOT/.claude/.pending-review-training"
+MARKER="$REPO_ROOT/.pending-review-training"
 
 if [ ! -f "$MARKER" ]; then
   exit 0
 fi
 
 cat <<'EOF'
-{"decision": "block", "reason": "REVIEW TRAINING — Du code de génération de texte ou une commande [Dev] a été exécutée. Tu DOIS lancer /review-training maintenant pour vérifier la qualité des textes. Une fois terminé, supprime le marker avec : rm .claude/.pending-review-training"}
+{"decision": "block", "reason": "REVIEW TRAINING — Du code de génération de texte ou une commande [Dev] a été exécutée. Tu DOIS lancer /rloop maintenant pour vérifier la qualité des textes. Une fois terminé, supprime le marker avec : rm -f .pending-review-training"}
 EOF

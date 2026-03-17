@@ -35,7 +35,7 @@ def test_no_unknown_source(positions):
 
 
 def test_no_excessive_pawn_loss_in_text(positions):
-    """Explanations should not mention pawn counts > 50 (sign of a mate bug)."""
+    """Explanations should not mention pawn counts > 20 (sign of a display bug)."""
     pattern = re.compile(r"(\d+\.?\d*)\s*pawns?")
     bad = []
     for p in positions:
@@ -43,7 +43,7 @@ def test_no_excessive_pawn_loss_in_text(positions):
             text = p.get(field, "")
             for match in pattern.finditer(text):
                 value = float(match.group(1))
-                if value > 50:
+                if value > 20:
                     bad.append((p["id"], field, text[:80]))
     assert not bad, f"{len(bad)} text(s) with >50 pawns: {bad[:3]}"
 

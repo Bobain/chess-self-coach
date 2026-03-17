@@ -108,6 +108,8 @@ def _format_cp_loss_human(cp_loss: int, was_mate: bool = False) -> str:
     if cp_loss >= _MATE_CP or was_mate:
         return "a forced mate"
     pawns = cp_loss / 100.0
+    if pawns >= 5:
+        return "a decisive advantage"
     if pawns == int(pawns):
         return f"{int(pawns)} pawn{'s' if int(pawns) != 1 else ''}"
     return f"{pawns:.1f} pawns"

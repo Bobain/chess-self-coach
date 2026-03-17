@@ -7,7 +7,7 @@ set -euo pipefail
 INPUT=$(cat)
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-MARKER="$REPO_ROOT/.claude/.pending-review-training"
+MARKER="$REPO_ROOT/.pending-review-training"
 
 # Already flagged this session
 [ -f "$MARKER" ] && exit 0

@@ -11,15 +11,7 @@ Run `uv run pytest tests/test_training_texts.py -v`. If any test fails:
 - Go back to Step 1 (the fix may affect other positions)
 
 **Step 3 — Semantic review:**
-Read `training_data.json` and sample 15 positions across categories (blunders, mistakes, inaccuracies). For each, verify:
-- `player_move` and `best_move` are valid SAN in the FEN (parse with chess.Board)
-- `player_move` != `best_move`
-- `context` includes game phase (Opening/Middlegame/Endgame) and advantage description
-- `explanation` mentions the best move and is factually coherent
-- No pawn counts > 20 in any text field
-- `source` is not "unknown"
-
-If any issue is found:
+Run `uv run python3 scripts/review_texts.py`. If exit code 1 (issues found):
 - If systemic (pattern across multiple positions): fix `_generate_context()` or `generate_explanation()` in trainer.py
 - If data bug: fix the root cause in the generation code
 - Go back to Step 1
@@ -32,5 +24,5 @@ If no issues found in Step 2 and Step 3:
 - If anything changed: go back to Step 1
 
 **Step 5 — Cleanup:**
-Run `rm -f .claude/.pending-review-training` to clear the marker.
+Run `rm -f .pending-review-training` to clear the marker.
 Report: number of iterations, fixes applied, final position count, test results.
