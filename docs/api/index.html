@@ -1399,14 +1399,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
@@ -1429,7 +1422,14 @@ Every error produces a clear message with the exact command to fix it.</p>
 <span class="normal">226</span>
 <span class="normal">227</span>
 <span class="normal">228</span>
-<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_stockfish_version</span><span class="p">(</span><span class="n">sf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_stockfish_version</span><span class="p">(</span><span class="n">sf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check the Stockfish version and warn if it doesn&#39;t match expected.</span>
 
 <span class="sd">    Args:</span>
@@ -1674,14 +1674,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
@@ -1724,7 +1717,14 @@ Every error produces a clear message with the exact command to fix it.</p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_stockfish</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_stockfish</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a working Stockfish binary.</span>
 
 <span class="sd">    Search order: config.json path → common install locations → system → $PATH.</span>
@@ -1890,14 +1890,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/config.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
@@ -1912,7 +1905,14 @@ Every error produces a clear message with the exact command to fix it.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_study_mapping</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">pgn_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_study_mapping</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">pgn_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the Lichess study mapping for a PGN file.</span>
 
 <span class="sd">    Args:</span>
@@ -2068,7 +2068,7 @@ Every error produces a clear message with the exact command to fix it.</p>
 
 
 <h2 id="chess_self_coach.config.load_lichess_token" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">load_lichess_token</span><span class="p">()</span></code>
+            <code class="highlight language-python"><span class="n">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 </h2>
 
@@ -2076,6 +2076,37 @@ Every error produces a clear message with the exact command to fix it.</p>
     <div class="doc doc-contents ">
 
         <p>Load the Lichess API token from .env or environment.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>required</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If True, exit on missing token. If False, return None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -2089,11 +2120,11 @@ Every error produces a clear message with the exact command to fix it.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The API token string.</p>
+                <p>The API token string, or None if not found and not required.</p>
               </div>
             </td>
           </tr>
@@ -2116,7 +2147,7 @@ Every error produces a clear message with the exact command to fix it.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If no token is found or it looks invalid.</p>
+                <p>If required=True and no token is found or it looks invalid.</p>
               </div>
             </td>
           </tr>
@@ -2163,14 +2194,24 @@ Every error produces a clear message with the exact command to fix it.</p>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
-<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_lichess_token</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load the Lichess API token from .env or environment.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        required: If True, exit on missing token. If False, return None.</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        The API token string.</span>
+<span class="sd">        The API token string, or None if not found and not required.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        SystemExit: If no token is found or it looks invalid.</span>
+<span class="sd">        SystemExit: If required=True and no token is found or it looks invalid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">_find_project_root</span><span class="p">()</span>
     <span class="n">env_path</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="n">ENV_FILE</span>
@@ -2182,6 +2223,8 @@ Every error produces a clear message with the exact command to fix it.</p>
     <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LICHESS_API_TOKEN&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="n">error_exit</span><span class="p">(</span>
             <span class="s2">&quot;Lichess API token not found.&quot;</span><span class="p">,</span>
             <span class="n">hint</span><span class="o">=</span><span class="p">(</span>
@@ -2195,6 +2238,8 @@ Every error produces a clear message with the exact command to fix it.</p>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;lip_&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">required</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="n">error_exit</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Lichess token looks invalid (expected &#39;lip_...&#39; prefix, got &#39;</span><span class="si">{</span><span class="n">token</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">...&#39;).&quot;</span><span class="p">,</span>
             <span class="n">hint</span><span class="o">=</span><span class="s2">&quot;Regenerate your token at https://lichess.org/account/oauth/token/create&quot;</span><span class="p">,</span>
@@ -3880,7 +3925,9 @@ Only new games are analyzed. SRS progress is preserved.</p>
 <span class="normal">721</span>
 <span class="normal">722</span>
 <span class="normal">723</span>
-<span class="normal">724</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_training_data</span><span class="p">(</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_training_data</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">max_games</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
     <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span>
@@ -3903,9 +3950,10 @@ Only new games are analyzed. SRS progress is preserved.</p>
     <span class="n">lichess_user</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lichess&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">chesscom_user</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chesscom&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">lichess_user</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lichess_user</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">chesscom_user</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;No Lichess username in config.json (players.lichess)&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+            <span class="s2">&quot;No player configured. Run &#39;chess-self-coach setup&#39; to set your Lichess and/or chess.com username.&quot;</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
@@ -3941,8 +3989,9 @@ Only new games are analyzed. SRS progress is preserved.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Fetching games...&quot;</span><span class="p">)</span>
     <span class="n">all_games</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">chess</span><span class="o">.</span><span class="n">pgn</span><span class="o">.</span><span class="n">Game</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="n">lichess_games</span> <span class="o">=</span> <span class="n">fetch_lichess_games</span><span class="p">(</span><span class="n">lichess_user</span><span class="p">,</span> <span class="n">max_games</span><span class="p">)</span>
-    <span class="n">all_games</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">lichess_games</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lichess_user</span><span class="p">:</span>
+        <span class="n">lichess_games</span> <span class="o">=</span> <span class="n">fetch_lichess_games</span><span class="p">(</span><span class="n">lichess_user</span><span class="p">,</span> <span class="n">max_games</span><span class="p">)</span>
+        <span class="n">all_games</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">lichess_games</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">chesscom_user</span><span class="p">:</span>
         <span class="n">chesscom_games</span> <span class="o">=</span> <span class="n">fetch_chesscom_games</span><span class="p">(</span><span class="n">chesscom_user</span><span class="p">,</span> <span class="n">max_games</span><span class="p">)</span>
@@ -4077,9 +4126,7 @@ Only new games are analyzed. SRS progress is preserved.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">805</span>
 <span class="normal">806</span>
 <span class="normal">807</span>
 <span class="normal">808</span>
@@ -4119,7 +4166,9 @@ Only new games are analyzed. SRS progress is preserved.</p>
 <span class="normal">842</span>
 <span class="normal">843</span>
 <span class="normal">844</span>
-<span class="normal">845</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_stats</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_stats</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Show training progress from training_data.json.&quot;&quot;&quot;</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">_find_project_root</span><span class="p">()</span>
     <span class="n">data_path</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="s2">&quot;training_data.json&quot;</span>
@@ -4186,9 +4235,7 @@ and writes back. SRS progress and all other fields are preserved.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">729</span>
 <span class="normal">730</span>
 <span class="normal">731</span>
 <span class="normal">732</span>
@@ -4259,7 +4306,9 @@ and writes back. SRS progress and all other fields are preserved.</p>
 <span class="normal">797</span>
 <span class="normal">798</span>
 <span class="normal">799</span>
-<span class="normal">800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">refresh_explanations</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">refresh_explanations</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Regenerate explanations in training_data.json without re-running Stockfish.</span>
 
 <span class="sd">    Reads existing positions, rebuilds explanations using generate_explanation(),</span>
@@ -4358,9 +4407,7 @@ never modified.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">848</span>
-<span class="normal">849</span>
-<span class="normal">850</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span>
 <span class="normal">853</span>
@@ -4423,7 +4470,9 @@ never modified.</p>
 <span class="normal">910</span>
 <span class="normal">911</span>
 <span class="normal">912</span>
-<span class="normal">913</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">serve_pwa</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">serve_pwa</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Start a local HTTP server and open the training PWA in the browser.</span>
 
 <span class="sd">    Copies PWA files + training data to a temp directory and injects the</span>
@@ -6043,54 +6092,54 @@ detects and removes such chapters.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/lichess.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pull_pgn</span><span class="p">(</span><span class="n">pgn_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pull_pgn</span><span class="p">(</span><span class="n">pgn_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">in_place</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pull the latest PGN from a Lichess study to a local file.</span>
 
 <span class="sd">    Args:</span>
@@ -6209,59 +6258,7 @@ Use --no-replace to append without deleting.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/chess_self_coach/lichess.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">373</span>
 <span class="normal">374</span>
 <span class="normal">375</span>
 <span class="normal">376</span>
@@ -6276,7 +6273,59 @@ Use --no-replace to append without deleting.</p>
 <span class="normal">385</span>
 <span class="normal">386</span>
 <span class="normal">387</span>
-<span class="normal">388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">push_pgn</span><span class="p">(</span><span class="n">pgn_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">push_pgn</span><span class="p">(</span><span class="n">pgn_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Push a local PGN file to its mapped Lichess study.</span>
 
 <span class="sd">    By default, replaces all existing chapters (deletes old, imports new).</span>
@@ -6504,7 +6553,59 @@ PGN files to Lichess Studies.</p>
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
-<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interactive setup: verify auth, find studies, configure config.json.</span>
 
 <span class="sd">    Guides the user through connecting their Lichess account and mapping</span>
@@ -6512,12 +6613,8 @@ PGN files to Lichess Studies.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">🔧 chess-self-coach setup</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Step 1: Verify auth</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Step 1: Checking Lichess authentication...&quot;</span><span class="p">)</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">_get_client</span><span class="p">()</span>
-
-    <span class="c1"># Step 2: Check Stockfish</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Step 2: Checking Stockfish...&quot;</span><span class="p">)</span>
+    <span class="c1"># Step 1: Check Stockfish</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Step 1: Checking Stockfish...&quot;</span><span class="p">)</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_stockfish</span><span class="p">,</span> <span class="n">check_stockfish_version</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -6541,105 +6638,161 @@ PGN files to Lichess Studies.</p>
     <span class="n">version</span> <span class="o">=</span> <span class="n">check_stockfish_version</span><span class="p">(</span><span class="n">sf_path</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stockfish&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;expected_version&quot;</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Found </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">sf_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Step 3: List user&#39;s studies and try to match</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Step 3: Looking for existing Lichess studies...&quot;</span><span class="p">)</span>
-    <span class="n">account</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-    <span class="n">username</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
+    <span class="c1"># Step 2: Game platforms (at least one required)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Step 2: Game platforms (at least one required)&quot;</span><span class="p">)</span>
+    <span class="n">players</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;players&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="c1"># berserk doesn&#39;t have a method to list studies with metadata,</span>
-    <span class="c1"># so we use the Lichess API directly (ndjson format).</span>
-    <span class="n">studies</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">token</span> <span class="o">=</span> <span class="n">load_lichess_token</span><span class="p">()</span>
-        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;https://lichess.org/api/study/by/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/x-ndjson&quot;</span><span class="p">},</span>
-            <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">iter_lines</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="n">studies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="c1"># Lichess (optional)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Lichess:&quot;</span><span class="p">)</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">_get_client</span><span class="p">()</span>
+            <span class="n">account</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">username</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
+            <span class="n">players</span><span class="p">[</span><span class="s2">&quot;lichess&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">username</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    ✓ Token verified: </span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    ✗ Token invalid: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">players</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;lichess&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    No token found in .env (optional — skip if you only use chess.com)&quot;</span><span class="p">)</span>
+        <span class="n">players</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;lichess&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Chess.com (optional)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Chess.com:&quot;</span><span class="p">)</span>
+    <span class="n">current_chesscom</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chesscom&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">current_chesscom</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    Currently configured: </span><span class="si">{</span><span class="n">current_chesscom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">change</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;    Change it? [y/N] &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">change</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+            <span class="n">current_chesscom</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">current_chesscom</span><span class="p">:</span>
+        <span class="n">chesscom_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;    Enter your chess.com username (optional, press Enter to skip): &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">chesscom_input</span><span class="p">:</span>
+            <span class="n">players</span><span class="p">[</span><span class="s2">&quot;chesscom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chesscom_input</span>
+            <span class="n">current_chesscom</span> <span class="o">=</span> <span class="n">chesscom_input</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    ✓ Chess.com: </span><span class="si">{</span><span class="n">chesscom_input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">players</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;chesscom&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">current_chesscom</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># Validate: at least one platform</span>
+    <span class="n">lichess_user</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lichess&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">chesscom_user</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chesscom&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">lichess_user</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">chesscom_user</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  ✗ Error: at least one platform (Lichess or chess.com) is required.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    - For Lichess: create a token at https://lichess.org/account/oauth/token/create&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    - Then: echo &quot;LICHESS_API_TOKEN=lip_...&quot; &gt; .env&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    - For chess.com: re-run setup and enter your username&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Summary</span>
+    <span class="n">platforms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">lichess_user</span><span class="p">:</span>
+        <span class="n">platforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lichess (</span><span class="si">{</span><span class="n">lichess_user</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">chesscom_user</span><span class="p">:</span>
+        <span class="n">platforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;chess.com (</span><span class="si">{</span><span class="n">chesscom_user</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  ✓ Configured: </span><span class="si">{</span><span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platforms</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">config</span><span class="p">[</span><span class="s2">&quot;players&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">players</span>
+
+    <span class="c1"># Step 3: Lichess Studies (only if Lichess is configured)</span>
+    <span class="k">if</span> <span class="n">client</span> <span class="ow">and</span> <span class="n">username</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Step 3: Looking for existing Lichess studies...&quot;</span><span class="p">)</span>
+
         <span class="n">studies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;https://lichess.org/api/study/by/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/x-ndjson&quot;</span><span class="p">},</span>
+                <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">iter_lines</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">studies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">studies</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># Expected study names and their PGN files</span>
-    <span class="n">expected_studies</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;repertoire_blancs_gambit_dame_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Whites - Queen&#39;s Gambit&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;repertoire_noirs_vs_e4_scandinave_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Black vs e4 - Scandinavian&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;repertoire_noirs_vs_d4_slave_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Black vs d4 - Slav&quot;</span><span class="p">,</span>
-    <span class="p">}</span>
+        <span class="n">expected_studies</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;repertoire_blancs_gambit_dame_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Whites - Queen&#39;s Gambit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;repertoire_noirs_vs_e4_scandinave_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Black vs e4 - Scandinavian&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;repertoire_noirs_vs_d4_slave_annote.pgn&quot;</span><span class="p">:</span> <span class="s2">&quot;Black vs d4 - Slav&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
 
-    <span class="n">studies_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;studies&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">studies_config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;studies&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
-    <span class="k">if</span> <span class="n">studies</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">studies</span><span class="p">)</span><span class="si">}</span><span class="s2"> study/studies on your account:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">study</span> <span class="ow">in</span> <span class="n">studies</span><span class="p">:</span>
-            <span class="n">study_name</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Unnamed&quot;</span><span class="p">)</span>
-            <span class="n">study_id</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;???&quot;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    - </span><span class="si">{</span><span class="n">study_name</span><span class="si">}</span><span class="s2"> (id: </span><span class="si">{</span><span class="n">study_id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Try to auto-match by name</span>
-        <span class="k">for</span> <span class="n">pgn_file</span><span class="p">,</span> <span class="n">expected_name</span> <span class="ow">in</span> <span class="n">expected_studies</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">pgn_file</span> <span class="ow">in</span> <span class="n">studies_config</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                <span class="s2">&quot;study_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;STUDY_ID&quot;</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> already configured&quot;</span><span class="p">)</span>
-                <span class="k">continue</span>
-
-            <span class="n">matched</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">studies</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">studies</span><span class="p">)</span><span class="si">}</span><span class="s2"> study/studies on your account:&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">study</span> <span class="ow">in</span> <span class="n">studies</span><span class="p">:</span>
-                <span class="n">study_name</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">expected_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">study_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                    <span class="n">matched</span> <span class="o">=</span> <span class="n">study</span>
-                    <span class="k">break</span>
+                <span class="n">study_name</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Unnamed&quot;</span><span class="p">)</span>
+                <span class="n">study_id</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;???&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    - </span><span class="si">{</span><span class="n">study_name</span><span class="si">}</span><span class="s2"> (id: </span><span class="si">{</span><span class="n">study_id</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">matched</span><span class="p">:</span>
-                <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;study_id&quot;</span><span class="p">:</span> <span class="n">matched</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-                    <span class="s2">&quot;study_name&quot;</span><span class="p">:</span> <span class="n">matched</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
-                <span class="p">}</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Auto-matched </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">matched</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">matched</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">pgn_file</span><span class="p">,</span> <span class="n">expected_name</span> <span class="ow">in</span> <span class="n">expected_studies</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">pgn_file</span> <span class="ow">in</span> <span class="n">studies_config</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;study_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;STUDY_ID&quot;</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> already configured&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">matched</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">study</span> <span class="ow">in</span> <span class="n">studies</span><span class="p">:</span>
+                    <span class="n">study_name</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">expected_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">study_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">matched</span> <span class="o">=</span> <span class="n">study</span>
+                        <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">matched</span><span class="p">:</span>
+                    <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;study_id&quot;</span><span class="p">:</span> <span class="n">matched</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;study_name&quot;</span><span class="p">:</span> <span class="n">matched</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+                    <span class="p">}</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✓ Auto-matched </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">matched</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">matched</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;study_id&quot;</span><span class="p">:</span> <span class="s2">&quot;STUDY_ID_HERE&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;study_name&quot;</span><span class="p">:</span> <span class="n">expected_name</span><span class="p">,</span>
+                    <span class="p">}</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ No match for </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> (expected: &#39;</span><span class="si">{</span><span class="n">expected_name</span><span class="si">}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No studies found on your account.&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pgn_file</span><span class="p">,</span> <span class="n">expected_name</span> <span class="ow">in</span> <span class="n">expected_studies</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;study_id&quot;</span><span class="p">:</span> <span class="s2">&quot;STUDY_ID_HERE&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;study_name&quot;</span><span class="p">:</span> <span class="n">expected_name</span><span class="p">,</span>
                 <span class="p">}</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ✗ No match for </span><span class="si">{</span><span class="n">pgn_file</span><span class="si">}</span><span class="s2"> (expected: &#39;</span><span class="si">{</span><span class="n">expected_name</span><span class="si">}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No studies found on your account.&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">pgn_file</span><span class="p">,</span> <span class="n">expected_name</span> <span class="ow">in</span> <span class="n">expected_studies</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">studies_config</span><span class="p">[</span><span class="n">pgn_file</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;study_id&quot;</span><span class="p">:</span> <span class="s2">&quot;STUDY_ID_HERE&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;study_name&quot;</span><span class="p">:</span> <span class="n">expected_name</span><span class="p">,</span>
-            <span class="p">}</span>
 
-    <span class="n">config</span><span class="p">[</span><span class="s2">&quot;studies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">studies_config</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;studies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">studies_config</span>
+
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">pgn</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;study_name&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">pgn</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">studies_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;study_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;STUDY_ID&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> study/studies need to be created on Lichess:&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pgn</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    - </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (for </span><span class="si">{</span><span class="n">pgn</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Opening Lichess study page in your browser...&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;https://lichess.org/study&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Could not open browser. Go to: https://lichess.org/study&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  After creating the studies, run &#39;chess-self-coach setup&#39; again</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;  to auto-detect them, or edit config.json manually.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  ✓ All studies configured!&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Step 3: Lichess Studies (skipped — no Lichess account)&quot;</span><span class="p">)</span>
+
     <span class="n">save_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-
-    <span class="c1"># Check if any studies still need to be created</span>
-    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">(</span><span class="n">pgn</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;study_name&quot;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">pgn</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">studies_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;study_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;STUDY_ID&quot;</span><span class="p">)</span>
-    <span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> study/studies need to be created on Lichess:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">pgn</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    - </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (for </span><span class="si">{</span><span class="n">pgn</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  Opening Lichess study page in your browser...&quot;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;https://lichess.org/study&quot;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Could not open browser. Go to: https://lichess.org/study&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  After creating the studies, run &#39;chess-self-coach setup&#39; again</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="s2">&quot;  to auto-detect them, or edit config.json manually.&quot;</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  ✓ All studies configured!&quot;</span><span class="p">)</span>
-
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✓ Setup complete.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -7265,7 +7418,22 @@ PGN files to Lichess Studies.</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Main CLI entry point.</span>
 
 <span class="sd">    Args:</span>
@@ -7476,16 +7644,31 @@ PGN files to Lichess Studies.</p>
         <span class="n">setup</span><span class="p">()</span>
 
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">&quot;push&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_lichess_token</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lichess token required for push. Set LICHESS_API_TOKEN in .env&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.lichess</span><span class="w"> </span><span class="kn">import</span> <span class="n">push_pgn</span>
 
         <span class="n">push_pgn</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pgn_file</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">no_replace</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">&quot;pull&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_lichess_token</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lichess token required for pull. Set LICHESS_API_TOKEN in .env&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.lichess</span><span class="w"> </span><span class="kn">import</span> <span class="n">pull_pgn</span>
 
         <span class="n">pull_pgn</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pgn_file</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">in_place</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s2">&quot;cleanup&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_lichess_token</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">load_lichess_token</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lichess token required for cleanup. Set LICHESS_API_TOKEN in .env&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.lichess</span><span class="w"> </span><span class="kn">import</span> <span class="n">cleanup_study</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">get_study_mapping</span>
 
