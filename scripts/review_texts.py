@@ -55,6 +55,10 @@ def main():
         if p["game"]["source"] == "unknown":
             issues.append(("UNKNOWN", p["id"], ""))
 
+        game_id = p.get("game", {}).get("id", "")
+        if not game_id.startswith("http"):
+            issues.append(("NO_URL", p["id"], game_id))
+
     print(f"Reviewed {len(sample)} positions. Issues: {len(issues)}")
     for t, pid, d in issues:
         print(f"  [{t}] {pid}: {d}")

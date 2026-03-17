@@ -78,6 +78,18 @@ def test_player_move_differs_from_best(positions):
     assert not dupes, f"{len(dupes)} position(s) where player_move == best_move: {dupes[:5]}"
 
 
+def test_game_id_is_url(positions):
+    """Game ID should be a valid URL (for hyperlink in PWA)."""
+    bad = [
+        p["id"] for p in positions
+        if not p.get("game", {}).get("id", "").startswith("http")
+    ]
+    assert not bad, (
+        f"{len(bad)} position(s) have non-URL game.id: "
+        f"{[p['game'].get('id', '') for p in positions if p['id'] in bad[:5]]}"
+    )
+
+
 def test_cp_loss_matches_category(positions):
     """cp_loss must be consistent with the category classification."""
     thresholds = {"blunder": 200, "mistake": 100, "inaccuracy": 50}

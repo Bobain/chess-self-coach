@@ -548,8 +548,20 @@ function showPosition(index) {
   const context = position.context || '';
   document.getElementById('prompt').textContent =
     `${context} You played ${position.player_move}. Can you find a better move?`;
-  document.getElementById('game-info').textContent =
-    `vs ${position.game.opponent} (${position.game.source}, ${position.game.date})`;
+  const gameInfoEl = document.getElementById('game-info');
+  gameInfoEl.textContent = '';
+  const gameText = `vs ${position.game.opponent} (${position.game.source}, ${position.game.date})`;
+  const gameId = position.game.id || '';
+  if (gameId.startsWith('http')) {
+    const link = document.createElement('a');
+    link.href = gameId;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = gameText;
+    gameInfoEl.appendChild(link);
+  } else {
+    gameInfoEl.textContent = gameText;
+  }
 
   document.getElementById('feedback').classList.add('hidden');
   document.getElementById('next-btn').classList.add('hidden');

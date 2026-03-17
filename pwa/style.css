@@ -156,6 +156,15 @@ cg-container {
   color: var(--text-dim);
 }
 
+#game-info a {
+  color: var(--text-dim);
+  text-decoration: underline;
+}
+
+#game-info a:hover {
+  color: var(--accent);
+}
+
 #feedback {
   margin-top: 0.75rem;
   padding: 0.75rem;
