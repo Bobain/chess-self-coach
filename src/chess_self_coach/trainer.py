@@ -209,35 +209,71 @@ def generate_explanation(
     return " ".join(parts)
 
 
+def _detect_game_phase(fen: str) -> str:
+    """Detect game phase from FEN based on piece count."""
+    pieces = fen.split(" ")[0]
+    # Count non-pawn, non-king pieces (minor + major)
+    major_minor = sum(1 for c in pieces if c in "qrbnQRBN")
+    if major_minor >= 8:
+        return "Opening"
+    if major_minor >= 3:
+        return "Middlegame"
+    return "Endgame"
+
+
+def _describe_advantage(score_before_cp: int | None, player_color: str) -> str:
+    """Describe who has the advantage before the move."""
+    if score_before_cp is None:
+        return ""
+    # Convert to player perspective
+    player_cp = score_before_cp if player_color == "white" else -score_before_cp
+    if player_cp > 200:
+        return "you had a strong advantage"
+    if player_cp > 50:
+        return "you had a slight advantage"
+    if player_cp > -50:
+        return "the position was roughly equal"
+    if player_cp > -200:
+        return "you were slightly worse"
+    return "you were in a difficult position"
+
+
 def _generate_context(
     category: str,
     cp_loss: int,
     was_mate: bool,
     score_after_cp: int | None,
+    fen: str = "",
+    score_before_cp: int | None = None,
+    player_color: str = "white",
 ) -> str:
     """Generate a short context sentence shown BEFORE the player answers.
 
-    Tells the player what went wrong with their move, to frame the exercise.
+    Includes game phase, advantage context, and what went wrong.
     """
     score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= _MATE_CP
 
+    phase = _detect_game_phase(fen) if fen else ""
+    advantage = _describe_advantage(score_before_cp, player_color) if score_before_cp is not None else ""
+    prefix = f"{phase}, {advantage}." if phase and advantage else (phase + "." if phase else "")
+
     if was_mate and score_after_cp is not None and abs(score_after_cp) < 50:
-        return "Your move threw away a winning position and led to a draw."
+        return f"{prefix} Your move threw away a winning position and led to a draw."
     if was_mate:
-        return "Your move threw away a forced mate."
+        return f"{prefix} Your move threw away a forced mate."
     if score_after_is_mate:
-        return "Your move allowed your opponent to force checkmate."
+        return f"{prefix} Your move allowed your opponent to force checkmate."
     if cp_loss >= _MATE_CP:
-        return "Your move allowed your opponent to force checkmate."
+        return f"{prefix} Your move allowed your opponent to force checkmate."
 
     pawns = cp_loss / 100.0
     if pawns >= 5:
-        return f"Your move lost a decisive advantage ({pawns:.1f} pawns)."
+        return f"{prefix} Your move lost a decisive advantage."
     if pawns >= 2:
-        return f"Your move lost significant material ({pawns:.1f} pawns)."
+        return f"{prefix} Your move lost significant material ({pawns:.1f} pawns)."
     if pawns >= 1:
-        return f"Your move lost about {pawns:.1f} pawns of advantage."
-    return f"Your move was slightly inaccurate ({pawns:.1f} pawns)."
+        return f"{prefix} Your move cost about {pawns:.1f} pawns."
+    return f"{prefix} Your move was inaccurate ({pawns:.1f} pawns)."
 
 
 def _make_position_id(fen: str, actual_san: str) -> str:
@@ -411,7 +447,11 @@ def extract_mistakes(
             was_mate=was_mate,
             score_after_cp=score_after_cp,
         )
-        context = _generate_context(category, cp_loss, was_mate, score_after_cp)
+        p_color = "white" if player_color == chess.WHITE else "black"
+        context = _generate_context(
+            category, cp_loss, was_mate, score_after_cp,
+            fen=pos["fen"], score_before_cp=pos["score_cp"], player_color=p_color,
+        )
 
         mistakes.append({
             "id": _make_position_id(pos["fen"], pos["actual_san"]),
@@ -719,6 +759,8 @@ def refresh_explanations() -> None:
         )
         new_context = _generate_context(
             pos["category"], pos["cp_loss"], was_mate, score_after_cp,
+            fen=pos["fen"], score_before_cp=score_before_cp,
+            player_color=pos.get("player_color", "white"),
         )
         # Fix source if "unknown" and game.id hints at the platform
         game = pos.get("game", {})
