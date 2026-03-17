@@ -1,0 +1,350 @@
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --primary: #0f3460;
+  --accent: #e94560;
+  --success: #4ecca3;
+  --text: #eee;
+  --text-dim: #999;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+header h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#session-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+#settings-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* Board wrapper: contains material balance + board */
+#board-wrapper {
+  width: min(88vw, 480px);
+}
+
+/* Board sizing: square, responsive, with space for outside coordinates */
+#board-container {
+  width: 100%;
+  aspect-ratio: 1;
+  padding-left: 1.5rem;
+  padding-bottom: 1.5rem;
+  position: relative;
+}
+
+#board {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.material-balance {
+  height: 1.6rem;
+  font-size: 1.3rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  padding-left: 1.5rem;
+  white-space: nowrap;
+  line-height: 1.6rem;
+}
+
+/* Override chessground dimensions */
+cg-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Move coordinates outside the board */
+.cg-wrap coords {
+  pointer-events: none;
+}
+
+.cg-wrap coords.ranks {
+  position: absolute !important;
+  left: -1.5rem !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 1.5rem !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.cg-wrap coords.ranks coord {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.cg-wrap coords.files {
+  position: absolute !important;
+  bottom: -1.5rem !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 1.5rem !important;
+  display: flex !important;
+  flex-direction: row;
+}
+
+
+.cg-wrap coords coord {
+  font-weight: 600 !important;
+  color: var(--text-dim) !important;
+  font-size: 0.8rem !important;
+  text-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 !important;
+}
+
+#info-panel {
+  width: min(88vw, 480px);
+  text-align: center;
+}
+
+#prompt {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+#game-info {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+#game-info a {
+  color: var(--text-dim);
+  text-decoration: underline;
+}
+
+#game-info a:hover {
+  color: var(--accent);
+}
+
+#feedback {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.correct {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.incorrect {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.try-again {
+  color: #f0a500;
+  font-weight: 600;
+}
+
+#explanation {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+#controls {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+#pv-line {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--success);
+  font-family: monospace;
+  letter-spacing: 0.03em;
+}
+
+#show-position-btn,
+#play-line-btn {
+  background: var(--surface);
+  color: var(--text-dim);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#show-position-btn:hover,
+#play-line-btn:hover {
+  background: var(--primary);
+  color: var(--text);
+}
+
+#dismiss-btn {
+  background: none;
+  color: var(--text-dim);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#dismiss-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+#next-btn,
+#new-session {
+  background: var(--primary);
+  color: var(--text);
+  border: none;
+  padding: 0.6rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#next-btn:hover,
+#new-session:hover {
+  background: #1a4a8a;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: min(90vw, 400px);
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.modal-content input[type="number"],
+.modal-content select {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+
+.modal-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 0.9rem;
+}
+
+#reset-progress {
+  background: var(--accent);
+  color: white;
+}
+
+#close-settings {
+  background: var(--primary);
+  color: white;
+}
+
+#summary-stats {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Desktop: side-by-side layout */
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  #info-panel {
+    text-align: left;
+    max-width: 360px;
+  }
+}

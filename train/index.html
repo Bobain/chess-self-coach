@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Chess Self-Coach</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9/assets/chessground.base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9/assets/chessground.brown.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9/assets/chessground.cburnett.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Find the Better Move</h1>
+    <div id="session-info">
+      <span id="progress"></span>
+      <button id="settings-btn" title="Settings">&#9881;</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="board-wrapper">
+      <div id="material-top" class="material-balance"></div>
+      <div id="board-container">
+        <div id="board"></div>
+      </div>
+      <div id="material-bottom" class="material-balance"></div>
+    </div>
+
+    <div id="info-panel">
+      <div id="position-context">
+        <p id="prompt">Loading training data...</p>
+        <p id="game-info"></p>
+      </div>
+
+      <div id="feedback" class="hidden">
+        <p id="feedback-text"></p>
+        <p id="explanation"></p>
+        <p id="pv-line" class="hidden"></p>
+      </div>
+
+      <div id="controls">
+        <button id="show-position-btn" class="hidden">Show original position</button>
+        <button id="play-line-btn" class="hidden">Play best line</button>
+        <button id="next-btn" class="hidden">Next</button>
+        <button id="dismiss-btn" class="hidden" title="This position will be permanently removed from your training. You will never see it again.">Give up on this lesson</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <label>
+        Positions per session:
+        <input type="number" id="session-size" min="1" max="50" value="10">
+      </label>
+      <label>
+        Difficulty:
+        <select id="difficulty">
+          <option value="all">All mistakes</option>
+          <option value="blunders">Blunders only</option>
+          <option value="blunders+mistakes">Blunders + Mistakes</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button id="reset-progress">Reset Progress</button>
+        <button id="close-settings">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Summary Modal -->
+  <div id="summary-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Session Complete</h2>
+      <div id="summary-stats"></div>
+      <button id="new-session">New Session</button>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
