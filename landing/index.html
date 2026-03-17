@@ -18,69 +18,93 @@
       padding: 2rem;
     }
     h1 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       margin-bottom: 0.5rem;
     }
     .subtitle {
       color: #999;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1rem;
       text-align: center;
       line-height: 1.5;
+      max-width: 500px;
     }
-    .cards {
+    .cta {
+      display: inline-block;
+      background: #4ecca3;
+      color: #1a1a2e;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 0.9rem 2.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      margin: 1.5rem 0 2.5rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(78, 204, 163, 0.3);
+    }
+    .features {
       display: flex;
       gap: 1.5rem;
       flex-wrap: wrap;
       justify-content: center;
+      max-width: 700px;
+      margin-bottom: 2rem;
     }
-    a.card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
+    .feature {
       background: #16213e;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 2rem 2.5rem;
-      text-decoration: none;
-      color: #eee;
-      width: 240px;
-      transition: border-color 0.2s, transform 0.2s;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      width: 200px;
+      text-align: center;
     }
-    a.card:hover {
-      border-color: #4ecca3;
-      transform: translateY(-2px);
+    .feature .icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .feature .label { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .feature .desc { font-size: 0.8rem; color: #999; line-height: 1.4; }
+    .links {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.85rem;
     }
-    .card .icon { font-size: 2.5rem; }
-    .card .label { font-size: 1.15rem; font-weight: 600; }
-    .card .desc { font-size: 0.85rem; color: #999; text-align: center; line-height: 1.4; }
-    footer {
-      margin-top: 3rem;
-      font-size: 0.8rem;
-      color: #555;
-    }
-    footer a { color: #777; }
+    .links a { color: #777; text-decoration: none; }
+    .links a:hover { color: #4ecca3; }
   </style>
 </head>
 <body>
   <h1>Chess Self-Coach</h1>
-  <p class="subtitle">Opening repertoire manager + mistake trainer</p>
+  <p class="subtitle">Learn from your own mistakes. Your games are analyzed by Stockfish, then you drill the correct moves with spaced repetition.</p>
 
-  <div class="cards">
-    <a class="card" href="docs/">
-      <span class="icon">&#128214;</span>
-      <span class="label">Documentation</span>
-      <span class="desc">Setup guide, CLI reference, API docs</span>
-    </a>
-    <a class="card" href="train/">
-      <span class="icon">&#9823;</span>
-      <span class="label">Training</span>
-      <span class="desc">Find the better move — drill your mistakes</span>
-    </a>
+  <a class="cta" href="train/">Start Training</a>
+
+  <div class="features">
+    <div class="feature">
+      <div class="icon">&#9812;</div>
+      <div class="label">Your games</div>
+      <div class="desc">Fetches from Lichess and chess.com automatically</div>
+    </div>
+    <div class="feature">
+      <div class="icon">&#128300;</div>
+      <div class="label">Stockfish analysis</div>
+      <div class="desc">Parallel depth-18 analysis finds every mistake</div>
+    </div>
+    <div class="feature">
+      <div class="icon">&#127919;</div>
+      <div class="label">Find the better move</div>
+      <div class="desc">Drag the correct piece. Context, explanation, best line</div>
+    </div>
+    <div class="feature">
+      <div class="icon">&#128257;</div>
+      <div class="label">Spaced repetition</div>
+      <div class="desc">Positions come back until mastered (SM-2 algorithm)</div>
+    </div>
   </div>
 
-  <footer>
+  <div class="links">
     <a href="https://github.com/Bobain/chess-self-coach">GitHub</a>
-  </footer>
+    <a href="docs/">Documentation</a>
+    <a href="https://pypi.org/project/chess-self-coach/">PyPI</a>
+  </div>
 </body>
 </html>
