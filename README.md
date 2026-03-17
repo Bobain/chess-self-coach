@@ -137,7 +137,7 @@ Show sync status of all repertoire files, Stockfish availability, and Lichess co
 Analyze your recent games (Lichess + chess.com), find mistakes with Stockfish, and export `training_data.json`.
 
 ```bash
-chess-self-coach train --prepare                    # 20 games, depth 18
+chess-self-coach train --prepare                    # 20 games, depth 18, parallel
 chess-self-coach train --prepare --games 10         # fewer games (faster)
 chess-self-coach train --prepare --depth 12         # lower depth (faster)
 chess-self-coach train --prepare --engine /path/sf   # custom Stockfish

@@ -494,7 +494,7 @@ def prepare_training_data(
         return
 
     # Analyze each game
-    workers = max(1, _physical_core_count() - 1)
+    workers = _physical_core_count()
     workers = min(workers, len(all_games))
     print(f"\n  Analyzing {len(all_games)} game(s) with Stockfish (depth {depth}, {workers} workers)...")
     print("  This may take several minutes...\n")

@@ -7,6 +7,7 @@ local repertoire PGN files, and reports where players deviated.
 from __future__ import annotations
 
 import io
+import logging
 import sys
 from pathlib import Path
 
@@ -171,6 +172,11 @@ def fetch_lichess_games(username: str, max_games: int = 100) -> list[chess.pgn.G
         pgn_text = "".join(exported) if hasattr(exported, "__iter__") else str(exported)
         pgn_io = io.StringIO(pgn_text)
 
+        # Suppress chess.pgn parse errors (variant games produce illegal SAN warnings)
+        chess_logger = logging.getLogger("chess.pgn")
+        old_level = chess_logger.level
+        chess_logger.setLevel(logging.CRITICAL)
+
         skipped_variants = 0
         while True:
             game = chess.pgn.read_game(pgn_io)
@@ -183,6 +189,8 @@ def fetch_lichess_games(username: str, max_games: int = 100) -> list[chess.pgn.G
                 skipped_variants += 1
                 continue
             games.append(game)
+
+        chess_logger.setLevel(old_level)
 
         msg = f"  Fetched {len(games)} game(s) from Lichess for {username}"
         if skipped_variants:
