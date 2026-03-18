@@ -307,6 +307,20 @@ def main(argv: list[str] | None = None) -> None:
                 fresh=args.fresh,
             )
         elif args.serve:
+            from chess_self_coach.updater import check_update
+
+            available, latest = check_update()
+            if available:
+                answer = input(
+                    f"  Version {latest} available (current: {__version__}). "
+                    "Update now? [y/N] ",
+                )
+                if answer.strip().lower() == "y":
+                    from chess_self_coach.updater import update
+
+                    update()
+                    print("  Please re-run: chess-self-coach train --serve")
+                    sys.exit(0)
             serve_pwa()
         elif args.stats:
             print_stats()

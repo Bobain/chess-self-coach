@@ -2,9 +2,31 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
+import urllib.request
+
+
+def check_update() -> tuple[bool, str | None]:
+    """Check PyPI for a newer version.
+
+    Returns:
+        Tuple of (update_available, latest_version). On network error,
+        returns (False, None) — never crashes.
+    """
+    from chess_self_coach import __version__
+
+    try:
+        resp = urllib.request.urlopen(
+            "https://pypi.org/pypi/chess-self-coach/json", timeout=3,
+        )
+        data = json.loads(resp.read())
+        latest = data["info"]["version"]
+        return (latest != __version__), latest
+    except Exception:
+        return False, None
 
 
 def update() -> None:
