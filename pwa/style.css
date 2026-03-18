@@ -6,6 +6,8 @@
   --success: #4ecca3;
   --text: #eee;
   --text-dim: #999;
+  --warning: #f0a500;
+  --primary-hover: #1a4a8a;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -176,7 +178,7 @@ cg-container {
 }
 
 .try-again {
-  color: #f0a500;
+  color: var(--warning);
   font-weight: 600;
 }
 
@@ -250,7 +252,7 @@ cg-container {
 
 #next-btn:hover,
 #new-session:hover {
-  background: #1a4a8a;
+  background: var(--primary-hover);
 }
 
 .hidden {
