@@ -637,6 +637,9 @@ def extract_mistakes(
             player_cp_after = next_pos["score_cp"] if player_color == chess.WHITE else -next_pos["score_cp"]
             if player_cp < -500 and player_cp_after < -500 and not pos.get("is_mate", False):
                 continue
+            # Pedagogical filter: skip positions already won (no learning value)
+            if player_cp > 500 and player_cp_after > 500:
+                continue
 
             was_mate = pos.get("is_mate", False)
             score_after_cp = next_pos["score_cp"]
