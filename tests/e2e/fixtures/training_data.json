@@ -19,6 +19,7 @@
       "explanation": "You played a3 (blunder, -250 cp). A better move was d4.",
       "acceptable_moves": ["d4", "e4"],
       "game": {
+        "id": "https://lichess.org/testgame1",
         "source": "lichess",
         "opponent": "opponent1",
         "date": "2026-03-10",
@@ -40,6 +41,7 @@
       "explanation": "You played a3 (mistake, -120 cp). A better move was Nf3.",
       "acceptable_moves": ["Nf3"],
       "game": {
+        "id": "https://www.chess.com/game/live/123456789",
         "source": "chess.com",
         "opponent": "opponent2",
         "date": "2026-03-12",
@@ -61,6 +63,7 @@
       "explanation": "You played a6 (inaccuracy, -50 cp). A better move was d5.",
       "acceptable_moves": ["d5"],
       "game": {
+        "id": "https://lichess.org/testgame3",
         "source": "lichess",
         "opponent": "opponent3",
         "date": "2026-03-14",

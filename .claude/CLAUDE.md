@@ -199,3 +199,37 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## E2E Testing & Silent Errors
+
+Rules learned from debugging the "See moves" link (hours lost to silent failures and fake-passing tests).
+
+### No Silent Errors — EVER
+
+- **JavaScript**: NEVER use `if (el)` guards that silently skip logic. If `getElementById` returns null, it's a bug — throw an explicit error or `console.error()` so it's visible.
+- **Python**: NEVER use bare `except: pass`. Always log or re-raise.
+- **General**: A function that fails silently is worse than one that crashes. Crashes are debuggable; silent failures waste hours.
+
+### E2E Tests Must Use Real Data
+
+- **NEVER test only with simplified fixtures**. Always include at least one test that runs against the real `training_data.json` (the production data).
+- Fixtures are useful for unit-like e2e tests (known positions, predictable moves). But a separate "production smoke test" must verify the real data path.
+- The "See moves" bug passed all fixture tests but failed in production because fixtures were missing `game.id` fields.
+
+### Playwright Tests: Always Capture Console
+
+- **Always** attach console and error listeners when running Playwright tests:
+  ```python
+  console_msgs = []
+  page.on('console', lambda msg: console_msgs.append(f'[{msg.type}] {msg.text}'))
+  page.on('pageerror', lambda exc: console_msgs.append(f'[ERROR] {exc}'))
+  ```
+- After each test action, check for errors: `assert not [m for m in console_msgs if 'error' in m.lower()]`
+- This catches JS errors that would otherwise be invisible in headless mode.
+
+### Service Worker: Network-First for Local Assets
+
+- The PWA service worker MUST use **network-first** for same-origin assets (always serve fresh files from server, cache as offline fallback).
+- **Cache-first** is only for CDN resources (which never change).
+- `serve_pwa()` creates a temp dir on each launch — the SW must fetch fresh files, not serve stale cache.
+- Lesson: `skipWaiting()` + `clients.claim()` are NOT enough to invalidate cache-first responses from the old SW's fetch handler.

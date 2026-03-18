@@ -999,10 +999,11 @@ def serve_pwa() -> None:
         if f.is_file() and f.name != "training_data.json":
             shutil.copy2(f, serve_dir / f.name)
 
-    # Inject version into service worker
+    # Inject version + timestamp into service worker (invalidates cache on each serve)
     sw_path = serve_dir / "sw.js"
     sw_text = sw_path.read_text()
-    sw_path.write_text(sw_text.replace("__VERSION__", __version__))
+    cache_version = f"{__version__}-{int(time.time())}"
+    sw_path.write_text(sw_text.replace("__VERSION__", cache_version))
 
     # Copy training data
     data_path = root / "training_data.json"

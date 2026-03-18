@@ -181,6 +181,28 @@ function selectPositions(positions, count) {
 // --- Board ---
 
 /**
+ * Build a deep link to the specific move position in the original game.
+ * @param {string} gameId - Full game URL (lichess.org or chess.com).
+ * @param {string} fen - FEN of the position (contains fullmove number and side to move).
+ * @returns {string} URL with move anchor/parameter, or original URL if format unknown.
+ */
+function getMoveLink(gameId, fen) {
+  const parts = fen.split(' ');
+  const turn = parts[1];
+  const fullmove = parseInt(parts[5]);
+  if (isNaN(fullmove)) return gameId;
+  const ply = (fullmove - 1) * 2 + (turn === 'b' ? 1 : 0);
+
+  if (gameId.includes('lichess.org')) {
+    return gameId + '#' + ply;
+  }
+  if (gameId.includes('chess.com')) {
+    return gameId + '?move=' + ply;
+  }
+  return gameId;
+}
+
+/**
  * Compute legal move destinations for chessground from a FEN.
  * @param {string} fen - FEN string of the position.
  * @returns {Map.<string, Array.<string>>} Map of source square → destination squares.
@@ -372,6 +394,18 @@ function showFeedback(correct, position, gaveUp = false) {
 
   explanationEl.textContent = position.explanation;
 
+  // Show "See moves" deep link to the game position
+  const gameId = position.game.id || '';
+  const seeLinkEl = document.getElementById('see-moves');
+  if (seeLinkEl) {
+    if (gameId.startsWith('http')) {
+      seeLinkEl.href = getMoveLink(gameId, position.fen);
+      seeLinkEl.classList.remove('hidden');
+    } else {
+      seeLinkEl.classList.add('hidden');
+    }
+  }
+
   // Show PV line if available
   const pvLineEl = document.getElementById('pv-line');
   const playLineBtn = document.getElementById('play-line-btn');
@@ -552,16 +586,8 @@ function showPosition(index) {
   gameInfoEl.textContent = '';
   const gameText = `vs ${position.game.opponent} (${position.game.source}, ${position.game.date})`;
   const gameId = position.game.id || '';
-  if (gameId.startsWith('http')) {
-    const link = document.createElement('a');
-    link.href = gameId;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = gameText;
-    gameInfoEl.appendChild(link);
-  } else {
-    gameInfoEl.textContent = gameText;
-  }
+
+  gameInfoEl.textContent = gameText;
 
   document.getElementById('feedback').classList.add('hidden');
   document.getElementById('next-btn').classList.add('hidden');
@@ -569,6 +595,8 @@ function showPosition(index) {
   document.getElementById('play-line-btn').classList.add('hidden');
   document.getElementById('pv-line').classList.add('hidden');
   document.getElementById('dismiss-btn').classList.add('hidden');
+  const seeMoves = document.getElementById('see-moves');
+  if (seeMoves) seeMoves.classList.add('hidden');
 
   setupBoard(position);
 }

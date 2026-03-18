@@ -144,6 +144,18 @@ cg-container {
   color: var(--accent);
 }
 
+.see-moves-link {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 1.05rem;
+  color: var(--text-dim) !important;
+  text-decoration: underline;
+}
+
+.see-moves-link:hover {
+  color: var(--text) !important;
+}
+
 #feedback {
   margin-top: 0.75rem;
   padding: 0.75rem;
