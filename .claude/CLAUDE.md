@@ -72,6 +72,21 @@ For multi-step tasks, state a brief plan:
 
 ---
 
+## Architecture: Static Demo vs Application
+
+Two distribution modes — always specify which one when discussing features:
+
+- **Static demo** (`[demo]`): GitHub Pages, no backend, static files only. Shows positions, accepts correct move. Cannot run Stockfish.
+- **Application** (`[app]`): Installed via one-liner, local Python backend + Stockfish. Can respond to moves, show punishment, etc.
+
+When adding a feature to the application, decide the **demo fallback**:
+- If the feature can work without backend → implement in both
+- If it requires backend → show a disabled state or message in the demo (never silently skip)
+
+Full architecture table: see CONTRIBUTING.md § Architecture.
+
+---
+
 ## E2E Testing & Silent Errors
 
 Rules learned from debugging the "See moves" link (hours lost to silent failures and fake-passing tests).

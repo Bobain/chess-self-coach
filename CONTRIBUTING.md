@@ -39,6 +39,17 @@ The **static demo** is a read-only preview hosted at GitHub Pages. It shows the 
 
 The **application** runs a local backend (`chess-self-coach train --serve`) with Stockfish available. First exclusive feature: when the learner plays the wrong move, the application shows how the opponent punishes it (Stockfish's refutation move, animated with an arrow), then a Retry button lets the learner try again.
 
+### Feature Development Protocol
+
+When developing a new feature:
+1. **Tag the scope**: use `[demo]`, `[app]`, or `[both]` in discussions and commit messages
+2. **App-first**: implement in the application first
+3. **Demo fallback**: for each app-only feature, add a minimal representation in the demo:
+   - Disabled button/UI element with tooltip "Available in the full app"
+   - Or informational display (show data without interactivity)
+   - NEVER silently omit — the user must see what they're missing
+4. **Feature table**: keep the Architecture table updated with each new feature
+
 ---
 
 ## Chess Context
