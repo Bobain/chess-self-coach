@@ -958,6 +958,35 @@ def refresh_explanations() -> None:
         data["positions"] = positions
         print(f"  Removed {removed} invalid position(s) (player_move == best_move)")
 
+    # Remove positions where both moves win or both lose (no learning value)
+    def _parse_score_cp(s: str) -> int | None:
+        try:
+            return int(float(s) * 100)
+        except (ValueError, TypeError):
+            return None
+
+    before_count = len(positions)
+    filtered = []
+    for p in positions:
+        sb = _parse_score_cp(p.get("score_before", ""))
+        sa = _parse_score_cp(p.get("score_after", ""))
+        if sb is None or sa is None:
+            filtered.append(p)
+            continue
+        mul = 1 if p.get("player_color") == "white" else -1
+        player_before = sb * mul
+        player_after = sa * mul
+        if player_before > 500 and player_after > 500:
+            continue
+        if player_before < -500 and player_after < -500:
+            continue
+        filtered.append(p)
+    positions = filtered
+    removed_decisive = before_count - len(positions)
+    if removed_decisive:
+        data["positions"] = positions
+        print(f"  Removed {removed_decisive} position(s) already decisive (both win or both lose)")
+
     updated = 0
     for pos in positions:
         board = chess.Board(pos["fen"])
