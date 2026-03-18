@@ -16,6 +16,11 @@ chess-self-coach --help
 - **Type hints**: Use `from __future__ import annotations` and type all function signatures.
 - **Formatting**: Follow PEP 8. Use `ruff` if available.
 
+### Commits
+
+- **Commit at each logical step** — don't accumulate changes. Each commit should be a self-contained, testable unit (a feature, a fix, a refactor).
+- Run tests before committing. If tests fail, fix before committing.
+
 ## Coding Guidelines
 
 See [`.claude/CLAUDE.md`](.claude/CLAUDE.md) for detailed guidelines:
