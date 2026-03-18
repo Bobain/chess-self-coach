@@ -19,6 +19,7 @@ from chess_self_coach.trainer import (
     _format_score_cp,
     _make_position_id,
     _score_to_cp,
+    _time_pressure_context,
     compute_cp_loss,
     generate_explanation,
 )
@@ -282,3 +283,38 @@ def test_analysis_limit_opening():
     limit = _analysis_limit(board, 18)
     assert limit.time is None
     assert limit.depth == 18
+
+
+# --- _time_pressure_context ---
+
+
+def test_time_pressure_none():
+    """No clock data returns empty string."""
+    assert _time_pressure_context(None, None) == ""
+
+
+def test_time_pressure_severe():
+    """Under 2 minutes with opponent having much more time."""
+    result = _time_pressure_context(90, 420)  # 1.5min vs 7min
+    assert "severe time pressure" in result
+    assert "1min" in result or "2min" in result
+
+
+def test_time_pressure_low():
+    """Under 2 minutes without large opponent advantage."""
+    result = _time_pressure_context(60, 90)  # 1min vs 1.5min
+    assert "time pressure" in result
+    assert "severe" not in result
+
+
+def test_time_advantage():
+    """Player has significantly more time than opponent."""
+    result = _time_pressure_context(600, 300)  # 10min vs 5min
+    assert "more time" in result
+    assert "could have taken longer" in result
+
+
+def test_time_neutral():
+    """Similar clocks, no time pressure."""
+    result = _time_pressure_context(600, 500)  # 10min vs 8min
+    assert result == ""

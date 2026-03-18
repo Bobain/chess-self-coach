@@ -167,6 +167,7 @@ def fetch_lichess_games(username: str, max_games: int = 100) -> list[chess.pgn.G
             rated=True,
             perf_type="rapid,classical,correspondence",
             as_pgn=True,
+            clocks=True,
         )
 
         pgn_text = "".join(exported) if hasattr(exported, "__iter__") else str(exported)
