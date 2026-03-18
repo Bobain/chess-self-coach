@@ -24,7 +24,10 @@ def check_update() -> tuple[bool, str | None]:
         )
         data = json.loads(resp.read())
         latest = data["info"]["version"]
-        return (latest != __version__), latest
+        # Compare as tuples to detect only newer versions
+        def _parse_ver(v: str) -> tuple[int, ...]:
+            return tuple(int(x) for x in v.split("."))
+        return (_parse_ver(latest) > _parse_ver(__version__)), latest
     except Exception:
         return False, None
 
