@@ -10,6 +10,7 @@ import json
 import re
 from pathlib import Path
 
+import chess
 import pytest
 
 TRAINING_DATA_PATH = Path(__file__).parent.parent / "training_data.json"
@@ -101,3 +102,61 @@ def test_cp_loss_matches_category(positions):
         if cp_loss < min_cp:
             bad.append((p["id"], category, cp_loss))
     assert not bad, f"{len(bad)} position(s) with mismatched cp_loss/category: {bad[:5]}"
+
+
+# --- Board coherence tests ---
+
+
+def test_player_color_valid(positions):
+    """player_color must be 'white' or 'black'."""
+    bad = [p["id"] for p in positions if p["player_color"] not in ("white", "black")]
+    assert not bad, f"{len(bad)} position(s) with invalid player_color"
+
+
+def test_fen_side_to_move_matches_player_color(positions):
+    """The FEN side-to-move must match player_color."""
+    bad = []
+    for p in positions:
+        fen_turn = p["fen"].split()[1]
+        expected = "w" if p["player_color"] == "white" else "b"
+        if fen_turn != expected:
+            bad.append((p["id"], p["player_color"], fen_turn))
+    assert not bad, (
+        f"{len(bad)} position(s) where FEN turn != player_color: {bad[:5]}"
+    )
+
+
+def test_player_move_is_legal(positions):
+    """player_move must be a legal move in the FEN position."""
+    bad = []
+    for p in positions:
+        board = chess.Board(p["fen"])
+        try:
+            board.parse_san(p["player_move"])
+        except (ValueError, chess.InvalidMoveError, chess.IllegalMoveError):
+            bad.append((p["id"], p["player_move"], p["fen"][:40]))
+    assert not bad, f"{len(bad)} position(s) with illegal player_move: {bad[:5]}"
+
+
+def test_best_move_is_legal(positions):
+    """best_move must be a legal move in the FEN position."""
+    bad = []
+    for p in positions:
+        board = chess.Board(p["fen"])
+        try:
+            board.parse_san(p["best_move"])
+        except (ValueError, chess.InvalidMoveError, chess.IllegalMoveError):
+            bad.append((p["id"], p["best_move"], p["fen"][:40]))
+    assert not bad, f"{len(bad)} position(s) with illegal best_move: {bad[:5]}"
+
+
+def test_board_has_two_kings(positions):
+    """Every FEN must have exactly one white king and one black king."""
+    bad = []
+    for p in positions:
+        board = chess.Board(p["fen"])
+        white_kings = len(board.pieces(chess.KING, chess.WHITE))
+        black_kings = len(board.pieces(chess.KING, chess.BLACK))
+        if white_kings != 1 or black_kings != 1:
+            bad.append((p["id"], white_kings, black_kings))
+    assert not bad, f"{len(bad)} position(s) with wrong king count: {bad[:5]}"

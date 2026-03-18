@@ -16,6 +16,7 @@ import chess.engine
 import chess.pgn
 
 from chess_self_coach.config import check_stockfish_version, find_stockfish, load_config
+from chess_self_coach.trainer import _analysis_limit
 
 # Regex to detect existing evaluation annotations
 _EVAL_PATTERN = re.compile(r"\[%eval\s+[^\]]+\]")
@@ -111,7 +112,7 @@ def _analyze_node(
 
     # Analyze this position if no existing annotation
     if not _has_annotation(node.comment):
-        info = engine.analyse(board, chess.engine.Limit(depth=depth))
+        info = engine.analyse(board, _analysis_limit(board, depth))
         score = info.get("score")
         if score:
             annotation = _format_score(score, board.turn)

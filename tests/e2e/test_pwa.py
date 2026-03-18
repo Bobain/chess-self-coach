@@ -197,3 +197,82 @@ def test_settings_modal_opens_and_closes(page, pwa_url):
 
     page.locator("#close-settings").click()
     expect(page.locator("#settings-modal")).not_to_be_visible()
+
+
+# --- See moves link ---
+
+
+def test_see_moves_hidden_before_answer(page, pwa_url):
+    """The 'See moves' link is not visible before the player answers."""
+    _wait_for_board(page, pwa_url)
+
+    expect(page.locator("#see-moves")).not_to_be_visible()
+
+
+def test_see_moves_visible_after_correct(page, pwa_url):
+    """The 'See moves' link appears after a correct answer."""
+    _wait_for_board(page, pwa_url)
+
+    # Position 1: best_move="d4"
+    make_move(page, "d2", "d4", "white")
+    page.wait_for_timeout(300)
+
+    expect(page.locator("#feedback-text")).to_contain_text("Correct")
+    expect(page.locator("#see-moves")).to_be_visible()
+    expect(page.locator("#see-moves")).to_contain_text("See moves")
+
+
+def test_see_moves_visible_after_two_wrong(page, pwa_url):
+    """The 'See moves' link appears after 2 wrong attempts (not 3)."""
+    _wait_for_board(page, pwa_url)
+
+    # First wrong attempt — link should NOT appear
+    make_move(page, "a2", "a3", "white")
+    page.wait_for_timeout(500)
+    expect(page.locator("#see-moves")).not_to_be_visible()
+
+    # Second wrong attempt — link SHOULD appear
+    page.wait_for_selector("cg-board piece", timeout=5000)
+    page.wait_for_timeout(200)
+    make_move(page, "a2", "a3", "white")
+    page.wait_for_timeout(500)
+    expect(page.locator("#see-moves")).to_be_visible()
+
+
+def test_see_moves_link_has_move_parameter(page, pwa_url):
+    """The 'See moves' link includes the move number for deep linking."""
+    _wait_for_board(page, pwa_url)
+
+    # Position 1: FEN "...w KQkq - 0 1" → ply = 0, game.id = lichess
+    # Expected: https://lichess.org/testgame1#0
+    make_move(page, "d2", "d4", "white")
+    page.wait_for_timeout(300)
+
+    href = page.locator("#see-moves").get_attribute("href")
+    assert href is not None, "See moves link has no href"
+    assert "lichess.org/testgame1" in href, f"Expected lichess URL, got: {href}"
+    assert "#" in href, f"Expected move anchor (#ply), got: {href}"
+
+
+def test_see_moves_works_after_reload(page, pwa_url):
+    """The 'See moves' link works even after page reload (SW cache scenario).
+
+    This simulates the production bug: first load caches files via SW,
+    reload serves from cache. The link must still appear.
+    """
+    _wait_for_board(page, pwa_url)
+
+    # First load — registers SW and caches files
+    page.wait_for_timeout(1000)
+
+    # Reload — SW serves from cache (network-first should still fetch fresh)
+    page.reload()
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    # Play correct move
+    make_move(page, "d2", "d4", "white")
+    page.wait_for_timeout(300)
+
+    expect(page.locator("#feedback-text")).to_contain_text("Correct")
+    expect(page.locator("#see-moves")).to_be_visible()
+    expect(page.locator("#see-moves")).to_contain_text("See moves")

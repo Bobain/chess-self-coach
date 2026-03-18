@@ -199,3 +199,42 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## E2E Testing & Silent Errors
+
+Rules learned from debugging the "See moves" link (hours lost to silent failures and fake-passing tests).
+
+### No Silent Errors — EVER
+
+- **JavaScript**: NEVER use `if (el)` guards that silently skip logic. If `getElementById` returns null, it's a bug — throw an explicit error or `console.error()` so it's visible.
+- **Python**: NEVER use bare `except: pass`. Always log or re-raise.
+- **General**: A function that fails silently is worse than one that crashes. Crashes are debuggable; silent failures waste hours.
+
+### E2E Tests Must Use Real Data
+
+- **NEVER test only with simplified fixtures**. Always include at least one test that runs against the real `training_data.json` (the production data).
+- Fixtures are useful for unit-like e2e tests (known positions, predictable moves). But a separate "production smoke test" must verify the real data path.
+- The "See moves" bug passed all fixture tests but failed in production because fixtures were missing `game.id` fields.
+
+### Playwright Tests: Always Capture Console
+
+- The `console_errors` fixture in `tests/e2e/conftest.py` is `autouse=True` — it automatically captures all browser console messages and JS errors for every test.
+- Tests fail automatically if any JS error is detected.
+- All console output is printed in pytest `-v` output for debugging.
+- NEVER run Playwright tests without console capture. If writing a standalone debug script, always attach `page.on('console')` and `page.on('pageerror')` listeners.
+- Use `console_errors["messages"]` in assertions to verify that specific JS code paths were executed (e.g., `assert "[showFeedback]" in log_text`).
+
+### JavaScript: Always Add Console Logs in Key Functions
+
+- Every user-facing function (`showFeedback`, `handleMove`, `showPosition`, etc.) MUST have `console.log` at entry with its key parameters.
+- Every branch (correct/wrong/error) MUST log which path was taken.
+- Every DOM lookup that could fail MUST log whether the element was found or null.
+- These logs are essential for debugging in the browser console — without them, failures are invisible.
+- This is NOT optional debug code to remove later. It stays permanently.
+
+### Service Worker: Network-First for Local Assets
+
+- The PWA service worker MUST use **network-first** for same-origin assets (always serve fresh files from server, cache as offline fallback).
+- **Cache-first** is only for CDN resources (which never change).
+- `serve_pwa()` creates a temp dir on each launch — the SW must fetch fresh files, not serve stale cache.
+- Lesson: `skipWaiting()` + `clients.claim()` are NOT enough to invalidate cache-first responses from the old SW's fetch handler.

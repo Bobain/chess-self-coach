@@ -12,6 +12,7 @@ from chess_self_coach.trainer import (
     BLUNDER_THRESHOLD,
     INACCURACY_THRESHOLD,
     MISTAKE_THRESHOLD,
+    _analysis_limit,
     _classify_mistake,
     _detect_source,
     _determine_player_color,
@@ -243,3 +244,41 @@ def test_detect_source_chesscom():
 def test_detect_source_unknown():
     game = _make_game('[Site "unknown"]\n\n1. e4 *')
     assert _detect_source(game) == "unknown"
+
+
+# --- _analysis_limit ---
+
+
+def test_analysis_limit_kings_and_pawns():
+    """King+pawns endgame (<=7 pieces) gets maximum time."""
+    board = chess.Board("8/4k3/8/8/8/3K4/4P3/8 w - - 0 1")  # K+P vs K
+    limit = _analysis_limit(board, 18)
+    assert limit.time == 6.0
+    assert limit.depth == 60
+
+
+def test_analysis_limit_pure_endgame():
+    """Endgame with pieces (<=7) gets high time."""
+    board = chess.Board("8/4k3/8/8/8/3K4/4R3/8 w - - 0 1")  # K+R vs K
+    limit = _analysis_limit(board, 18)
+    assert limit.time == 5.0
+    assert limit.depth == 50
+
+
+def test_analysis_limit_late_middlegame():
+    """8-12 pieces gets moderate time."""
+    # 10 pieces: 2K + 2R + 2B + 4P
+    board = chess.Board("r1b1k3/8/8/8/8/8/4PP2/R1B1K3 w - - 0 1")
+    assert len(board.piece_map()) <= 12
+    assert len(board.piece_map()) > 7
+    limit = _analysis_limit(board, 18)
+    assert limit.time == 4.0
+    assert limit.depth == 40
+
+
+def test_analysis_limit_opening():
+    """Many pieces (>12) uses default depth only."""
+    board = chess.Board()  # Starting position, 32 pieces
+    limit = _analysis_limit(board, 18)
+    assert limit.time is None
+    assert limit.depth == 18

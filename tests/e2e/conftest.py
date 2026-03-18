@@ -2,6 +2,9 @@
 
 Copies PWA files to a temp directory and serves them with a test-only
 training_data.json. The real training data is never touched.
+
+All tests automatically capture browser console messages and JS errors
+via the console_errors fixture — zero JS errors are tolerated.
 """
 
 from __future__ import annotations
@@ -9,42 +12,18 @@ from __future__ import annotations
 import http.server
 import shutil
 import threading
+import time
 from pathlib import Path
 
 import pytest
 
-PWA_DIR = Path(__file__).parent.parent.parent / "pwa"
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+PWA_DIR = PROJECT_ROOT / "pwa"
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
-@pytest.fixture(scope="session")
-def pwa_url(tmp_path_factory):
-    """Serve the PWA from a temp directory with test fixture data.
-
-    Isolation guarantees:
-    - PWA files are copied (not symlinked) to a temp dir
-    - training_data.json comes from tests/e2e/fixtures/, not the real one
-    - Each browser context has isolated localStorage (Playwright default)
-    """
-    tmp_dir = tmp_path_factory.mktemp("pwa_e2e")
-
-    # Copy PWA source files (skip any existing training data)
-    for f in PWA_DIR.iterdir():
-        if f.is_file() and f.name != "training_data.json":
-            shutil.copy2(f, tmp_dir / f.name)
-
-    # Inject version placeholder into service worker (matches CI behavior)
-    sw_path = tmp_dir / "sw.js"
-    sw_text = sw_path.read_text()
-    sw_path.write_text(sw_text.replace("__VERSION__", "test"))
-
-    # Copy test fixture data (NOT the real training data)
-    shutil.copy2(
-        FIXTURES_DIR / "training_data.json",
-        tmp_dir / "training_data.json",
-    )
-
-    # Start server on a random available port
+def _serve_pwa_dir(tmp_dir):
+    """Start an HTTP server for a PWA directory. Returns (url, server)."""
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **kw):
             super().__init__(*a, directory=str(tmp_dir), **kw)
@@ -54,13 +33,75 @@ def pwa_url(tmp_path_factory):
 
     server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
     port = server.server_address[1]
-
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
+    return f"http://127.0.0.1:{port}", server
 
-    yield f"http://127.0.0.1:{port}"
 
+def _copy_pwa_files(tmp_dir, training_data_path):
+    """Copy PWA files + training data to a temp directory."""
+    for f in PWA_DIR.iterdir():
+        if f.is_file() and f.name != "training_data.json":
+            shutil.copy2(f, tmp_dir / f.name)
+
+    # Inject unique version into service worker
+    sw_path = tmp_dir / "sw.js"
+    sw_text = sw_path.read_text()
+    sw_path.write_text(sw_text.replace("__VERSION__", f"test-{int(time.time())}"))
+
+    shutil.copy2(training_data_path, tmp_dir / "training_data.json")
+
+
+@pytest.fixture(scope="session")
+def pwa_url(tmp_path_factory):
+    """Serve the PWA with test fixture data (simplified positions)."""
+    tmp_dir = tmp_path_factory.mktemp("pwa_e2e")
+    _copy_pwa_files(tmp_dir, FIXTURES_DIR / "training_data.json")
+    url, server = _serve_pwa_dir(tmp_dir)
+    yield url
     server.shutdown()
+
+
+@pytest.fixture(scope="session")
+def pwa_real_url(tmp_path_factory):
+    """Serve the PWA with real training data (production positions).
+
+    Skips if training_data.json doesn't exist.
+    """
+    real_data = PROJECT_ROOT / "training_data.json"
+    if not real_data.exists():
+        pytest.skip("training_data.json not found (run train --prepare first)")
+    tmp_dir = tmp_path_factory.mktemp("pwa_e2e_real")
+    _copy_pwa_files(tmp_dir, real_data)
+    url, server = _serve_pwa_dir(tmp_dir)
+    yield url
+    server.shutdown()
+
+
+@pytest.fixture(autouse=True)
+def console_errors(page):
+    """Capture browser console messages and JS errors for every test.
+
+    Automatically attached to every e2e test. Fails the test if any
+    JS error (console.error or uncaught exception) is detected.
+    All console output is printed on failure for debugging.
+    """
+    messages = []
+    errors = []
+
+    page.on("console", lambda msg: messages.append(f"[{msg.type}] {msg.text}"))
+    page.on("pageerror", lambda exc: errors.append(str(exc)))
+
+    yield {"messages": messages, "errors": errors}
+
+    # Print all console output for debugging (visible in pytest -v output)
+    if messages:
+        print("\n--- Browser console ---")
+        for msg in messages:
+            print(f"  {msg}")
+
+    # Fail on JS errors
+    assert not errors, f"JS errors detected:\n" + "\n".join(errors)
 
 
 def click_square(page, square: str, orientation: str):

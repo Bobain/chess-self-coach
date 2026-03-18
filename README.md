@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish, and drills you on the correct moves with spaced repetition.
+**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, and drills you on the correct moves with spaced repetition.
 
 **[Try the training PWA](https://bobain.github.io/chess-self-coach/train/)** | **[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
 
@@ -12,7 +12,7 @@
 YOUR GAMES                    STOCKFISH ANALYSIS              TRAINING
 ┌───────────────────┐        ┌───────────────────┐        ┌───────────────────┐
 │ Lichess + chess.com│  ───→  │ Parallel analysis  │  ───→  │ Find the Better   │
-│ 20 recent games    │        │ depth 18, 4 cores  │        │ Move (PWA)        │
+│ 20 recent games    │        │ adaptive, parallel │        │ Move (PWA)        │
 └───────────────────┘        └───────────────────┘        └───────────────────┘
                                                            • Board position shown
                                                            • Context: phase, advantage
@@ -47,6 +47,8 @@ For each mistake in your games, the trainer shows:
 | Mistake | 100-199 cp | Missing a tactic, losing material |
 | Inaccuracy | 50-99 cp | Passive move when active was better |
 
+Endgame positions (≤ 7 pieces) are resolved by the [Lichess tablebase API](https://tablebase.lichess.ovh/) with mathematically exact Win/Draw/Loss verdicts — no Stockfish heuristics needed.
+
 ## Installation
 
 ```bash
@@ -66,18 +68,17 @@ uv venv && uv sync
 
 - **Python >= 3.12**
 - **Stockfish** — `sudo apt install stockfish` (or provide path via `--engine`)
-- **Lichess API token** — for fetching your games ([create one here](https://lichess.org/account/oauth/token/create), scopes: `study:read` + `study:write`)
+- **Lichess API token** (optional but recommended) — for syncing with Lichess Studies, Chessdriller drills, and more. The setup wizard guides you through creating one.
 
 ### Configuration
 
 ```bash
-echo "LICHESS_API_TOKEN=lip_your_token_here" > .env
-chess-self-coach setup    # interactive: verifies auth, asks for chess.com username, finds studies
+chess-self-coach setup    # interactive: finds Stockfish, guides Lichess token creation, finds studies
 ```
 
 The setup wizard will:
-1. Verify your Lichess token
-2. Find Stockfish on your system
+1. Find Stockfish on your system
+2. Guide you through **Lichess token creation** (bilingual FR/EN, step by step)
 3. Ask for your **chess.com username** (for importing games)
 4. Auto-detect your Lichess Studies
 
@@ -87,7 +88,7 @@ The setup wizard will:
 
 ```bash
 # Fetch your games and analyze with Stockfish
-chess-self-coach train --prepare                    # 20 games, depth 18, parallel
+chess-self-coach train --prepare                    # 20 games, adaptive depth, parallel
 chess-self-coach train --prepare --games 50         # more games
 chess-self-coach train --prepare --depth 12         # faster analysis
 

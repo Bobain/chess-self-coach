@@ -153,6 +153,83 @@ def cleanup_study(study_id: str, study_name: str = "") -> int:
     return deleted
 
 
+_TOKEN_GUIDE_FR = """
+    Guide de creation du token Lichess :
+
+    1. Ouvrez : https://lichess.org/account/oauth/token/create
+       (si vous n'avez pas de compte, creez-en un d'abord sur lichess.org)
+
+    2. Donnez un nom au token, par exemple : "chess-self-coach"
+
+    3. Cochez les permissions suivantes :
+       [ ] Lire les etudes privees (study:read)
+       [ ] Creer/modifier/supprimer les etudes (study:write)
+
+    4. Cliquez sur "Soumettre"
+
+    5. IMPORTANT : copiez le token (il commence par "lip_")
+       Il ne sera plus visible apres !
+"""
+
+_TOKEN_GUIDE_EN = """
+    Lichess token creation guide:
+
+    1. Open: https://lichess.org/account/oauth/token/create
+       (if you don't have an account, create one first at lichess.org)
+
+    2. Give the token a name, e.g.: "chess-self-coach"
+
+    3. Check these permissions:
+       [ ] Read private studies and broadcasts (study:read)
+       [ ] Create, update, delete studies and broadcasts (study:write)
+
+    4. Click "Submit"
+
+    5. IMPORTANT: copy the token (starts with "lip_")
+       It won't be shown again!
+"""
+
+
+def _guided_token_creation() -> str | None:
+    """Guide the user through Lichess token creation with bilingual instructions.
+
+    Returns:
+        The token string, or None if the user cancels.
+    """
+    print("\n    Choose language / Choisissez la langue :")
+    print("      1. Francais")
+    print("      2. English")
+    lang = input("    > ").strip()
+
+    if lang == "1":
+        print(_TOKEN_GUIDE_FR)
+        prompt = "    6. Collez le token ici (ou Entree pour annuler) : "
+    else:
+        print(_TOKEN_GUIDE_EN)
+        prompt = "    6. Paste the token here (or Enter to cancel): "
+
+    try:
+        webbrowser.open("https://lichess.org/account/oauth/token/create")
+    except Exception:
+        pass
+
+    token = input(prompt).strip()
+    if not token:
+        return None
+
+    if not token.startswith("lip_"):
+        print("    ✗ Token should start with 'lip_'. Please try again.")
+        return None
+
+    # Save to .env
+    root = _find_project_root()
+    env_path = root / ".env"
+    env_path.write_text(f"LICHESS_API_TOKEN={token}\n")
+    print(f"    ✓ Token saved to {env_path}")
+
+    return token
+
+
 def setup() -> None:
     """Interactive setup: verify auth, find studies, configure config.json.
 
@@ -206,8 +283,31 @@ def setup() -> None:
             print(f"    ✗ Token invalid: {e}")
             players.pop("lichess", None)
     else:
-        print("    No token found in .env (optional — skip if you only use chess.com)")
-        players.pop("lichess", None)
+        print("\n    With a Lichess account, you unlock:")
+        print("      ★ Perfect endgame analysis — Lichess tablebase gives mathematically")
+        print("        exact results (Win/Draw/Loss) for positions with ≤ 7 pieces")
+        print("      ★ Sync your repertoire to Lichess Studies (push/pull)")
+        print("      ★ Study interactively on Lichess with built-in Stockfish")
+        print("      ★ Drill with Chessdriller (spaced repetition from your Studies)")
+        setup_token = input("\n    Would you like to set up a Lichess token? [y/N] ").strip().lower()
+        if setup_token == "y":
+            token = _guided_token_creation()
+            if token:
+                try:
+                    session = berserk.TokenSession(token)
+                    client = berserk.Client(session=session)
+                    account = client.account.get()
+                    username = account["username"]
+                    players["lichess"] = username
+                    print(f"\n    ✓ Token verified: {username}")
+                except Exception as e:
+                    print(f"\n    ✗ Token invalid: {e}")
+                    players.pop("lichess", None)
+                    client = None
+            else:
+                players.pop("lichess", None)
+        else:
+            players.pop("lichess", None)
 
     # Chess.com (optional)
     print("\n  Chess.com:")

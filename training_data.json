@@ -1,55 +1,18 @@
 {
   "version": "1.0",
-  "generated": "2026-03-17T21:15:04Z",
+  "generated": "2026-03-18T10:41:27Z",
   "player": {
     "lichess": "bobainbobain",
     "chesscom": "Tonigor1982"
   },
   "positions": [
     {
-      "id": "396c71cd6d1b",
-      "fen": "QK6/3q4/2k5/8/8/8/8/8 b - - 0 64",
-      "player_color": "black",
-      "player_move": "Kd6",
-      "best_move": "Kb6",
-      "context": "Endgame, you had a strong advantage. Your move threw away a winning position and led to a draw.",
-      "score_before": "-100.00",
-      "score_after": "+0.00",
-      "cp_loss": 10000,
-      "category": "blunder",
-      "explanation": "You played Kd6 (blunder). You had a forced mate but threw it away — the game is now a draw. A better move was Kb6.",
-      "acceptable_moves": [
-        "Kb6"
-      ],
-      "pv": [
-        "Kb6",
-        "Qa5+",
-        "Kxa5",
-        "Ka8",
-        "Kb6"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
       "id": "cde3331f8db8",
       "fen": "rnb1rk2/b1p2q2/p2p1pB1/1p6/3P4/4B1Q1/PPP2PPP/R3R1K1 b - - 0 19",
       "player_color": "black",
       "player_move": "Qd7",
       "best_move": "Qg7",
-      "context": "Opening, you were in a difficult position. Your move allowed your opponent to force checkmate.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move allowed your opponent to force checkmate.",
       "score_before": "+4.99",
       "score_after": "+100.00",
       "cp_loss": 9501,
@@ -76,7 +39,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -86,7 +49,7 @@
       "player_color": "black",
       "player_move": "Qe6",
       "best_move": "Qxh1+",
-      "context": "Opening, you were in a difficult position. Your move allowed your opponent to force checkmate.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move allowed your opponent to force checkmate.",
       "score_before": "+6.03",
       "score_after": "+100.00",
       "cp_loss": 9397,
@@ -113,44 +76,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "732f9dec437e",
-      "fen": "8/5pp1/6k1/3bP2p/7P/6BK/4R2P/6r1 w - - 6 53",
-      "player_color": "white",
-      "player_move": "Rb2",
-      "best_move": "e6",
-      "context": "Middlegame, you were in a difficult position. Your move allowed your opponent to force checkmate.",
-      "score_before": "-6.24",
-      "score_after": "-100.00",
-      "cp_loss": 9376,
-      "category": "blunder",
-      "explanation": "You played Rb2 (blunder). This allowed your opponent to force checkmate. A better move was e6.",
-      "acceptable_moves": [
-        "e6"
-      ],
-      "pv": [
-        "e6",
-        "Bxe6+",
-        "Rxe6+",
-        "fxe6",
-        "Be5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/165939820182",
-        "source": "chess.com",
-        "opponent": "Tasoulinga",
-        "date": "2026.03.14",
-        "result": "0-1",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -160,7 +86,7 @@
       "player_color": "white",
       "player_move": "Qxe8+",
       "best_move": "Bxf7+",
-      "context": "Opening, you had a strong advantage. Your move threw away a forced mate.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move threw away a forced mate.",
       "score_before": "+100.00",
       "score_after": "+6.35",
       "cp_loss": 9365,
@@ -187,7 +113,81 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "16710669d026",
+      "fen": "7k/p7/1p4PP/2p4K/P4b2/3B4/2P2p2/8 b - - 0 63",
+      "player_color": "black",
+      "player_move": "Bxh6",
+      "best_move": "Be5",
+      "context": "Endgame, playing as Black, you were in a difficult position. Your move allowed your opponent to force checkmate.",
+      "score_before": "+6.52",
+      "score_after": "+100.00",
+      "cp_loss": 9348,
+      "category": "blunder",
+      "explanation": "You played Bxh6 (blunder). This allowed your opponent to force checkmate. A better move was Be5. Your bishop on h6 is left undefended.",
+      "acceptable_moves": [
+        "Be5"
+      ],
+      "pv": [
+        "Be5",
+        "Bc4",
+        "a6",
+        "Bxa6",
+        "Kg8"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166016258776",
+        "source": "chess.com",
+        "opponent": "ACDRAGON777",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "732f9dec437e",
+      "fen": "8/5pp1/6k1/3bP2p/7P/6BK/4R2P/6r1 w - - 6 53",
+      "player_color": "white",
+      "player_move": "Rb2",
+      "best_move": "e6",
+      "context": "Middlegame, playing as White, you were in a difficult position. Your move allowed your opponent to force checkmate.",
+      "score_before": "-7.04",
+      "score_after": "-100.00",
+      "cp_loss": 9296,
+      "category": "blunder",
+      "explanation": "You played Rb2 (blunder). This allowed your opponent to force checkmate. A better move was e6.",
+      "acceptable_moves": [
+        "e6"
+      ],
+      "pv": [
+        "e6",
+        "Bxe6+",
+        "Rxe6+",
+        "fxe6",
+        "Be5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/165939820182",
+        "source": "chess.com",
+        "opponent": "Tasoulinga",
+        "date": "2026.03.14",
+        "result": "0-1",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -197,7 +197,7 @@
       "player_color": "white",
       "player_move": "Qxa5",
       "best_move": "Ng6+",
-      "context": "Middlegame, you had a strong advantage. Your move threw away a forced mate.",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move threw away a forced mate.",
       "score_before": "+100.00",
       "score_after": "+10.17",
       "cp_loss": 8983,
@@ -224,68 +224,31 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
     {
-      "id": "4a065752f058",
-      "fen": "8/8/6K1/8/6P1/8/3kp3/7R w - - 2 61",
-      "player_color": "white",
-      "player_move": "Kf6",
-      "best_move": "Kf5",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "+81.15",
-      "score_after": "+44.25",
-      "cp_loss": 3690,
-      "category": "blunder",
-      "explanation": "You played Kf6 (blunder, lost a decisive advantage). A better move was Kf5.",
-      "acceptable_moves": [
-        "Kf5"
-      ],
-      "pv": [
-        "Kf5",
-        "e1=Q",
-        "Rxe1",
-        "Kxe1",
-        "Ke4"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "c0d68cfa27ef",
-      "fen": "8/8/P7/1K6/8/3k4/8/2q5 b - - 0 56",
+      "id": "d0fb65cc5a05",
+      "fen": "8/8/pp6/2p5/P1P3p1/2P5/4KPk1/8 b - - 6 44",
       "player_color": "black",
-      "player_move": "Qc4+",
-      "best_move": "Kd4",
-      "context": "Endgame, you had a strong advantage. Your move threw away a forced mate.",
-      "score_before": "-100.00",
-      "score_after": "-73.81",
-      "cp_loss": 2619,
+      "player_move": "Kg1",
+      "best_move": "a5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
+      "score_before": "-60.04",
+      "score_after": "+0.00",
+      "cp_loss": 6004,
       "category": "blunder",
-      "explanation": "You played Qc4+ (blunder). You had a forced mate but lost it. A better move was Kd4.",
+      "explanation": "You played Kg1 (blunder, lost a decisive advantage). A better move was a5.",
       "acceptable_moves": [
-        "Kd4"
+        "a5"
       ],
       "pv": [
-        "Kd4",
-        "Kb6",
-        "Qc8",
-        "a7",
-        "Kd5"
+        "a5",
+        "Ke3",
+        "Kf1",
+        "Kd3",
+        "Kxf2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -298,7 +261,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "6b159c976ffc",
+      "fen": "8/8/pp6/2p5/P1P3K1/2P5/5k2/8 b - - 0 47",
+      "player_color": "black",
+      "player_move": "Ke3",
+      "best_move": "a5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
+      "score_before": "-62.79",
+      "score_after": "-45.81",
+      "cp_loss": 1698,
+      "category": "blunder",
+      "explanation": "You played Ke3 (blunder, lost a decisive advantage). A better move was a5.",
+      "acceptable_moves": [
+        "a5"
+      ],
+      "pv": [
+        "a5",
+        "Kf4",
+        "Ke1",
+        "Ke3",
+        "Kd1"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166054148592",
+        "source": "chess.com",
+        "opponent": "JARVIS42AI",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -308,7 +308,7 @@
       "player_color": "black",
       "player_move": "Rf2",
       "best_move": "Qc6+",
-      "context": "Middlegame, you had a strong advantage. Your move lost a decisive advantage.",
+      "context": "Middlegame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
       "score_before": "-12.97",
       "score_after": "+2.71",
       "cp_loss": 1568,
@@ -335,44 +335,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "5193c12c156f",
-      "fen": "7R/8/6K1/8/6P1/3k4/4p3/8 w - - 0 60",
-      "player_color": "white",
-      "player_move": "Rh1",
-      "best_move": "Re8",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "+72.84",
-      "score_after": "+57.39",
-      "cp_loss": 1545,
-      "category": "blunder",
-      "explanation": "You played Rh1 (blunder, lost a decisive advantage). A better move was Re8.",
-      "acceptable_moves": [
-        "Re8"
-      ],
-      "pv": [
-        "Re8",
-        "e1=Q",
-        "Rxe1",
-        "Kc4",
-        "Kf5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -382,10 +345,10 @@
       "player_color": "black",
       "player_move": "Kd6",
       "best_move": "h4",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-6.67",
-      "score_after": "+5.28",
-      "cp_loss": 1195,
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
+      "score_before": "-7.83",
+      "score_after": "+7.72",
+      "cp_loss": 1555,
       "category": "blunder",
       "explanation": "You played Kd6 (blunder, lost a decisive advantage). A better move was h4.",
       "acceptable_moves": [
@@ -409,7 +372,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -419,7 +382,7 @@
       "player_color": "black",
       "player_move": "Kf8",
       "best_move": "Kg7",
-      "context": "Opening, you were slightly worse. Your move lost a decisive advantage.",
+      "context": "Opening, playing as Black, you were slightly worse. Your move lost a decisive advantage.",
       "score_before": "+1.40",
       "score_after": "+10.49",
       "cp_loss": 909,
@@ -446,44 +409,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "d0fb65cc5a05",
-      "fen": "8/8/pp6/2p5/P1P3p1/2P5/4KPk1/8 b - - 6 44",
-      "player_color": "black",
-      "player_move": "Kg1",
-      "best_move": "a5",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-8.79",
-      "score_after": "-0.28",
-      "cp_loss": 851,
-      "category": "blunder",
-      "explanation": "You played Kg1 (blunder, lost a decisive advantage). A better move was a5.",
-      "acceptable_moves": [
-        "a5"
-      ],
-      "pv": [
-        "a5",
-        "Ke3",
-        "Kf1",
-        "Kf4",
-        "Kxf2"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -493,7 +419,7 @@
       "player_color": "black",
       "player_move": "g4",
       "best_move": "h4",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
       "score_before": "-8.18",
       "score_after": "-0.60",
       "cp_loss": 758,
@@ -520,7 +446,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "56b726ec496d",
+      "fen": "8/8/pp3pk1/2p5/P1P2KpP/2P5/5P2/8 b - - 2 39",
+      "player_color": "black",
+      "player_move": "f5",
+      "best_move": "Kh5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
+      "score_before": "-7.26",
+      "score_after": "+0.00",
+      "cp_loss": 726,
+      "category": "blunder",
+      "explanation": "You played f5 (blunder, lost a decisive advantage). A better move was Kh5.",
+      "acceptable_moves": [
+        "Kh5"
+      ],
+      "pv": [
+        "Kh5",
+        "Ke4",
+        "a5",
+        "Kd5",
+        "Kxh4"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166054148592",
+        "source": "chess.com",
+        "opponent": "JARVIS42AI",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -530,7 +493,7 @@
       "player_color": "black",
       "player_move": "g6",
       "best_move": "Qxe4",
-      "context": "Opening, you were in a difficult position. Your move lost a decisive advantage.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move lost a decisive advantage.",
       "score_before": "+3.59",
       "score_after": "+10.10",
       "cp_loss": 651,
@@ -557,7 +520,40 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "ceeff7078bf2",
+      "fen": "8/5pp1/6k1/3bP2p/7P/4R1BK/7P/5r2 w - - 4 52",
+      "player_color": "white",
+      "player_move": "Re2",
+      "best_move": "Re1",
+      "context": "Middlegame, playing as White, the position was roughly equal. Your move lost a decisive advantage.",
+      "score_before": "-0.02",
+      "score_after": "-6.28",
+      "cp_loss": 626,
+      "category": "blunder",
+      "explanation": "You played Re2 (blunder, lost a decisive advantage). A better move was Re1.",
+      "acceptable_moves": [
+        "Re1"
+      ],
+      "pv": [
+        "Re1"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/165939820182",
+        "source": "chess.com",
+        "opponent": "Tasoulinga",
+        "date": "2026.03.14",
+        "result": "0-1",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -567,7 +563,7 @@
       "player_color": "black",
       "player_move": "Qxg6",
       "best_move": "fxg6",
-      "context": "Opening, you had a strong advantage. Your move lost a decisive advantage.",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
       "score_before": "-2.49",
       "score_after": "+3.71",
       "cp_loss": 620,
@@ -594,44 +590,559 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
     {
-      "id": "ceeff7078bf2",
-      "fen": "8/5pp1/6k1/3bP2p/7P/4R1BK/7P/5r2 w - - 4 52",
-      "player_color": "white",
-      "player_move": "Re2",
-      "best_move": "Re1",
-      "context": "Middlegame, the position was roughly equal. Your move lost a decisive advantage.",
-      "score_before": "-0.03",
-      "score_after": "-6.17",
-      "cp_loss": 614,
+      "id": "ded8c585b606",
+      "fen": "8/p7/1P6/P1k4K/6p1/8/7P/8 b - - 0 44",
+      "player_color": "black",
+      "player_move": "axb6",
+      "best_move": "Kb4",
+      "context": "Endgame (7 pieces), playing as Black, you were in a difficult position. Tablebase: theoretical loss (DTZ 2).",
+      "score_before": "TB:loss",
+      "score_after": "TB:win",
+      "cp_loss": 600,
       "category": "blunder",
-      "explanation": "You played Re2 (blunder, lost a decisive advantage). A better move was Re1.",
+      "explanation": "Tablebase: the position was a theoretical loss (DTZ 2). Your move axb6 turns it into a win, mate in 35. The correct move was Kb4.",
       "acceptable_moves": [
-        "Re1"
+        "Kb4"
       ],
       "pv": [
-        "Re1",
-        "Rf3",
-        "Kg2",
-        "Kf5",
-        "Rf1"
+        "Kb4"
       ],
       "game": {
-        "id": "https://www.chess.com/game/live/165939820182",
+        "id": "https://www.chess.com/game/live/166067143160",
         "source": "chess.com",
-        "opponent": "Tasoulinga",
-        "date": "2026.03.14",
-        "result": "0-1",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
         "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -2
+        },
+        "after": {
+          "category": "win",
+          "dtm": 35,
+          "dtz": 1
+        },
+        "transition": "LOSS → WIN"
       },
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "aaa72ea35692",
+      "fen": "8/8/1k6/8/6K1/8/7P/8 b - - 0 46",
+      "player_color": "black",
+      "player_move": "Kc7",
+      "best_move": "Kc6",
+      "context": "Endgame (3 pieces), playing as Black, you were in a difficult position. Tablebase: theoretical loss, mate in 32.",
+      "score_before": "TB:loss",
+      "score_after": "TB:win",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical loss, mate in 32. Your move Kc7 turns it into a win, mate in 31. The correct move was Kc6.",
+      "acceptable_moves": [
+        "Kc6"
+      ],
+      "pv": [
+        "Kc6"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "loss",
+          "dtm": -32,
+          "dtz": -8
+        },
+        "after": {
+          "category": "win",
+          "dtm": 31,
+          "dtz": 7
+        },
+        "transition": "LOSS → WIN"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "b64999855302",
+      "fen": "8/2k5/8/6K1/8/8/7P/8 b - - 2 47",
+      "player_color": "black",
+      "player_move": "Kd8",
+      "best_move": "Kd7",
+      "context": "Endgame (3 pieces), playing as Black, you were in a difficult position. Tablebase: theoretical loss, mate in 30.",
+      "score_before": "TB:loss",
+      "score_after": "TB:win",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical loss, mate in 30. Your move Kd8 turns it into a win, mate in 29. The correct move was Kd7.",
+      "acceptable_moves": [
+        "Kd7"
+      ],
+      "pv": [
+        "Kd7"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "loss",
+          "dtm": -30,
+          "dtz": -6
+        },
+        "after": {
+          "category": "win",
+          "dtm": 29,
+          "dtz": 5
+        },
+        "transition": "LOSS → WIN"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "cf9c546e59dc",
+      "fen": "3k4/8/6K1/8/8/8/7P/8 b - - 4 48",
+      "player_color": "black",
+      "player_move": "Ke8",
+      "best_move": "Ke7",
+      "context": "Endgame (3 pieces), playing as Black, you were in a difficult position. Tablebase: theoretical loss, mate in 28.",
+      "score_before": "TB:loss",
+      "score_after": "TB:win",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical loss, mate in 28. Your move Ke8 turns it into a win, mate in 27. The correct move was Ke7.",
+      "acceptable_moves": [
+        "Ke7"
+      ],
+      "pv": [
+        "Ke7"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "loss",
+          "dtm": -28,
+          "dtz": -4
+        },
+        "after": {
+          "category": "win",
+          "dtm": 27,
+          "dtz": 3
+        },
+        "transition": "LOSS → WIN"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "0f757bbf27a3",
+      "fen": "8/6R1/4p2k/4r3/8/7P/6P1/6K1 w - - 0 40",
+      "player_color": "white",
+      "player_move": "Re7",
+      "best_move": "Rg4",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 5).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 5). Your move Re7 turns it into a loss (DTZ 8). The correct move was Rg4.",
+      "acceptable_moves": [
+        "Rg4"
+      ],
+      "pv": [
+        "Rg4"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 5
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -8
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "4f02f5f71f3b",
+      "fen": "8/4R3/4p3/4r1k1/8/7P/6P1/6K1 w - - 2 41",
+      "player_color": "white",
+      "player_move": "Kf2",
+      "best_move": "Rg7+",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 7).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 7). Your move Kf2 turns it into a loss (DTZ 8). The correct move was Rg7+.",
+      "acceptable_moves": [
+        "Rg7+"
+      ],
+      "pv": [
+        "Rg7+"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 7
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -8
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "3cc8146475b3",
+      "fen": "8/4R3/4p3/4r3/4k3/6PP/5K2/8 w - - 1 43",
+      "player_color": "white",
+      "player_move": "Rg7",
+      "best_move": "g4",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 1).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 1). Your move Rg7 turns it into a loss (DTZ 8). The correct move was g4.",
+      "acceptable_moves": [
+        "g4"
+      ],
+      "pv": [
+        "g4"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 1
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -8
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "c154e4913a42",
+      "fen": "4R3/8/6K1/3k4/6PP/4pr2/8/8 w - - 2 55",
+      "player_color": "white",
+      "player_move": "h5",
+      "best_move": "g5",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 1).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 1). Your move h5 turns it into a loss (DTZ 2). The correct move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 1
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -2
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "5d616d1f4b13",
+      "fen": "4R3/8/6K1/7P/3k2P1/4pr2/8/8 w - - 1 56",
+      "player_color": "white",
+      "player_move": "h6",
+      "best_move": "g5",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 1).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 1). Your move h6 turns it into a loss (DTZ 2). The correct move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 1
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -2
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "d020bd89f9c6",
+      "fen": "4R3/8/6KP/8/6P1/3kpr2/8/8 w - - 1 57",
+      "player_color": "white",
+      "player_move": "h7",
+      "best_move": "g5",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 1).",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 1). Your move h7 turns it into a loss (DTZ 2). The correct move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 1
+        },
+        "after": {
+          "category": "loss",
+          "dtm": null,
+          "dtz": -2
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "5193c12c156f",
+      "fen": "7R/8/6K1/8/6P1/3k4/4p3/8 w - - 0 60",
+      "player_color": "white",
+      "player_move": "Rh1",
+      "best_move": "Re8",
+      "context": "Endgame (5 pieces), playing as White, you had a winning position. Tablebase: theoretical win, mate in 27.",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win, mate in 27. Your move Rh1 turns it into a loss, mate in 28. The correct move was Re8.",
+      "acceptable_moves": [
+        "Re8"
+      ],
+      "pv": [
+        "Re8"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": 27,
+          "dtz": 3
+        },
+        "after": {
+          "category": "loss",
+          "dtm": -28,
+          "dtz": -2
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "4a065752f058",
+      "fen": "8/8/6K1/8/6P1/8/3kp3/7R w - - 2 61",
+      "player_color": "white",
+      "player_move": "Kf6",
+      "best_move": "g5",
+      "context": "Endgame (5 pieces), playing as White, you had a winning position. Tablebase: theoretical win, mate in 25.",
+      "score_before": "TB:win",
+      "score_after": "TB:loss",
+      "cp_loss": 600,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win, mate in 25. Your move Kf6 turns it into a loss, mate in 26. The correct move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": 25,
+          "dtz": 1
+        },
+        "after": {
+          "category": "loss",
+          "dtm": -26,
+          "dtz": -2
+        },
+        "transition": "WIN → LOSS"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -641,7 +1152,7 @@
       "player_color": "white",
       "player_move": "Rf8",
       "best_move": "Rb7",
-      "context": "Middlegame, you had a strong advantage. Your move lost a decisive advantage.",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost a decisive advantage.",
       "score_before": "+5.71",
       "score_after": "+0.08",
       "cp_loss": 563,
@@ -668,44 +1179,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "56b726ec496d",
-      "fen": "8/8/pp3pk1/2p5/P1P2KpP/2P5/5P2/8 b - - 2 39",
-      "player_color": "black",
-      "player_move": "f5",
-      "best_move": "Kh5",
-      "context": "Endgame, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-5.33",
-      "score_after": "-0.09",
-      "cp_loss": 524,
-      "category": "blunder",
-      "explanation": "You played f5 (blunder, lost a decisive advantage). A better move was Kh5.",
-      "acceptable_moves": [
-        "Kh5"
-      ],
-      "pv": [
-        "Kh5",
-        "Ke4",
-        "Kxh4",
-        "Kd5",
-        "f5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -715,7 +1189,7 @@
       "player_color": "black",
       "player_move": "Nxg4",
       "best_move": "Be4+",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (4.7 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (4.7 pawns).",
       "score_before": "-4.47",
       "score_after": "+0.23",
       "cp_loss": 470,
@@ -742,44 +1216,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "769a2b953cb3",
-      "fen": "8/6R1/4p3/8/4k1PK/5r1P/8/8 w - - 5 48",
-      "player_color": "white",
-      "player_move": "Rg5",
-      "best_move": "g5",
-      "context": "Endgame, you had a strong advantage. Your move lost significant material (4.6 pawns).",
-      "score_before": "+4.88",
-      "score_after": "+0.32",
-      "cp_loss": 456,
-      "category": "blunder",
-      "explanation": "You played Rg5 (blunder, lost 4.6 pawns). A better move was g5.",
-      "acceptable_moves": [
-        "g5"
-      ],
-      "pv": [
-        "g5",
-        "Rf4+",
-        "Kh5",
-        "Rf5",
-        "h4"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -789,7 +1226,7 @@
       "player_color": "white",
       "player_move": "Qd4",
       "best_move": "Bxf6",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (4.4 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (4.4 pawns).",
       "score_before": "+4.10",
       "score_after": "-0.28",
       "cp_loss": 438,
@@ -816,7 +1253,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -826,12 +1263,12 @@
       "player_color": "white",
       "player_move": "Bxh6",
       "best_move": "Bc3",
-      "context": "Middlegame, you had a strong advantage. Your move lost significant material (4.2 pawns).",
-      "score_before": "+4.11",
-      "score_after": "-0.13",
-      "cp_loss": 424,
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost significant material (4.3 pawns).",
+      "score_before": "+4.27",
+      "score_after": "+0.00",
+      "cp_loss": 427,
       "category": "blunder",
-      "explanation": "You played Bxh6 (blunder, lost 4.2 pawns). A better move was Bc3. Your bishop on h6 is left undefended.",
+      "explanation": "You played Bxh6 (blunder, lost 4.3 pawns). A better move was Bc3. Your bishop on h6 is left undefended.",
       "acceptable_moves": [
         "Bc3"
       ],
@@ -839,8 +1276,8 @@
         "Bc3",
         "Rg5",
         "Re7",
-        "h5",
-        "Rc7"
+        "Rg3",
+        "Bf6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -853,7 +1290,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -863,7 +1300,7 @@
       "player_color": "white",
       "player_move": "f4",
       "best_move": "Bg7",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (4.2 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (4.2 pawns).",
       "score_before": "+2.82",
       "score_after": "-1.38",
       "cp_loss": 420,
@@ -890,7 +1327,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -900,7 +1337,7 @@
       "player_color": "black",
       "player_move": "Bf5",
       "best_move": "e5",
-      "context": "Opening, the position was roughly equal. Your move lost significant material (4.1 pawns).",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move lost significant material (4.1 pawns).",
       "score_before": "+0.00",
       "score_after": "+4.13",
       "cp_loss": 413,
@@ -927,7 +1364,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -937,7 +1374,7 @@
       "player_color": "black",
       "player_move": "Kg7",
       "best_move": "Bg3",
-      "context": "Endgame, the position was roughly equal. Your move lost significant material (4.0 pawns).",
+      "context": "Endgame, playing as Black, the position was roughly equal. Your move lost significant material (4.0 pawns).",
       "score_before": "+0.00",
       "score_after": "+3.95",
       "cp_loss": 395,
@@ -964,7 +1401,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -974,7 +1411,7 @@
       "player_color": "white",
       "player_move": "Bf4",
       "best_move": "Qb5+",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (3.8 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (3.8 pawns).",
       "score_before": "+4.57",
       "score_after": "+0.77",
       "cp_loss": 380,
@@ -1001,7 +1438,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1011,7 +1448,7 @@
       "player_color": "white",
       "player_move": "Ba2",
       "best_move": "Bxb5",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (3.6 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (3.6 pawns).",
       "score_before": "+3.62",
       "score_after": "+0.00",
       "cp_loss": 362,
@@ -1038,7 +1475,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1048,7 +1485,7 @@
       "player_color": "white",
       "player_move": "Qd5+",
       "best_move": "Qe6+",
-      "context": "Middlegame, you had a strong advantage. Your move lost significant material (3.5 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost significant material (3.5 pawns).",
       "score_before": "+8.89",
       "score_after": "+5.42",
       "cp_loss": 347,
@@ -1075,7 +1512,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1085,7 +1522,7 @@
       "player_color": "white",
       "player_move": "a3",
       "best_move": "Qb3",
-      "context": "Opening, the position was roughly equal. Your move lost significant material (3.4 pawns).",
+      "context": "Opening, playing as White, the position was roughly equal. Your move lost significant material (3.4 pawns).",
       "score_before": "+0.36",
       "score_after": "-3.06",
       "cp_loss": 342,
@@ -1112,7 +1549,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1122,7 +1559,7 @@
       "player_color": "black",
       "player_move": "Nc3",
       "best_move": "Nf6",
-      "context": "Opening, you were slightly worse. Your move lost significant material (3.4 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move lost significant material (3.4 pawns).",
       "score_before": "+1.28",
       "score_after": "+4.64",
       "cp_loss": 336,
@@ -1149,7 +1586,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1159,7 +1596,7 @@
       "player_color": "white",
       "player_move": "Qxb5",
       "best_move": "h4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (3.2 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (3.2 pawns).",
       "score_before": "+2.24",
       "score_after": "-0.95",
       "cp_loss": 319,
@@ -1186,7 +1623,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1196,7 +1633,7 @@
       "player_color": "black",
       "player_move": "a6",
       "best_move": "Qa5+",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (3.1 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (3.1 pawns).",
       "score_before": "-3.57",
       "score_after": "-0.43",
       "cp_loss": 314,
@@ -1223,44 +1660,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "16710669d026",
-      "fen": "7k/p7/1p4PP/2p4K/P4b2/3B4/2P2p2/8 b - - 0 63",
-      "player_color": "black",
-      "player_move": "Bxh6",
-      "best_move": "Be5",
-      "context": "Endgame, you were in a difficult position. Your move lost significant material (3.1 pawns).",
-      "score_before": "+7.20",
-      "score_after": "+10.26",
-      "cp_loss": 306,
-      "category": "blunder",
-      "explanation": "You played Bxh6 (blunder, lost 3.1 pawns). A better move was Be5. Your bishop on h6 is left undefended.",
-      "acceptable_moves": [
-        "Be5"
-      ],
-      "pv": [
-        "Be5",
-        "Bc4",
-        "Bd4",
-        "Kg4",
-        "Be5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166016258776",
-        "source": "chess.com",
-        "opponent": "ACDRAGON777",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1270,7 +1670,7 @@
       "player_color": "black",
       "player_move": "Bf6",
       "best_move": "Qxe4",
-      "context": "Opening, you were in a difficult position. Your move lost significant material (3.0 pawns).",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move lost significant material (3.0 pawns).",
       "score_before": "+3.66",
       "score_after": "+6.71",
       "cp_loss": 305,
@@ -1297,7 +1697,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1307,7 +1707,7 @@
       "player_color": "white",
       "player_move": "Qg4",
       "best_move": "Qxc5",
-      "context": "Opening, you were in a difficult position. Your move lost significant material (3.0 pawns).",
+      "context": "Opening, playing as White, you were in a difficult position. Your move lost significant material (3.0 pawns).",
       "score_before": "-3.10",
       "score_after": "-6.13",
       "cp_loss": 303,
@@ -1334,7 +1734,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1344,7 +1744,7 @@
       "player_color": "black",
       "player_move": "e6",
       "best_move": "Nxd5",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (3.0 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (3.0 pawns).",
       "score_before": "-4.62",
       "score_after": "-1.59",
       "cp_loss": 303,
@@ -1371,31 +1771,27 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
     {
-      "id": "491712f1924f",
-      "fen": "8/8/8/4p1R1/4k1PK/5r1P/8/8 w - - 0 49",
+      "id": "769a2b953cb3",
+      "fen": "8/6R1/4p3/8/4k1PK/5r1P/8/8 w - - 5 48",
       "player_color": "white",
-      "player_move": "Rh5",
-      "best_move": "Rg8",
-      "context": "Endgame, you had a strong advantage. Your move lost significant material (2.9 pawns).",
-      "score_before": "+3.71",
-      "score_after": "+0.78",
-      "cp_loss": 293,
+      "player_move": "Rg5",
+      "best_move": "g5",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 1).",
+      "score_before": "TB:win",
+      "score_after": "TB:draw",
+      "cp_loss": 300,
       "category": "blunder",
-      "explanation": "You played Rh5 (blunder, lost 2.9 pawns). A better move was Rg8.",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 1). Your move Rg5 turns it into a draw. The correct move was g5.",
       "acceptable_moves": [
-        "Rg8"
+        "g5"
       ],
       "pv": [
-        "Rg8",
-        "Rd3",
-        "g5",
-        "Kf5",
-        "Rf8+"
+        "g5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -1405,10 +1801,115 @@
         "result": "1-0",
         "opening": "Live Chess"
       },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 1
+        },
+        "after": {
+          "category": "draw",
+          "dtm": null,
+          "dtz": 0
+        },
+        "transition": "WIN → DRAW"
+      },
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "491712f1924f",
+      "fen": "8/8/8/4p1R1/4k1PK/5r1P/8/8 w - - 0 49",
+      "player_color": "white",
+      "player_move": "Rh5",
+      "best_move": "Rg8",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 5).",
+      "score_before": "TB:win",
+      "score_after": "TB:draw",
+      "cp_loss": 300,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 5). Your move Rh5 turns it into a draw. The correct move was Rg8.",
+      "acceptable_moves": [
+        "Rg8"
+      ],
+      "pv": [
+        "Rg8"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 5
+        },
+        "after": {
+          "category": "draw",
+          "dtm": null,
+          "dtz": 0
+        },
+        "transition": "WIN → DRAW"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "22551e43dd4f",
+      "fen": "8/8/8/4p1KR/4k1P1/5r1P/8/8 w - - 4 51",
+      "player_color": "white",
+      "player_move": "Kg6",
+      "best_move": "Rh8",
+      "context": "Endgame (7 pieces), playing as White, you had a winning position. Tablebase: theoretical win (DTZ 7).",
+      "score_before": "TB:win",
+      "score_after": "TB:draw",
+      "cp_loss": 300,
+      "category": "blunder",
+      "explanation": "Tablebase: the position was a theoretical win (DTZ 7). Your move Kg6 turns it into a draw. The correct move was Rh8.",
+      "acceptable_moves": [
+        "Rh8"
+      ],
+      "pv": [
+        "Rh8"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "tablebase": {
+        "before": {
+          "category": "win",
+          "dtm": null,
+          "dtz": 7
+        },
+        "after": {
+          "category": "draw",
+          "dtm": null,
+          "dtz": 0
+        },
+        "transition": "WIN → DRAW"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1418,7 +1919,7 @@
       "player_color": "white",
       "player_move": "f3",
       "best_move": "Kf1",
-      "context": "Middlegame, you were slightly worse. Your move lost significant material (2.8 pawns).",
+      "context": "Middlegame, playing as White, you were slightly worse. Your move lost significant material (2.8 pawns).",
       "score_before": "-1.84",
       "score_after": "-4.67",
       "cp_loss": 283,
@@ -1445,7 +1946,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1455,7 +1956,7 @@
       "player_color": "white",
       "player_move": "Rd7",
       "best_move": "h4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.8 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.8 pawns).",
       "score_before": "+2.29",
       "score_after": "-0.52",
       "cp_loss": 281,
@@ -1482,7 +1983,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1492,7 +1993,7 @@
       "player_color": "black",
       "player_move": "b5",
       "best_move": "Qf7",
-      "context": "Opening, you were slightly worse. Your move lost significant material (2.8 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move lost significant material (2.8 pawns).",
       "score_before": "+0.92",
       "score_after": "+3.71",
       "cp_loss": 279,
@@ -1519,7 +2020,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1529,7 +2030,7 @@
       "player_color": "white",
       "player_move": "O-O-O",
       "best_move": "Qb5+",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.7 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.7 pawns).",
       "score_before": "+4.73",
       "score_after": "+2.01",
       "cp_loss": 272,
@@ -1556,7 +2057,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1566,7 +2067,7 @@
       "player_color": "white",
       "player_move": "Nd6+",
       "best_move": "Qd4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.6 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.6 pawns).",
       "score_before": "+7.10",
       "score_after": "+4.49",
       "cp_loss": 261,
@@ -1593,7 +2094,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1603,7 +2104,7 @@
       "player_color": "white",
       "player_move": "Bb2",
       "best_move": "Rb1",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.6 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.6 pawns).",
       "score_before": "+4.53",
       "score_after": "+1.93",
       "cp_loss": 260,
@@ -1630,7 +2131,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1640,7 +2141,7 @@
       "player_color": "white",
       "player_move": "Red1",
       "best_move": "h4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.5 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.5 pawns).",
       "score_before": "+2.61",
       "score_after": "+0.16",
       "cp_loss": 245,
@@ -1667,44 +2168,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "22551e43dd4f",
-      "fen": "8/8/8/4p1KR/4k1P1/5r1P/8/8 w - - 4 51",
-      "player_color": "white",
-      "player_move": "Kg6",
-      "best_move": "Rh8",
-      "context": "Endgame, you had a strong advantage. Your move lost significant material (2.4 pawns).",
-      "score_before": "+2.49",
-      "score_after": "+0.10",
-      "cp_loss": 239,
-      "category": "blunder",
-      "explanation": "You played Kg6 (blunder, lost 2.4 pawns). A better move was Rh8.",
-      "acceptable_moves": [
-        "Rh8"
-      ],
-      "pv": [
-        "Rh8",
-        "Rb3",
-        "Kh4",
-        "Kf3",
-        "g5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1714,7 +2178,7 @@
       "player_color": "black",
       "player_move": "exd5",
       "best_move": "e5",
-      "context": "Opening, you were slightly worse. Your move lost significant material (2.3 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move lost significant material (2.3 pawns).",
       "score_before": "+1.06",
       "score_after": "+3.39",
       "cp_loss": 233,
@@ -1741,7 +2205,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1751,7 +2215,7 @@
       "player_color": "black",
       "player_move": "Rxd1",
       "best_move": "Kf7",
-      "context": "Middlegame, you had a strong advantage. Your move lost significant material (2.2 pawns).",
+      "context": "Middlegame, playing as Black, you had a strong advantage. Your move lost significant material (2.2 pawns).",
       "score_before": "-3.79",
       "score_after": "-1.55",
       "cp_loss": 224,
@@ -1778,7 +2242,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1788,7 +2252,7 @@
       "player_color": "black",
       "player_move": "bxc5",
       "best_move": "Ne4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.2 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (2.2 pawns).",
       "score_before": "-3.10",
       "score_after": "-0.87",
       "cp_loss": 223,
@@ -1815,7 +2279,40 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "231a0d4d3751",
+      "fen": "6k1/p5pp/4p1p1/4q3/1P6/P5Q1/5K1P/8 b - - 1 29",
+      "player_color": "black",
+      "player_move": "Qb2+",
+      "best_move": "Qxg3+",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost significant material (2.1 pawns).",
+      "score_before": "-4.19",
+      "score_after": "-2.05",
+      "cp_loss": 214,
+      "category": "blunder",
+      "explanation": "You played Qb2+ (blunder, lost 2.1 pawns). You missed capturing the queen with Qxg3+. Qxg3+ also gives check.",
+      "acceptable_moves": [
+        "Qxg3+"
+      ],
+      "pv": [
+        "Qxg3+"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1825,7 +2322,7 @@
       "player_color": "white",
       "player_move": "O-O",
       "best_move": "Qb3",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.1 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.1 pawns).",
       "score_before": "+3.22",
       "score_after": "+1.16",
       "cp_loss": 206,
@@ -1852,7 +2349,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1862,7 +2359,7 @@
       "player_color": "black",
       "player_move": "d4",
       "best_move": "Bd6",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.0 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (2.0 pawns).",
       "score_before": "-2.22",
       "score_after": "-0.17",
       "cp_loss": 205,
@@ -1889,7 +2386,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1899,7 +2396,7 @@
       "player_color": "black",
       "player_move": "Bxd3",
       "best_move": "Nd4",
-      "context": "Opening, you had a strong advantage. Your move lost significant material (2.0 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move lost significant material (2.0 pawns).",
       "score_before": "-2.32",
       "score_after": "-0.29",
       "cp_loss": 203,
@@ -1926,7 +2423,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -1936,7 +2433,7 @@
       "player_color": "white",
       "player_move": "Rxb2",
       "best_move": "Rc1",
-      "context": "Middlegame, you were in a difficult position. Your move cost about 2.0 pawns.",
+      "context": "Middlegame, playing as White, you were in a difficult position. Your move cost about 2.0 pawns.",
       "score_before": "-4.49",
       "score_after": "-6.45",
       "cp_loss": 196,
@@ -1963,81 +2460,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "231a0d4d3751",
-      "fen": "6k1/p5pp/4p1p1/4q3/1P6/P5Q1/5K1P/8 b - - 1 29",
-      "player_color": "black",
-      "player_move": "Qb2+",
-      "best_move": "Qxg3+",
-      "context": "Endgame, you had a strong advantage. Your move cost about 1.9 pawns.",
-      "score_before": "-3.88",
-      "score_after": "-1.94",
-      "cp_loss": 194,
-      "category": "mistake",
-      "explanation": "You played Qb2+ (mistake, lost 1.9 pawns). You missed capturing the queen with Qxg3+. Qxg3+ also gives check.",
-      "acceptable_moves": [
-        "Qxg3+"
-      ],
-      "pv": [
-        "Qxg3+",
-        "Kxg3",
-        "Kf7",
-        "a4",
-        "Ke7"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166067143160",
-        "source": "chess.com",
-        "opponent": "Ramadan0099",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "2a93faaf1a0f",
-      "fen": "8/5Rp1/4p1kB/4r3/8/7P/6P1/6K1 w - - 1 39",
-      "player_color": "white",
-      "player_move": "Rxg7+",
-      "best_move": "Bf4",
-      "context": "Middlegame, you had a strong advantage. Your move cost about 1.9 pawns.",
-      "score_before": "+4.19",
-      "score_after": "+2.25",
-      "cp_loss": 194,
-      "category": "mistake",
-      "explanation": "You played Rxg7+ (mistake, lost 1.9 pawns). A better move was Bf4.",
-      "acceptable_moves": [
-        "Bf4"
-      ],
-      "pv": [
-        "Bf4",
-        "Rb5",
-        "Rf8",
-        "e5",
-        "Be3"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2047,7 +2470,7 @@
       "player_color": "white",
       "player_move": "Bc3",
       "best_move": "Qb3",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.9 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.9 pawns.",
       "score_before": "+2.33",
       "score_after": "+0.41",
       "cp_loss": 192,
@@ -2074,7 +2497,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2084,7 +2507,7 @@
       "player_color": "white",
       "player_move": "h3",
       "best_move": "d5",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.9 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.9 pawns.",
       "score_before": "+0.69",
       "score_after": "-1.21",
       "cp_loss": 190,
@@ -2111,7 +2534,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "2a93faaf1a0f",
+      "fen": "8/5Rp1/4p1kB/4r3/8/7P/6P1/6K1 w - - 1 39",
+      "player_color": "white",
+      "player_move": "Rxg7+",
+      "best_move": "Bf4",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move cost about 1.8 pawns.",
+      "score_before": "+4.20",
+      "score_after": "+2.39",
+      "cp_loss": 181,
+      "category": "mistake",
+      "explanation": "You played Rxg7+ (mistake, lost 1.8 pawns). A better move was Bf4.",
+      "acceptable_moves": [
+        "Bf4"
+      ],
+      "pv": [
+        "Bf4",
+        "Re4",
+        "Rf8",
+        "e5",
+        "Bd2"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2121,7 +2581,7 @@
       "player_color": "white",
       "player_move": "Qf3",
       "best_move": "Qg4",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.8 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.8 pawns.",
       "score_before": "+1.08",
       "score_after": "-0.67",
       "cp_loss": 175,
@@ -2148,7 +2608,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2158,7 +2618,7 @@
       "player_color": "black",
       "player_move": "a6",
       "best_move": "d5",
-      "context": "Opening, the position was roughly equal. Your move cost about 1.8 pawns.",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move cost about 1.8 pawns.",
       "score_before": "+0.07",
       "score_after": "+1.82",
       "cp_loss": 175,
@@ -2185,7 +2645,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2195,7 +2655,7 @@
       "player_color": "white",
       "player_move": "Rd3",
       "best_move": "Re3",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.7 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.7 pawns.",
       "score_before": "+1.19",
       "score_after": "-0.55",
       "cp_loss": 174,
@@ -2222,7 +2682,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2232,7 +2692,7 @@
       "player_color": "white",
       "player_move": "Rc1",
       "best_move": "Ne6",
-      "context": "Middlegame, you had a strong advantage. Your move cost about 1.6 pawns.",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move cost about 1.6 pawns.",
       "score_before": "+7.05",
       "score_after": "+5.42",
       "cp_loss": 163,
@@ -2259,7 +2719,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2269,7 +2729,7 @@
       "player_color": "black",
       "player_move": "Nh5",
       "best_move": "c5",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.6 pawns.",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move cost about 1.6 pawns.",
       "score_before": "-5.11",
       "score_after": "-3.54",
       "cp_loss": 157,
@@ -2296,7 +2756,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2306,7 +2766,7 @@
       "player_color": "white",
       "player_move": "Rd5",
       "best_move": "exd6",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.6 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.6 pawns.",
       "score_before": "+0.89",
       "score_after": "-0.66",
       "cp_loss": 155,
@@ -2333,44 +2793,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "75197238f1f8",
-      "fen": "3r1k2/p4p1p/1p4p1/2p5/8/2P2PK1/P1P1RP1P/8 b - - 0 26",
-      "player_color": "black",
-      "player_move": "Rd7",
-      "best_move": "Rd1",
-      "context": "Endgame, you had a strong advantage. Your move cost about 1.5 pawns.",
-      "score_before": "-3.06",
-      "score_after": "-1.57",
-      "cp_loss": 149,
-      "category": "mistake",
-      "explanation": "You played Rd7 (mistake, lost 1.5 pawns). A better move was Rd1.",
-      "acceptable_moves": [
-        "Rd1"
-      ],
-      "pv": [
-        "Rd1",
-        "f4",
-        "Ra1",
-        "f5",
-        "Kg7"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2380,7 +2803,7 @@
       "player_color": "white",
       "player_move": "b3",
       "best_move": "Qd4",
-      "context": "Opening, the position was roughly equal. Your move cost about 1.5 pawns.",
+      "context": "Opening, playing as White, the position was roughly equal. Your move cost about 1.5 pawns.",
       "score_before": "+0.00",
       "score_after": "-1.49",
       "cp_loss": 149,
@@ -2407,7 +2830,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "75197238f1f8",
+      "fen": "3r1k2/p4p1p/1p4p1/2p5/8/2P2PK1/P1P1RP1P/8 b - - 0 26",
+      "player_color": "black",
+      "player_move": "Rd7",
+      "best_move": "Rd1",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.5 pawns.",
+      "score_before": "-3.06",
+      "score_after": "-1.57",
+      "cp_loss": 149,
+      "category": "mistake",
+      "explanation": "You played Rd7 (mistake, lost 1.5 pawns). A better move was Rd1.",
+      "acceptable_moves": [
+        "Rd1"
+      ],
+      "pv": [
+        "Rd1",
+        "f4",
+        "Ra1",
+        "f5",
+        "Kg7"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166054148592",
+        "source": "chess.com",
+        "opponent": "JARVIS42AI",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2417,7 +2877,7 @@
       "player_color": "black",
       "player_move": "c5",
       "best_move": "Bd6",
-      "context": "Opening, the position was roughly equal. Your move cost about 1.5 pawns.",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move cost about 1.5 pawns.",
       "score_before": "-0.44",
       "score_after": "+1.02",
       "cp_loss": 146,
@@ -2444,7 +2904,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2454,7 +2914,7 @@
       "player_color": "black",
       "player_move": "Bg7",
       "best_move": "cxd5",
-      "context": "Opening, the position was roughly equal. Your move cost about 1.5 pawns.",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move cost about 1.5 pawns.",
       "score_before": "-0.21",
       "score_after": "+1.25",
       "cp_loss": 146,
@@ -2481,7 +2941,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2491,7 +2951,7 @@
       "player_color": "white",
       "player_move": "Nxe6",
       "best_move": "Bxh7+",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.4 pawns.",
       "score_before": "+1.17",
       "score_after": "-0.26",
       "cp_loss": 143,
@@ -2518,7 +2978,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2528,7 +2988,7 @@
       "player_color": "white",
       "player_move": "g4",
       "best_move": "b5",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.4 pawns.",
       "score_before": "+2.81",
       "score_after": "+1.39",
       "cp_loss": 142,
@@ -2555,7 +3015,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2565,7 +3025,7 @@
       "player_color": "black",
       "player_move": "f6",
       "best_move": "h4",
-      "context": "Endgame, you had a strong advantage. Your move cost about 1.4 pawns.",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.4 pawns.",
       "score_before": "-6.60",
       "score_after": "-5.20",
       "cp_loss": 140,
@@ -2592,7 +3052,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2602,7 +3062,7 @@
       "player_color": "black",
       "player_move": "Kg7",
       "best_move": "Rd1",
-      "context": "Endgame, you had a strong advantage. Your move cost about 1.4 pawns.",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.4 pawns.",
       "score_before": "-2.76",
       "score_after": "-1.38",
       "cp_loss": 138,
@@ -2629,7 +3089,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2639,7 +3099,7 @@
       "player_color": "white",
       "player_move": "Qc2",
       "best_move": "Ne5",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.4 pawns.",
       "score_before": "+2.81",
       "score_after": "+1.43",
       "cp_loss": 138,
@@ -2666,7 +3126,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2676,7 +3136,7 @@
       "player_color": "black",
       "player_move": "Bxf6",
       "best_move": "exf6",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as Black, you had a slight advantage. Your move cost about 1.4 pawns.",
       "score_before": "-1.63",
       "score_after": "-0.26",
       "cp_loss": 137,
@@ -2703,44 +3163,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "0c3462a8fdbe",
-      "fen": "7k/p7/1p5P/2p3PK/P7/3Bb3/2P2p2/8 b - - 2 62",
-      "player_color": "black",
-      "player_move": "Bf4",
-      "best_move": "Bd4",
-      "context": "Endgame, you were in a difficult position. Your move cost about 1.4 pawns.",
-      "score_before": "+5.65",
-      "score_after": "+7.01",
-      "cp_loss": 136,
-      "category": "mistake",
-      "explanation": "You played Bf4 (mistake, lost 1.4 pawns). A better move was Bd4.",
-      "acceptable_moves": [
-        "Bd4"
-      ],
-      "pv": [
-        "Bd4",
-        "g6",
-        "Kg8",
-        "Bc4+",
-        "Kf8"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166016258776",
-        "source": "chess.com",
-        "opponent": "ACDRAGON777",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2750,7 +3173,7 @@
       "player_color": "white",
       "player_move": "Rc2",
       "best_move": "Ra3",
-      "context": "Middlegame, the position was roughly equal. Your move cost about 1.3 pawns.",
+      "context": "Middlegame, playing as White, the position was roughly equal. Your move cost about 1.3 pawns.",
       "score_before": "-0.33",
       "score_after": "-1.67",
       "cp_loss": 134,
@@ -2777,7 +3200,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2787,7 +3210,7 @@
       "player_color": "white",
       "player_move": "Rfd1",
       "best_move": "h3",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.3 pawns.",
       "score_before": "+0.82",
       "score_after": "-0.50",
       "cp_loss": 132,
@@ -2814,7 +3237,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2824,7 +3247,7 @@
       "player_color": "white",
       "player_move": "Re4",
       "best_move": "Be4",
-      "context": "Middlegame, you had a slight advantage. Your move cost about 1.3 pawns.",
+      "context": "Middlegame, playing as White, you had a slight advantage. Your move cost about 1.3 pawns.",
       "score_before": "+1.73",
       "score_after": "+0.41",
       "cp_loss": 132,
@@ -2851,7 +3274,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2861,7 +3284,7 @@
       "player_color": "black",
       "player_move": "Qc6",
       "best_move": "Nxb4",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as Black, you had a slight advantage. Your move cost about 1.3 pawns.",
       "score_before": "-1.47",
       "score_after": "-0.16",
       "cp_loss": 131,
@@ -2888,7 +3311,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2898,7 +3321,7 @@
       "player_color": "black",
       "player_move": "Re8",
       "best_move": "Bf6",
-      "context": "Opening, you were in a difficult position. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move cost about 1.3 pawns.",
       "score_before": "+2.46",
       "score_after": "+3.76",
       "cp_loss": 130,
@@ -2925,7 +3348,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2935,7 +3358,7 @@
       "player_color": "white",
       "player_move": "bxc4",
       "best_move": "Bxf6",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.3 pawns.",
       "score_before": "+2.13",
       "score_after": "+0.84",
       "cp_loss": 129,
@@ -2962,7 +3385,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -2972,7 +3395,7 @@
       "player_color": "white",
       "player_move": "c4",
       "best_move": "d5",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.3 pawns.",
       "score_before": "+1.83",
       "score_after": "+0.57",
       "cp_loss": 126,
@@ -2999,7 +3422,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3009,7 +3432,7 @@
       "player_color": "black",
       "player_move": "Ba6",
       "best_move": "Qc7",
-      "context": "Opening, you were slightly worse. Your move cost about 1.2 pawns.",
+      "context": "Opening, playing as Black, you were slightly worse. Your move cost about 1.2 pawns.",
       "score_before": "+1.25",
       "score_after": "+2.48",
       "cp_loss": 123,
@@ -3036,7 +3459,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3046,7 +3469,7 @@
       "player_color": "black",
       "player_move": "Re7+",
       "best_move": "Rd1",
-      "context": "Endgame, you had a strong advantage. Your move cost about 1.2 pawns.",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.2 pawns.",
       "score_before": "-3.18",
       "score_after": "-1.98",
       "cp_loss": 120,
@@ -3073,7 +3496,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3083,7 +3506,7 @@
       "player_color": "white",
       "player_move": "gxh4",
       "best_move": "Rcxc4",
-      "context": "Opening, you were slightly worse. Your move cost about 1.2 pawns.",
+      "context": "Opening, playing as White, you were slightly worse. Your move cost about 1.2 pawns.",
       "score_before": "-0.51",
       "score_after": "-1.71",
       "cp_loss": 120,
@@ -3110,7 +3533,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3120,7 +3543,7 @@
       "player_color": "white",
       "player_move": "Bb4",
       "best_move": "Rd4",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.2 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.2 pawns.",
       "score_before": "+1.50",
       "score_after": "+0.32",
       "cp_loss": 118,
@@ -3147,7 +3570,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3157,7 +3580,7 @@
       "player_color": "white",
       "player_move": "Nxe5",
       "best_move": "Bxh7+",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.1 pawns.",
       "score_before": "+2.15",
       "score_after": "+1.01",
       "cp_loss": 114,
@@ -3184,7 +3607,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3194,7 +3617,7 @@
       "player_color": "white",
       "player_move": "a3",
       "best_move": "e4",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.1 pawns.",
       "score_before": "+0.59",
       "score_after": "-0.51",
       "cp_loss": 110,
@@ -3221,7 +3644,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3231,7 +3654,7 @@
       "player_color": "white",
       "player_move": "Rad1",
       "best_move": "Ne5",
-      "context": "Opening, you had a slight advantage. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.1 pawns.",
       "score_before": "+1.27",
       "score_after": "+0.19",
       "cp_loss": 108,
@@ -3258,7 +3681,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3268,7 +3691,7 @@
       "player_color": "black",
       "player_move": "Bg7",
       "best_move": "Qxa2",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move cost about 1.1 pawns.",
       "score_before": "-2.76",
       "score_after": "-1.69",
       "cp_loss": 107,
@@ -3295,7 +3718,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3305,7 +3728,7 @@
       "player_color": "white",
       "player_move": "Qg3",
       "best_move": "b5",
-      "context": "Opening, you had a strong advantage. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.1 pawns.",
       "score_before": "+2.62",
       "score_after": "+1.56",
       "cp_loss": 106,
@@ -3332,7 +3755,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3342,7 +3765,7 @@
       "player_color": "black",
       "player_move": "Kf8",
       "best_move": "Qc8",
-      "context": "Opening, you were in a difficult position. Your move cost about 1.1 pawns.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move cost about 1.1 pawns.",
       "score_before": "+3.76",
       "score_after": "+4.81",
       "cp_loss": 105,
@@ -3369,7 +3792,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "deb8b9b0ca69",
+      "fen": "8/p5p1/3k2p1/PP2p2p/4K3/8/7P/8 b - - 0 38",
+      "player_color": "black",
+      "player_move": "Kc7",
+      "best_move": "g5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.0 pawns.",
+      "score_before": "-5.75",
+      "score_after": "-4.73",
+      "cp_loss": 102,
+      "category": "mistake",
+      "explanation": "You played Kc7 (mistake, lost 1.0 pawns). A better move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5",
+        "Kd3",
+        "Kc5",
+        "b6",
+        "axb6"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3379,7 +3839,7 @@
       "player_color": "black",
       "player_move": "Qf6",
       "best_move": "Qd6",
-      "context": "Opening, you were slightly worse. Your move cost about 1.0 pawns.",
+      "context": "Opening, playing as Black, you were slightly worse. Your move cost about 1.0 pawns.",
       "score_before": "+0.92",
       "score_after": "+1.94",
       "cp_loss": 102,
@@ -3406,7 +3866,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3416,7 +3876,7 @@
       "player_color": "black",
       "player_move": "hxg6",
       "best_move": "Qxg6",
-      "context": "Opening, you were in a difficult position. Your move cost about 1.0 pawns.",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move cost about 1.0 pawns.",
       "score_before": "+9.45",
       "score_after": "+10.47",
       "cp_loss": 102,
@@ -3443,7 +3903,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3453,7 +3913,7 @@
       "player_color": "black",
       "player_move": "b6",
       "best_move": "Nc6",
-      "context": "Opening, the position was roughly equal. Your move cost about 1.0 pawns.",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move cost about 1.0 pawns.",
       "score_before": "-0.32",
       "score_after": "+0.68",
       "cp_loss": 100,
@@ -3480,44 +3940,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "deb8b9b0ca69",
-      "fen": "8/p5p1/3k2p1/PP2p2p/4K3/8/7P/8 b - - 0 38",
-      "player_color": "black",
-      "player_move": "Kc7",
-      "best_move": "g5",
-      "context": "Endgame, you had a strong advantage. Your move was inaccurate (1.0 pawns).",
-      "score_before": "-5.43",
-      "score_after": "-4.44",
-      "cp_loss": 99,
-      "category": "inaccuracy",
-      "explanation": "You played Kc7 (inaccuracy, lost 1.0 pawns). A better move was g5.",
-      "acceptable_moves": [
-        "g5"
-      ],
-      "pv": [
-        "g5",
-        "a6",
-        "Kc5",
-        "Kxe5",
-        "Kxb5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166067143160",
-        "source": "chess.com",
-        "opponent": "Ramadan0099",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3527,7 +3950,7 @@
       "player_color": "black",
       "player_move": "Be5",
       "best_move": "Bxb1",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "-3.01",
       "score_after": "-2.06",
       "cp_loss": 95,
@@ -3554,7 +3977,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3564,7 +3987,7 @@
       "player_color": "black",
       "player_move": "Bh6",
       "best_move": "Nh5",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "-4.31",
       "score_after": "-3.37",
       "cp_loss": 94,
@@ -3591,7 +4014,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3601,7 +4024,7 @@
       "player_color": "white",
       "player_move": "Qh4",
       "best_move": "Qd3",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+1.68",
       "score_after": "+0.75",
       "cp_loss": 93,
@@ -3628,7 +4051,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3638,7 +4061,7 @@
       "player_color": "white",
       "player_move": "O-O",
       "best_move": "e4",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+1.70",
       "score_after": "+0.78",
       "cp_loss": 92,
@@ -3665,7 +4088,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3675,7 +4098,7 @@
       "player_color": "black",
       "player_move": "Bc5",
       "best_move": "Nc6",
-      "context": "Opening, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
       "score_before": "+0.20",
       "score_after": "+1.12",
       "cp_loss": 92,
@@ -3702,7 +4125,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3712,7 +4135,7 @@
       "player_color": "black",
       "player_move": "b6",
       "best_move": "Bg4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "-5.00",
       "score_after": "-4.08",
       "cp_loss": 92,
@@ -3739,7 +4162,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3749,7 +4172,7 @@
       "player_color": "black",
       "player_move": "Qxc5",
       "best_move": "e5",
-      "context": "Opening, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
       "score_before": "-0.19",
       "score_after": "+0.72",
       "cp_loss": 91,
@@ -3776,7 +4199,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3786,7 +4209,7 @@
       "player_color": "black",
       "player_move": "Bb7",
       "best_move": "e6",
-      "context": "Opening, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
       "score_before": "-0.42",
       "score_after": "+0.49",
       "cp_loss": 91,
@@ -3813,7 +4236,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3823,7 +4246,7 @@
       "player_color": "white",
       "player_move": "O-O",
       "best_move": "Bxb7",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+2.12",
       "score_after": "+1.22",
       "cp_loss": 90,
@@ -3850,44 +4273,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "b64999855302",
-      "fen": "8/2k5/8/6K1/8/8/7P/8 b - - 2 47",
-      "player_color": "black",
-      "player_move": "Kd8",
-      "best_move": "Kc6",
-      "context": "Endgame, you were in a difficult position. Your move was inaccurate (0.9 pawns).",
-      "score_before": "+65.58",
-      "score_after": "+66.48",
-      "cp_loss": 90,
-      "category": "inaccuracy",
-      "explanation": "You played Kd8 (inaccuracy, lost 0.9 pawns). A better move was Kc6.",
-      "acceptable_moves": [
-        "Kc6"
-      ],
-      "pv": [
-        "Kc6",
-        "h4",
-        "Kd5",
-        "Kf6",
-        "Kc5"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166067143160",
-        "source": "chess.com",
-        "opponent": "Ramadan0099",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3897,7 +4283,7 @@
       "player_color": "white",
       "player_move": "Kg2",
       "best_move": "Kxh2",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+7.11",
       "score_after": "+6.21",
       "cp_loss": 90,
@@ -3924,7 +4310,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3934,7 +4320,7 @@
       "player_color": "white",
       "player_move": "Re1",
       "best_move": "Ng5",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+1.68",
       "score_after": "+0.80",
       "cp_loss": 88,
@@ -3961,7 +4347,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -3971,7 +4357,7 @@
       "player_color": "white",
       "player_move": "Qh3",
       "best_move": "Qg2",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+1.88",
       "score_after": "+1.00",
       "cp_loss": 88,
@@ -3998,7 +4384,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4008,7 +4394,7 @@
       "player_color": "white",
       "player_move": "Qb3",
       "best_move": "Qa4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+2.45",
       "score_after": "+1.57",
       "cp_loss": 88,
@@ -4035,7 +4421,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4045,7 +4431,7 @@
       "player_color": "black",
       "player_move": "c5",
       "best_move": "Rd8",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Middlegame, playing as Black, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "-4.82",
       "score_after": "-3.95",
       "cp_loss": 87,
@@ -4072,7 +4458,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4082,7 +4468,7 @@
       "player_color": "black",
       "player_move": "dxe3",
       "best_move": "Be4+",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "-4.35",
       "score_after": "-3.49",
       "cp_loss": 86,
@@ -4109,7 +4495,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4119,7 +4505,7 @@
       "player_color": "black",
       "player_move": "Qh3",
       "best_move": "Qa5",
-      "context": "Opening, you were in a difficult position. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move was inaccurate (0.9 pawns).",
       "score_before": "+5.12",
       "score_after": "+5.98",
       "cp_loss": 86,
@@ -4146,7 +4532,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4156,7 +4542,7 @@
       "player_color": "black",
       "player_move": "O-O",
       "best_move": "d6",
-      "context": "Opening, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as Black, the position was roughly equal. Your move was inaccurate (0.9 pawns).",
       "score_before": "-0.01",
       "score_after": "+0.85",
       "cp_loss": 86,
@@ -4183,7 +4569,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4193,7 +4579,7 @@
       "player_color": "white",
       "player_move": "e3",
       "best_move": "Ne5",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "+1.33",
       "score_after": "+0.49",
       "cp_loss": 84,
@@ -4220,7 +4606,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4230,7 +4616,7 @@
       "player_color": "black",
       "player_move": "Nbd7",
       "best_move": "Ne4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "-2.31",
       "score_after": "-1.47",
       "cp_loss": 84,
@@ -4257,7 +4643,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4267,7 +4653,7 @@
       "player_color": "black",
       "player_move": "f6",
       "best_move": "Nc6",
-      "context": "Opening, you were in a difficult position. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move was inaccurate (0.8 pawns).",
       "score_before": "+2.06",
       "score_after": "+2.88",
       "cp_loss": 82,
@@ -4294,44 +4680,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "3cc8146475b3",
-      "fen": "8/4R3/4p3/4r3/4k3/6PP/5K2/8 w - - 1 43",
-      "player_color": "white",
-      "player_move": "Rg7",
-      "best_move": "h4",
-      "context": "Endgame, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
-      "score_before": "+2.37",
-      "score_after": "+1.57",
-      "cp_loss": 80,
-      "category": "inaccuracy",
-      "explanation": "You played Rg7 (inaccuracy, lost 0.8 pawns). A better move was h4.",
-      "acceptable_moves": [
-        "h4"
-      ],
-      "pv": [
-        "h4",
-        "Kf5",
-        "Kf3",
-        "Rb5",
-        "Rf7+"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4341,7 +4690,7 @@
       "player_color": "black",
       "player_move": "Kh8",
       "best_move": "Bg6",
-      "context": "Opening, you were in a difficult position. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move was inaccurate (0.8 pawns).",
       "score_before": "+4.04",
       "score_after": "+4.82",
       "cp_loss": 78,
@@ -4368,7 +4717,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4378,7 +4727,7 @@
       "player_color": "black",
       "player_move": "g6",
       "best_move": "c5",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "-4.42",
       "score_after": "-3.64",
       "cp_loss": 78,
@@ -4405,7 +4754,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4415,7 +4764,7 @@
       "player_color": "black",
       "player_move": "Bd4",
       "best_move": "Bxc1",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "-2.89",
       "score_after": "-2.12",
       "cp_loss": 77,
@@ -4442,7 +4791,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4452,7 +4801,7 @@
       "player_color": "black",
       "player_move": "h5",
       "best_move": "h6",
-      "context": "Endgame, you had a slight advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Endgame, playing as Black, you had a slight advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "-0.79",
       "score_after": "-0.02",
       "cp_loss": 77,
@@ -4479,7 +4828,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4489,7 +4838,7 @@
       "player_color": "white",
       "player_move": "Rhe1",
       "best_move": "Qd4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
       "score_before": "+5.06",
       "score_after": "+4.31",
       "cp_loss": 75,
@@ -4516,7 +4865,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4526,7 +4875,7 @@
       "player_color": "white",
       "player_move": "Re1",
       "best_move": "Qd4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "+2.22",
       "score_after": "+1.48",
       "cp_loss": 74,
@@ -4553,7 +4902,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4563,7 +4912,7 @@
       "player_color": "black",
       "player_move": "Nd4",
       "best_move": "Bxc3",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as Black, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-0.81",
       "score_after": "-0.07",
       "cp_loss": 74,
@@ -4590,7 +4939,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4600,7 +4949,7 @@
       "player_color": "black",
       "player_move": "d4",
       "best_move": "Qc7",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as Black, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-1.41",
       "score_after": "-0.69",
       "cp_loss": 72,
@@ -4627,7 +4976,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "7fe5a365fb6c",
+      "fen": "8/6pk/4p2p/4P2P/7r/8/3B1RPP/6K1 w - - 1 36",
+      "player_color": "white",
+      "player_move": "Rf7",
+      "best_move": "g3",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "score_before": "+4.99",
+      "score_after": "+4.28",
+      "cp_loss": 71,
+      "category": "inaccuracy",
+      "explanation": "You played Rf7 (inaccuracy, lost 0.7 pawns). A better move was g3.",
+      "acceptable_moves": [
+        "g3"
+      ],
+      "pv": [
+        "g3",
+        "Rc4",
+        "Kg2",
+        "Rc5",
+        "Bf4"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4637,7 +5023,7 @@
       "player_color": "black",
       "player_move": "d6",
       "best_move": "d5",
-      "context": "Opening, you were slightly worse. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move was inaccurate (0.7 pawns).",
       "score_before": "+1.12",
       "score_after": "+1.83",
       "cp_loss": 71,
@@ -4664,7 +5050,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4674,7 +5060,7 @@
       "player_color": "white",
       "player_move": "Bg2",
       "best_move": "e4",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "+2.75",
       "score_after": "+2.06",
       "cp_loss": 69,
@@ -4701,44 +5087,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "7fe5a365fb6c",
-      "fen": "8/6pk/4p2p/4P2P/7r/8/3B1RPP/6K1 w - - 1 36",
-      "player_color": "white",
-      "player_move": "Rf7",
-      "best_move": "g3",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
-      "score_before": "+4.78",
-      "score_after": "+4.09",
-      "cp_loss": 69,
-      "category": "inaccuracy",
-      "explanation": "You played Rf7 (inaccuracy, lost 0.7 pawns). A better move was g3.",
-      "acceptable_moves": [
-        "g3"
-      ],
-      "pv": [
-        "g3",
-        "Rxh5",
-        "Bc3",
-        "Kg6",
-        "Kg2"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4748,7 +5097,7 @@
       "player_color": "black",
       "player_move": "b6",
       "best_move": "Kf7",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Middlegame, playing as Black, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-3.95",
       "score_after": "-3.26",
       "cp_loss": 69,
@@ -4775,7 +5124,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4785,7 +5134,7 @@
       "player_color": "black",
       "player_move": "Nc7",
       "best_move": "Rd8",
-      "context": "Middlegame, you were in a difficult position. Your move was inaccurate (0.7 pawns).",
+      "context": "Middlegame, playing as Black, you were in a difficult position. Your move was inaccurate (0.7 pawns).",
       "score_before": "+2.41",
       "score_after": "+3.09",
       "cp_loss": 68,
@@ -4812,7 +5161,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4822,7 +5171,7 @@
       "player_color": "black",
       "player_move": "a5",
       "best_move": "Rb2",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Middlegame, playing as Black, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-9.17",
       "score_after": "-8.49",
       "cp_loss": 68,
@@ -4849,7 +5198,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4859,7 +5208,7 @@
       "player_color": "white",
       "player_move": "O-O",
       "best_move": "Qxb7",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "+1.26",
       "score_after": "+0.59",
       "cp_loss": 67,
@@ -4886,7 +5235,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4896,7 +5245,7 @@
       "player_color": "white",
       "player_move": "Nxe5",
       "best_move": "Bf4",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "+1.41",
       "score_after": "+0.75",
       "cp_loss": 66,
@@ -4923,7 +5272,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4933,7 +5282,7 @@
       "player_color": "black",
       "player_move": "Bxf6",
       "best_move": "Qxf6",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as Black, you had a slight advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-1.52",
       "score_after": "-0.86",
       "cp_loss": 66,
@@ -4960,7 +5309,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -4970,7 +5319,7 @@
       "player_color": "black",
       "player_move": "Qb6",
       "best_move": "g5",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.7 pawns).",
       "score_before": "-2.31",
       "score_after": "-1.66",
       "cp_loss": 65,
@@ -4997,7 +5346,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5007,7 +5356,7 @@
       "player_color": "white",
       "player_move": "fxe5",
       "best_move": "g4",
-      "context": "Opening, the position was roughly equal. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as White, the position was roughly equal. Your move was inaccurate (0.6 pawns).",
       "score_before": "+0.50",
       "score_after": "-0.14",
       "cp_loss": 64,
@@ -5034,7 +5383,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5044,7 +5393,7 @@
       "player_color": "black",
       "player_move": "f4",
       "best_move": "Kf6",
-      "context": "Endgame, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Endgame, playing as Black, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "-1.40",
       "score_after": "-0.77",
       "cp_loss": 63,
@@ -5071,7 +5420,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5081,7 +5430,7 @@
       "player_color": "white",
       "player_move": "Bd3",
       "best_move": "Bf1",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "+1.93",
       "score_after": "+1.30",
       "cp_loss": 63,
@@ -5108,7 +5457,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5118,7 +5467,7 @@
       "player_color": "black",
       "player_move": "Qc7",
       "best_move": "Qxa5",
-      "context": "Opening, you were slightly worse. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move was inaccurate (0.6 pawns).",
       "score_before": "+0.67",
       "score_after": "+1.28",
       "cp_loss": 61,
@@ -5145,7 +5494,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5155,7 +5504,7 @@
       "player_color": "white",
       "player_move": "d5",
       "best_move": "a5",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "+5.49",
       "score_after": "+4.88",
       "cp_loss": 61,
@@ -5182,7 +5531,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5192,7 +5541,7 @@
       "player_color": "white",
       "player_move": "Ba2",
       "best_move": "Rxe7",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "+1.56",
       "score_after": "+0.96",
       "cp_loss": 60,
@@ -5219,7 +5568,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5229,7 +5578,7 @@
       "player_color": "black",
       "player_move": "Qd8",
       "best_move": "Bf8",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "-4.15",
       "score_after": "-3.55",
       "cp_loss": 60,
@@ -5256,7 +5605,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5266,7 +5615,7 @@
       "player_color": "white",
       "player_move": "Nxd7",
       "best_move": "Rc2",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "+2.83",
       "score_after": "+2.23",
       "cp_loss": 60,
@@ -5293,44 +5642,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
-        "history": []
-      }
-    },
-    {
-      "id": "c93a04164270",
-      "fen": "B2q1rk1/p3bppp/np6/2p5/5B2/2P2P2/P1PQ1P1P/R4RK1 b - - 0 14",
-      "player_color": "black",
-      "player_move": "Qxa8",
-      "best_move": "Qxd2",
-      "context": "Opening, you were in a difficult position. Your move was inaccurate (0.6 pawns).",
-      "score_before": "+2.94",
-      "score_after": "+3.53",
-      "cp_loss": 59,
-      "category": "inaccuracy",
-      "explanation": "You played Qxa8 (inaccuracy, lost 0.6 pawns). You missed capturing the queen with Qxd2.",
-      "acceptable_moves": [
-        "Qxd2"
-      ],
-      "pv": [
-        "Qxd2",
-        "Bxd2",
-        "Rxa8",
-        "a4",
-        "Nc7"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5340,7 +5652,7 @@
       "player_color": "black",
       "player_move": "b6",
       "best_move": "Nc7",
-      "context": "Opening, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Opening, playing as Black, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "-2.53",
       "score_after": "-1.94",
       "cp_loss": 59,
@@ -5367,7 +5679,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "c93a04164270",
+      "fen": "B2q1rk1/p3bppp/np6/2p5/5B2/2P2P2/P1PQ1P1P/R4RK1 b - - 0 14",
+      "player_color": "black",
+      "player_move": "Qxa8",
+      "best_move": "Qxd2",
+      "context": "Opening, playing as Black, you were in a difficult position. Your move was inaccurate (0.6 pawns).",
+      "score_before": "+2.94",
+      "score_after": "+3.53",
+      "cp_loss": 59,
+      "category": "inaccuracy",
+      "explanation": "You played Qxa8 (inaccuracy, lost 0.6 pawns). You missed capturing the queen with Qxd2.",
+      "acceptable_moves": [
+        "Qxd2"
+      ],
+      "pv": [
+        "Qxd2",
+        "Bxd2",
+        "Rxa8",
+        "a4",
+        "Nc7"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166054148592",
+        "source": "chess.com",
+        "opponent": "JARVIS42AI",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5377,7 +5726,7 @@
       "player_color": "white",
       "player_move": "axb5",
       "best_move": "Bb4",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
       "score_before": "+5.60",
       "score_after": "+5.01",
       "cp_loss": 59,
@@ -5404,7 +5753,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5414,7 +5763,7 @@
       "player_color": "white",
       "player_move": "Bd1",
       "best_move": "Kd2",
-      "context": "Opening, you were in a difficult position. Your move was inaccurate (0.5 pawns).",
+      "context": "Opening, playing as White, you were in a difficult position. Your move was inaccurate (0.5 pawns).",
       "score_before": "-6.52",
       "score_after": "-7.06",
       "cp_loss": 54,
@@ -5441,7 +5790,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5451,7 +5800,7 @@
       "player_color": "black",
       "player_move": "Ba7",
       "best_move": "Be7",
-      "context": "Opening, you were slightly worse. Your move was inaccurate (0.5 pawns).",
+      "context": "Opening, playing as Black, you were slightly worse. Your move was inaccurate (0.5 pawns).",
       "score_before": "+1.80",
       "score_after": "+2.34",
       "cp_loss": 54,
@@ -5478,7 +5827,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5488,7 +5837,7 @@
       "player_color": "white",
       "player_move": "Bxc4",
       "best_move": "Bf4",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
       "score_before": "+0.74",
       "score_after": "+0.20",
       "cp_loss": 54,
@@ -5515,7 +5864,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5525,7 +5874,7 @@
       "player_color": "white",
       "player_move": "Qa4+",
       "best_move": "dxc5",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
       "score_before": "+0.92",
       "score_after": "+0.41",
       "cp_loss": 51,
@@ -5552,7 +5901,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5562,7 +5911,7 @@
       "player_color": "white",
       "player_move": "d5",
       "best_move": "g3",
-      "context": "Opening, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.5 pawns).",
       "score_before": "+1.34",
       "score_after": "+0.83",
       "cp_loss": 51,
@@ -5589,7 +5938,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5599,7 +5948,7 @@
       "player_color": "white",
       "player_move": "Bxf7+",
       "best_move": "Kxh2",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.5 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.5 pawns).",
       "score_before": "+6.49",
       "score_after": "+5.99",
       "cp_loss": 50,
@@ -5626,7 +5975,7 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
         "history": []
       }
     },
@@ -5636,7 +5985,7 @@
       "player_color": "white",
       "player_move": "Rc5",
       "best_move": "Bb4",
-      "context": "Middlegame, you had a strong advantage. Your move was inaccurate (0.5 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.5 pawns).",
       "score_before": "+5.12",
       "score_after": "+4.62",
       "cp_loss": 50,
@@ -5663,7 +6012,44 @@
       "srs": {
         "interval": 0,
         "ease": 2.5,
-        "next_review": "2026-03-17",
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "b6e7bc8fdeac",
+      "fen": "5R2/3r2pk/4p2p/7P/4P3/8/3B2PP/6K1 w - - 0 34",
+      "player_color": "white",
+      "player_move": "Rf2",
+      "best_move": "Be3",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.5 pawns).",
+      "score_before": "+5.22",
+      "score_after": "+4.72",
+      "cp_loss": 50,
+      "category": "inaccuracy",
+      "explanation": "You played Rf2 (inaccuracy, lost 0.5 pawns). A better move was Be3.",
+      "acceptable_moves": [
+        "Be3"
+      ],
+      "pv": [
+        "Be3",
+        "g5",
+        "Re8",
+        "Rd6",
+        "Bc5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
         "history": []
       }
     }

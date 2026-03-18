@@ -28,6 +28,14 @@ from chess_self_coach.config import (
     load_config,
 )
 from chess_self_coach.importer import fetch_chesscom_games, fetch_lichess_games
+from chess_self_coach.tablebase import (
+    MAX_PIECES,
+    TablebaseResult,
+    probe_position,
+    tablebase_context,
+    tablebase_cp_loss,
+    tablebase_explanation,
+)
 
 # Centipawn loss thresholds
 BLUNDER_THRESHOLD = 200
@@ -36,6 +44,27 @@ INACCURACY_THRESHOLD = 50
 
 # Sentinel for mate scores (centipawns)
 _MATE_CP = 10000
+
+
+def _analysis_limit(board: chess.Board, default_depth: int) -> chess.engine.Limit:
+    """Adaptive analysis limit: deeper search for endgames.
+
+    King+pawns endgames get the most time — these are highly instructive
+    and Stockfish NNUE is weakest here (opposition, zugzwang, key squares).
+    For positions <= 7 pieces, this is mainly a fallback when the Lichess
+    tablebase API is unavailable.
+    """
+    piece_count = len(board.piece_map())
+    kings_and_pawns_only = all(
+        p.piece_type in (chess.KING, chess.PAWN) for p in board.piece_map().values()
+    )
+    if kings_and_pawns_only and piece_count <= 7:
+        return chess.engine.Limit(time=6.0, depth=60)
+    if piece_count <= 7:
+        return chess.engine.Limit(time=5.0, depth=50)
+    if piece_count <= 12:
+        return chess.engine.Limit(time=4.0, depth=40)
+    return chess.engine.Limit(depth=default_depth)
 
 
 def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool]:
@@ -256,8 +285,14 @@ def _generate_context(
     score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= _MATE_CP
 
     phase = _detect_game_phase(fen) if fen else ""
+    color_label = f"playing as {player_color.capitalize()}"
     advantage = _describe_advantage(score_before_cp, player_color) if score_before_cp is not None else ""
-    prefix = f"{phase}, {advantage}." if phase and advantage else (phase + "." if phase else "")
+    if phase and advantage:
+        prefix = f"{phase}, {color_label}, {advantage}."
+    elif phase:
+        prefix = f"{phase}, {color_label}."
+    else:
+        prefix = f"{color_label.capitalize()}."
 
     if was_mate and score_after_cp is not None and abs(score_after_cp) < 50:
         return f"{prefix} Your move threw away a winning position and led to a draw."
@@ -350,7 +385,7 @@ def extract_mistakes(
     Returns:
         List of mistake dicts ready for training_data.json.
     """
-    # Build list of (fen, turn, score_cp, best_san, actual_san) for each position
+    # Build list of position data for each mainline node
     positions = []
     node = game
 
@@ -358,57 +393,116 @@ def extract_mistakes(
         board = node.board()
         next_node = node.variations[0]
         actual_move = next_node.move
+        piece_count = len(board.piece_map())
 
-        info = engine.analyse(board, chess.engine.Limit(depth=depth))
-        score = info.get("score")
-        pv = info.get("pv", [])
+        # Priority: tablebase for endgame positions (<= 7 pieces)
+        tb_result = None
+        if piece_count <= MAX_PIECES:
+            tb_result = probe_position(board.fen())
 
-        if score is None:
-            node = next_node
-            continue
+        if tb_result:
+            # Tablebase: perfect result, no Stockfish needed
+            # Use a synthetic score_cp for compatibility with the rest of the pipeline
+            tier = tb_result.tier
+            score_cp = _MATE_CP if tier == "WIN" else (-_MATE_CP if tier == "LOSS" else 0)
+            if board.turn == chess.BLACK:
+                score_cp = -score_cp
+            positions.append({
+                "fen": board.fen(),
+                "turn": board.turn,
+                "score_cp": score_cp,
+                "is_mate": False,
+                "best_san": tb_result.best_move,
+                "actual_san": board.san(actual_move),
+                "pv": [tb_result.best_move] if tb_result.best_move else [],
+                "tb": tb_result,
+            })
+        else:
+            # Stockfish: adaptive depth
+            info = engine.analyse(board, _analysis_limit(board, depth))
+            score = info.get("score")
+            pv = info.get("pv", [])
 
-        score_cp, is_mate = _score_to_cp(score)
-        best_move = pv[0] if pv else None
+            if score is None:
+                node = next_node
+                continue
 
-        # Convert PV to SAN (up to 5 moves)
-        pv_san = []
-        pv_board = board.copy()
-        for move in pv[:5]:
-            try:
-                pv_san.append(pv_board.san(move))
-                pv_board.push(move)
-            except (ValueError, AssertionError):
-                break
+            score_cp, is_mate = _score_to_cp(score)
+            best_move = pv[0] if pv else None
 
-        positions.append({
-            "fen": board.fen(),
-            "turn": board.turn,
-            "score_cp": score_cp,
-            "is_mate": is_mate,
-            "best_san": board.san(best_move) if best_move else None,
-            "actual_san": board.san(actual_move),
-            "pv": pv_san,
-        })
+            # Convert PV to SAN (up to 5 moves)
+            pv_san = []
+            pv_board = board.copy()
+            for move in pv[:5]:
+                try:
+                    pv_san.append(pv_board.san(move))
+                    pv_board.push(move)
+                except (ValueError, AssertionError):
+                    break
+
+            positions.append({
+                "fen": board.fen(),
+                "turn": board.turn,
+                "score_cp": score_cp,
+                "is_mate": is_mate,
+                "best_san": board.san(best_move) if best_move else None,
+                "actual_san": board.san(actual_move),
+                "pv": pv_san,
+                "tb": None,
+            })
         node = next_node
 
     # Score the final position (needed for last move's cp_loss)
     board = node.board()
-    info = engine.analyse(board, chess.engine.Limit(depth=depth))
-    score = info.get("score")
-    if score:
-        score_cp, is_mate = _score_to_cp(score)
+    piece_count = len(board.piece_map())
+    tb_result = None
+    if piece_count <= MAX_PIECES:
+        tb_result = probe_position(board.fen())
+
+    if tb_result:
+        tier = tb_result.tier
+        score_cp = _MATE_CP if tier == "WIN" else (-_MATE_CP if tier == "LOSS" else 0)
+        if board.turn == chess.BLACK:
+            score_cp = -score_cp
         positions.append({
             "fen": board.fen(),
             "turn": board.turn,
             "score_cp": score_cp,
-            "is_mate": is_mate,
+            "is_mate": False,
             "best_san": None,
             "actual_san": None,
             "pv": [],
+            "tb": tb_result,
         })
+    else:
+        info = engine.analyse(board, _analysis_limit(board, depth))
+        score = info.get("score")
+        if score:
+            score_cp, is_mate = _score_to_cp(score)
+            positions.append({
+                "fen": board.fen(),
+                "turn": board.turn,
+                "score_cp": score_cp,
+                "is_mate": is_mate,
+                "best_san": None,
+                "actual_san": None,
+                "pv": [],
+                "tb": None,
+            })
 
     # Find the player's mistakes
     mistakes = []
+    game_info = {
+        "id": game.headers.get("Link", game.headers.get("Site", "")),
+        "source": _detect_source(game),
+        "opponent": _get_opponent(game, player_color),
+        "date": game.headers.get("Date", "?"),
+        "result": game.headers.get("Result", "*"),
+        "opening": game.headers.get(
+            "Opening", game.headers.get("Event", "?")
+        ),
+    }
+
     for i in range(len(positions) - 1):
         pos = positions[i]
         next_pos = positions[i + 1]
@@ -430,60 +524,83 @@ def extract_mistakes(
         except ValueError:
             pass
 
-        cp_loss = compute_cp_loss(
-            pos["score_cp"], next_pos["score_cp"], pos["turn"]
-        )
+        # Determine cp_loss, context, and explanation based on source
+        tb_before: TablebaseResult | None = pos.get("tb")
+        tb_after: TablebaseResult | None = next_pos.get("tb")
 
-        if cp_loss < min_cp_loss:
-            continue
+        if tb_before and tb_after:
+            # Both positions resolved by tablebase — use WDL transition
+            cp_loss = tablebase_cp_loss(tb_before, tb_after, pos["turn"])
+            if cp_loss < min_cp_loss:
+                continue
+            category = _classify_mistake(cp_loss)
+            if category is None or not pos["best_san"]:
+                continue
+            if pos["actual_san"] == pos["best_san"]:
+                continue
 
-        category = _classify_mistake(cp_loss)
-        if category is None or not pos["best_san"]:
-            continue
+            piece_count = len(chess.Board(pos["fen"]).piece_map())
+            p_color = "white" if player_color == chess.WHITE else "black"
+            context = tablebase_context(tb_before, piece_count, p_color)
+            explanation = tablebase_explanation(
+                tb_before, tb_after, pos["actual_san"], pos["best_san"],
+            )
+            score_before = f"TB:{tb_before.tier.lower()}"
+            score_after = f"TB:{tb_after.tier.lower()}"
+            tb_data = {
+                "before": {"category": tb_before.category, "dtm": tb_before.dtm, "dtz": tb_before.dtz},
+                "after": {"category": tb_after.category, "dtm": tb_after.dtm, "dtz": tb_after.dtz},
+                "transition": f"{tb_before.tier} → {tb_after.tier}",
+            }
+        else:
+            # Standard Stockfish analysis
+            cp_loss = compute_cp_loss(
+                pos["score_cp"], next_pos["score_cp"], pos["turn"]
+            )
+            if cp_loss < min_cp_loss:
+                continue
+            category = _classify_mistake(cp_loss)
+            if category is None or not pos["best_san"]:
+                continue
+            if pos["actual_san"] == pos["best_san"]:
+                continue
 
-        # Skip if player already played the best move (Stockfish PV ambiguity)
-        if pos["actual_san"] == pos["best_san"]:
-            continue
+            was_mate = pos.get("is_mate", False)
+            score_after_cp = next_pos["score_cp"]
+            board = chess.Board(pos["fen"])
+            explanation = generate_explanation(
+                board, pos["actual_san"], pos["best_san"], cp_loss, category,
+                was_mate=was_mate,
+                score_after_cp=score_after_cp,
+            )
+            p_color = "white" if player_color == chess.WHITE else "black"
+            context = _generate_context(
+                category, cp_loss, was_mate, score_after_cp,
+                fen=pos["fen"], score_before_cp=pos["score_cp"], player_color=p_color,
+            )
+            score_before = _format_score_cp(pos["score_cp"])
+            score_after = _format_score_cp(next_pos["score_cp"])
+            tb_data = None
 
-        was_mate = pos.get("is_mate", False)
-        score_after_cp = next_pos["score_cp"]
-        board = chess.Board(pos["fen"])
-        explanation = generate_explanation(
-            board, pos["actual_san"], pos["best_san"], cp_loss, category,
-            was_mate=was_mate,
-            score_after_cp=score_after_cp,
-        )
-        p_color = "white" if player_color == chess.WHITE else "black"
-        context = _generate_context(
-            category, cp_loss, was_mate, score_after_cp,
-            fen=pos["fen"], score_before_cp=pos["score_cp"], player_color=p_color,
-        )
-
-        mistakes.append({
+        mistake = {
             "id": _make_position_id(pos["fen"], pos["actual_san"]),
             "fen": pos["fen"],
             "player_color": "white" if player_color == chess.WHITE else "black",
             "player_move": pos["actual_san"],
             "best_move": pos["best_san"],
             "context": context,
-            "score_before": _format_score_cp(pos["score_cp"]),
-            "score_after": _format_score_cp(next_pos["score_cp"]),
+            "score_before": score_before,
+            "score_after": score_after,
             "cp_loss": cp_loss,
             "category": category,
             "explanation": explanation,
             "acceptable_moves": [pos["best_san"]],
             "pv": pos.get("pv", []),
-            "game": {
-                "id": game.headers.get("Link", game.headers.get("Site", "")),
-                "source": _detect_source(game),
-                "opponent": _get_opponent(game, player_color),
-                "date": game.headers.get("Date", "?"),
-                "result": game.headers.get("Result", "*"),
-                "opening": game.headers.get(
-                    "Opening", game.headers.get("Event", "?")
-                ),
-            },
-        })
+            "game": game_info,
+        }
+        if tb_data:
+            mistake["tablebase"] = tb_data
+        mistakes.append(mistake)
 
     return mistakes
 
@@ -755,6 +872,13 @@ def refresh_explanations() -> None:
     updated = 0
     for pos in positions:
         board = chess.Board(pos["fen"])
+
+        # Skip tablebase-resolved positions — their context/explanation
+        # are generated by tablebase_context/tablebase_explanation and
+        # cannot be regenerated without re-probing the API.
+        if "tablebase" in pos:
+            continue
+
         # Parse scores to cp
         score_before_str = pos.get("score_before", "+0.00")
         score_after_str = pos.get("score_after", "+0.00")
@@ -875,10 +999,11 @@ def serve_pwa() -> None:
         if f.is_file() and f.name != "training_data.json":
             shutil.copy2(f, serve_dir / f.name)
 
-    # Inject version into service worker
+    # Inject version + timestamp into service worker (invalidates cache on each serve)
     sw_path = serve_dir / "sw.js"
     sw_text = sw_path.read_text()
-    sw_path.write_text(sw_text.replace("__VERSION__", __version__))
+    cache_version = f"{__version__}-{int(time.time())}"
+    sw_path.write_text(sw_text.replace("__VERSION__", cache_version))
 
     # Copy training data
     data_path = root / "training_data.json"
