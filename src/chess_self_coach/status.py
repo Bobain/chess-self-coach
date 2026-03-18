@@ -34,8 +34,8 @@ def _count_chapters(pgn_path: Path) -> int:
         with open(pgn_path) as f:
             while chess.pgn.read_game(f) is not None:
                 count += 1
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"  Warning: could not read {pgn_path}: {exc}", file=sys.stderr)
     return count
 
 

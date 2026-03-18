@@ -410,8 +410,8 @@ function showFeedback(correct, position, gaveUp = false) {
       bestMoveFen = chess.fen();
       bestMoveSquares = [move.from, move.to];
     }
-  } catch {
-    // Ignore
+  } catch (err) {
+    console.error('[showFeedback] Error computing best move FEN:', err);
   }
 
   if (correct) {
