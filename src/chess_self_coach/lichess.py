@@ -53,7 +53,6 @@ def _get_client() -> berserk.Client:
                 "https://lichess.org/api/account | python3 -m json.tool"
             ),
         )
-    return None  # unreachable
 
 
 def _get_chapters(study_id: str, token: str) -> list[dict[str, str]]:

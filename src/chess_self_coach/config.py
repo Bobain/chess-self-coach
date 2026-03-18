@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 from dotenv import load_dotenv
 
@@ -42,7 +42,7 @@ def _find_project_root() -> Path:
     return cwd
 
 
-def error_exit(message: str, hint: str | None = None, debug_cmd: str | None = None) -> None:
+def error_exit(message: str, hint: str | None = None, debug_cmd: str | None = None) -> NoReturn:
     """Print a formatted error and exit.
 
     Args:
@@ -86,7 +86,6 @@ def load_config() -> dict[str, Any]:
             f"config.json is not valid JSON: {e}",
             hint=f"Check the syntax in {config_path}",
         )
-    return {}  # unreachable, keeps type checker happy
 
 
 def save_config(config: dict[str, Any]) -> None:
@@ -200,7 +199,6 @@ def find_stockfish(config: dict[str, Any] | None = None) -> Path:
             "  - Or specify the path: chess-self-coach analyze --engine /path/to/stockfish file.pgn"
         ),
     )
-    return Path()  # unreachable
 
 
 def check_stockfish_version(sf_path: Path, expected: str | None = None) -> str:
