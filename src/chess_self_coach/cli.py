@@ -121,27 +121,11 @@ def main(argv: list[str] | None = None) -> None:
         help="Chess.com username (to also fetch games from chess.com)",
     )
     p_import.add_argument(
-        "--masters",
-        action="store_true",
-        help="Also query the Lichess masters database",
-    )
-    p_import.add_argument(
         "--max",
         type=int,
         default=100,
         dest="max_games",
         help="Maximum number of games to fetch per source (default: 100)",
-    )
-    p_import.add_argument(
-        "--enrich",
-        action="store_true",
-        help="Enrich repertoire PGN with deviation statistics",
-    )
-    p_import.add_argument(
-        "--rating",
-        type=str,
-        default=None,
-        help="Rating bracket filter (e.g. '800-1200')",
     )
 
     # --- status ---
@@ -285,9 +269,7 @@ def main(argv: list[str] | None = None) -> None:
         import_games(
             args.username,
             chesscom=args.chesscom,
-            masters=args.masters,
             max_games=args.max_games,
-            enrich=args.enrich,
         )
 
     elif args.command == "status":

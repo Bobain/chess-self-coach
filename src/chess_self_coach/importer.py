@@ -347,18 +347,14 @@ def import_games(
     username: str,
     *,
     chesscom: str | None = None,
-    masters: bool = False,
     max_games: int = 100,
-    enrich: bool = False,
 ) -> None:
-    """Main import entry point. Fetches games, analyzes deviations, optionally enriches PGN.
+    """Main import entry point. Fetches games and analyzes deviations.
 
     Args:
         username: Lichess username.
         chesscom: Optional chess.com username to also fetch from.
-        masters: If True, also query the Lichess masters database.
         max_games: Maximum games to fetch per source.
-        enrich: If True, add deviation info to repertoire PGN comments.
     """
     print(f"\n  Importing games for {username}...")
 
