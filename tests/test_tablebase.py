@@ -122,3 +122,72 @@ def test_explanation_no_best_move():
     exp = tablebase_explanation(_tb("draw"), _tb("loss"), "Kf3", None)
     assert "Kf3" in exp
     assert "loss" in exp
+
+
+# --- Perspective correctness (bug regression tests) ---
+# Position: 8/p7/1P6/P1k4K/6p1/8/7P/8 b - - 0 44
+# White has advanced pawns (a5+b6), Black is LOST. API: category="loss".
+# Mirror: 8/7p/8/6P1/p1K4k/1p6/P7/8 w - - 0 44
+# Same position, colors swapped. White is LOST. API: category="loss".
+
+
+import pytest
+from chess_self_coach.tablebase import probe_position
+
+
+@pytest.mark.network
+def test_probe_black_losing():
+    """API correctly reports Black is losing (side-to-move perspective)."""
+    result = probe_position("8/p7/1P6/P1k4K/6p1/8/7P/8 b - - 0 44")
+    assert result is not None, "API should return a result for 7-piece position"
+    assert result.tier == "LOSS", (
+        f"Black is losing but API returned tier={result.tier} "
+        f"(category={result.category})"
+    )
+
+
+@pytest.mark.network
+def test_probe_white_losing_mirror():
+    """Mirrored position: API correctly reports White is losing."""
+    result = probe_position("8/7p/8/6P1/p1K4k/1p6/P7/8 w - - 0 44")
+    assert result is not None, "API should return a result for 7-piece position"
+    assert result.tier == "LOSS", (
+        f"White is losing but API returned tier={result.tier} "
+        f"(category={result.category})"
+    )
+
+
+@pytest.mark.network
+def test_probe_symmetry():
+    """Both positions are symmetrical — same tier from side-to-move perspective."""
+    black_result = probe_position("8/p7/1P6/P1k4K/6p1/8/7P/8 b - - 0 44")
+    white_result = probe_position("8/7p/8/6P1/p1K4k/1p6/P7/8 w - - 0 44")
+    assert black_result is not None and white_result is not None
+    assert black_result.tier == white_result.tier == "LOSS"
+
+
+def test_context_black_losing_says_difficult():
+    """When Black is losing (API: loss), context must say 'difficult', not 'winning'."""
+    tb = _tb("loss", dtz=2)
+    ctx = tablebase_context(tb, 7, "black")
+    assert "difficult" in ctx, f"Black is losing but context says: {ctx}"
+    assert "winning" not in ctx
+
+
+def test_context_black_winning_says_winning():
+    """When Black is winning (API: win), context must say 'winning'."""
+    tb = _tb("win", dtz=-10)
+    ctx = tablebase_context(tb, 7, "black")
+    assert "winning" in ctx, f"Black is winning but context says: {ctx}"
+
+
+def test_cp_loss_black_loss_to_win_is_blunder():
+    """Black LOSS→WIN (side-to-move): after flip = WIN→LOSS = 600cp blunder."""
+    cp = tablebase_cp_loss(_tb("loss"), _tb("win"), chess.BLACK)
+    assert cp == 600, f"Expected 600 cp_loss for flipped WIN→LOSS, got {cp}"
+
+
+def test_cp_loss_white_win_to_loss_is_blunder():
+    """White WIN→LOSS (no flip needed): 600cp blunder."""
+    cp = tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE)
+    assert cp == 600, f"Expected 600 cp_loss for WIN→LOSS, got {cp}"
