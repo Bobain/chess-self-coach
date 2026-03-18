@@ -12,6 +12,19 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+#demo-banner {
+  background: var(--primary);
+  text-align: center;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+#demo-banner a {
+  color: var(--success);
+  text-decoration: underline;
+}
+
 body {
   background: var(--bg);
   color: var(--text);

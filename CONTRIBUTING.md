@@ -24,6 +24,23 @@ See [`.claude/CLAUDE.md`](.claude/CLAUDE.md) for detailed guidelines:
 
 ---
 
+## Architecture
+
+### Static Demo vs Application
+
+| | Static Demo | Application |
+|---|---|---|
+| **Distribution** | GitHub Pages | `pipx install` (one-liner) |
+| **Backend** | None — static files only | Python + Stockfish local |
+| **Training** | Show position, accept correct move | + punishment response (Stockfish plays the refutation), retry button |
+| **Data** | Bundled `training_data.json` | Generated from your own games |
+
+The **static demo** is a read-only preview hosted at GitHub Pages. It shows the training interface with sample data but cannot respond to moves with Stockfish analysis.
+
+The **application** runs a local backend (`chess-self-coach train --serve`) with Stockfish available. First exclusive feature: when the learner plays the wrong move, the application shows how the opponent punishes it (Stockfish's refutation move, animated with an arrow), then a Retry button lets the learner try again.
+
+---
+
 ## Chess Context
 
 ### Player

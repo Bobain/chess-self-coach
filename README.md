@@ -4,7 +4,7 @@
 
 **Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, and drills you on the correct moves with spaced repetition.
 
-**[Try the training PWA](https://bobain.github.io/chess-self-coach/train/)** | **[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
+**[Static demo](https://bobain.github.io/chess-self-coach/train/)** | **[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
 
 ## How It Works
 
@@ -142,7 +142,7 @@ chess-self-coach setup                  # interactive configuration wizard
 | URL | Content |
 |-----|---------|
 | [/chess-self-coach/](https://bobain.github.io/chess-self-coach/) | Landing page |
-| [/chess-self-coach/train/](https://bobain.github.io/chess-self-coach/train/) | Training PWA |
+| [/chess-self-coach/train/](https://bobain.github.io/chess-self-coach/train/) | Static demo |
 | [/chess-self-coach/docs/](https://bobain.github.io/chess-self-coach/docs/) | Documentation |
 
 ## Contributing
