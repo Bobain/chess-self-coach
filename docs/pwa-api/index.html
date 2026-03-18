@@ -662,6 +662,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#chessselfcoachgetmovelinkgameid-fen-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~getMoveLink(gameId, fen) ⇒ string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chessselfcoachgetlegaldestsfen-mapstring-arraystring" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -699,6 +710,17 @@
     <span class="md-ellipsis">
       
         ChessSelfCoach~handleMove(orig, dest)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chessselfcoach_showseemoveslinkposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~_showSeeMovesLink(position)
       
     </span>
   </a>
@@ -1027,6 +1049,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#chessselfcoachgetmovelinkgameid-fen-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~getMoveLink(gameId, fen) ⇒ string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chessselfcoachgetlegaldestsfen-mapstring-arraystring" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1064,6 +1097,17 @@
     <span class="md-ellipsis">
       
         ChessSelfCoach~handleMove(orig, dest)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chessselfcoach_showseemoveslinkposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~_showSeeMovesLink(position)
       
     </span>
   </a>
@@ -1202,10 +1246,12 @@ repetition to schedule reviews.</p>
 <li><a href="#module_ChessSelfCoach..saveSettings">~saveSettings(s)</a></li>
 <li><a href="#module_ChessSelfCoach..updateSRS">~updateSRS(state, correct)</a> ⇒ <code>SRSState</code></li>
 <li><a href="#module_ChessSelfCoach..selectPositions">~selectPositions(positions, count)</a> ⇒ <code>Array.&lt;Object&gt;</code></li>
+<li><a href="#module_ChessSelfCoach..getMoveLink">~getMoveLink(gameId, fen)</a> ⇒ <code>string</code></li>
 <li><a href="#module_ChessSelfCoach..getLegalDests">~getLegalDests(fen)</a> ⇒ <code>Map.&lt;string, Array.&lt;string&gt;&gt;</code></li>
 <li><a href="#module_ChessSelfCoach..updateMaterialBalance">~updateMaterialBalance(fen, orientation)</a></li>
 <li><a href="#module_ChessSelfCoach..setupBoard">~setupBoard(position)</a></li>
 <li><a href="#module_ChessSelfCoach..handleMove">~handleMove(orig, dest)</a></li>
+<li><a href="#module_ChessSelfCoach.._showSeeMovesLink">~_showSeeMovesLink(position)</a></li>
 <li><a href="#module_ChessSelfCoach..showFeedback">~showFeedback(correct, position, [gaveUp])</a></li>
 <li><a href="#module_ChessSelfCoach..recordResult">~recordResult(correct)</a></li>
 <li><a href="#module_ChessSelfCoach..dismissPosition">~dismissPosition()</a></li>
@@ -1351,6 +1397,32 @@ repetition to schedule reviews.</p>
 </tr>
 </tbody>
 </table>
+<p><a name="module_ChessSelfCoach..getMoveLink"></a></p>
+<h3 id="chessselfcoachgetmovelinkgameid-fen-string">ChessSelfCoach~getMoveLink(gameId, fen) ⇒ <code>string</code></h3>
+<p>Build a deep link to the specific move position in the original game.</p>
+<p><strong>Kind</strong>: inner method of <a href="#module_ChessSelfCoach"><code>ChessSelfCoach</code></a><br />
+<strong>Returns</strong>: <code>string</code> - URL with move anchor/parameter, or original URL if format unknown.  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gameId</td>
+<td><code>string</code></td>
+<td>Full game URL (lichess.org or chess.com).</td>
+</tr>
+<tr>
+<td>fen</td>
+<td><code>string</code></td>
+<td>FEN of the position (contains fullmove number and side to move).</td>
+</tr>
+</tbody>
+</table>
 <p><a name="module_ChessSelfCoach..getLegalDests"></a></p>
 <h3 id="chessselfcoachgetlegaldestsfen-mapstring-arraystring">ChessSelfCoach~getLegalDests(fen) ⇒ <code>Map.&lt;string, Array.&lt;string&gt;&gt;</code></h3>
 <p>Compute legal move destinations for chessground from a FEN.</p>
@@ -1443,6 +1515,26 @@ acceptable moves, and shows feedback. Allows up to 3 attempts.</p>
 <td>dest</td>
 <td><code>string</code></td>
 <td>Destination square (e.g. "e4").</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_ChessSelfCoach.._showSeeMovesLink"></a></p>
+<h3 id="chessselfcoach_showseemoveslinkposition">ChessSelfCoach~_showSeeMovesLink(position)</h3>
+<p>Show the "See moves" deep link for a position.</p>
+<p><strong>Kind</strong>: inner method of <a href="#module_ChessSelfCoach"><code>ChessSelfCoach</code></a>  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>position</td>
+<td><code>Object</code></td>
+<td>Training position with game.id and fen.</td>
 </tr>
 </tbody>
 </table>
