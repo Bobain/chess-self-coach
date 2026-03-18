@@ -493,10 +493,11 @@ def extract_mistakes(
                     if score_ab:
                         score_after_best_cp, _ = _score_to_cp(score_ab)
 
-            # Convert PV to SAN (up to 5 moves)
+            # Convert PV to SAN (up to 10 moves, or full line if mate found)
+            pv_limit = len(pv) if is_mate else 10
             pv_san = []
             pv_board = board.copy()
-            for move in pv[:5]:
+            for move in pv[:pv_limit]:
                 try:
                     pv_san.append(pv_board.san(move))
                     pv_board.push(move)
