@@ -435,6 +435,23 @@ function showFeedback(correct, position, gaveUp = false) {
 
   explanationEl.textContent = position.explanation;
 
+  // Show eval summary
+  const evalSummaryEl = document.getElementById('eval-summary');
+  if (evalSummaryEl && position.score_before != null) {
+    const before = position.score_before;
+    const after = position.score_after;
+    console.log(`[showFeedback] evals: before=${before}, after=${after}, cp_loss=${position.cp_loss}`);
+    let summary = `Before: ${before}  →  After your move: ${after}`;
+    summary += `  →  After best move: ${before}`;
+    if ((position.pv || []).length > 1) {
+      summary += `  →  End of line: ≈ ${before}`;
+    }
+    evalSummaryEl.textContent = summary;
+    evalSummaryEl.classList.remove('hidden');
+  } else if (evalSummaryEl) {
+    evalSummaryEl.classList.add('hidden');
+  }
+
   // Show "See moves" deep link
   _showSeeMovesLink(position);
 
@@ -623,18 +640,14 @@ function showPosition(index) {
   const context = position.context || '';
   document.getElementById('prompt').textContent =
     `${context} You played ${position.player_move}. Can you find a better move?`;
-  const gameInfoEl = document.getElementById('game-info');
-  gameInfoEl.textContent = '';
-  const gameText = `vs ${position.game.opponent} (${position.game.source}, ${position.game.date})`;
-  const gameId = position.game.id || '';
-
-  gameInfoEl.textContent = gameText;
+  document.getElementById('game-info').textContent = '';
 
   document.getElementById('feedback').classList.add('hidden');
   document.getElementById('next-btn').classList.add('hidden');
   document.getElementById('show-position-btn').classList.add('hidden');
   document.getElementById('play-line-btn').classList.add('hidden');
   document.getElementById('pv-line').classList.add('hidden');
+  document.getElementById('eval-summary').classList.add('hidden');
   document.getElementById('dismiss-btn').classList.add('hidden');
   const seeMoves = document.getElementById('see-moves');
   if (seeMoves) seeMoves.classList.add('hidden');

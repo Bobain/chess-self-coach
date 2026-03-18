@@ -189,6 +189,13 @@ cg-container {
   line-height: 1.5;
 }
 
+#eval-summary {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
 #controls {
   margin-top: 0.75rem;
   display: flex;
