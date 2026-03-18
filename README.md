@@ -35,6 +35,7 @@ For each mistake in your games, the trainer shows:
 - **Context**: "Middlegame, you had a slight advantage. Your move lost significant material."
 - **The position** with material balance (captured pieces)
 - **Your task**: find the better move by dragging a piece
+- **Wrong move?** Stockfish shows how the opponent punishes it, then Retry
 - **After answering**: explanation, best line (playable), link to the original game
 - **Spaced repetition**: positions come back until mastered (intra-session + SM-2)
 - **Give up**: permanently dismiss positions you don't want to review

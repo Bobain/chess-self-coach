@@ -87,11 +87,18 @@ def test_three_wrong_attempts_reveals_answer(page, pwa_url):
     """After 3 wrong attempts, the correct answer is revealed."""
     _wait_for_board(page, pwa_url)
 
-    for _ in range(3):
+    for i in range(3):
         page.wait_for_selector("cg-board piece", timeout=5000)
         page.wait_for_timeout(200)
         make_move(page, "a2", "a3", "white")
-        page.wait_for_timeout(700)
+        if i < 2:
+            # Wait for punishment + Retry button, then click Retry
+            page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+            page.locator("#retry-btn").click()
+            page.wait_for_timeout(500)
+        else:
+            # 3rd attempt — wait for the answer to be revealed
+            page.wait_for_timeout(700)
 
     expect(page.locator("#feedback-text")).to_contain_text("answer was")
     expect(page.locator("#explanation")).not_to_be_empty()
@@ -172,11 +179,16 @@ def test_failed_position_returns_in_session(page, pwa_url):
     _wait_for_board(page, pwa_url)
 
     # Fail position 1 three times to exhaust attempts
-    for _ in range(3):
+    for i in range(3):
         page.wait_for_selector("cg-board piece", timeout=5000)
         page.wait_for_timeout(200)
         make_move(page, "a2", "a3", "white")
-        page.wait_for_timeout(700)
+        if i < 2:
+            page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+            page.locator("#retry-btn").click()
+            page.wait_for_timeout(500)
+        else:
+            page.wait_for_timeout(700)
 
     expect(page.locator("#feedback-text")).to_contain_text("answer was")
     page.locator("#next-btn").click()
@@ -233,6 +245,11 @@ def test_see_moves_visible_after_two_wrong(page, pwa_url):
     make_move(page, "a2", "a3", "white")
     page.wait_for_timeout(500)
     expect(page.locator("#see-moves")).not_to_be_visible()
+
+    # Wait for punishment + click Retry to reset the board
+    page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+    page.locator("#retry-btn").click()
+    page.wait_for_timeout(500)
 
     # Second wrong attempt — link SHOULD appear
     page.wait_for_selector("cg-board piece", timeout=5000)
@@ -340,3 +357,70 @@ def test_dismiss_button_visible_after_wrong_attempt(page, pwa_url):
 
     expect(page.locator("#feedback-text")).to_contain_text("Try again")
     expect(page.locator("#dismiss-btn")).to_be_visible()
+
+
+# --- Stockfish WASM punishment ---
+
+
+def test_wrong_move_shows_punishment(page, pwa_url, console_errors):
+    """Wrong move triggers Stockfish WASM punishment and Retry button."""
+    _wait_for_board(page, pwa_url)
+
+    make_move(page, "a2", "a3", "white")
+
+    # Wait for Stockfish WASM to compute the punishment move
+    page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+
+    log_text = "\n".join(console_errors["messages"])
+    assert "[handleMove] Punishment:" in log_text
+
+
+def test_retry_resets_position(page, pwa_url, console_errors):
+    """After punishment, clicking Retry resets the board."""
+    _wait_for_board(page, pwa_url)
+
+    make_move(page, "a2", "a3", "white")
+    page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+
+    page.locator("#retry-btn").click()
+    page.wait_for_timeout(500)
+
+    expect(page.locator("#retry-btn")).not_to_be_visible()
+    log_text = "\n".join(console_errors["messages"])
+    assert "[showRetryButton] Retry clicked" in log_text
+
+
+def test_correct_move_no_punishment(page, pwa_url):
+    """Correct move has no punishment or retry — behavior unchanged."""
+    _wait_for_board(page, pwa_url)
+
+    make_move(page, "d2", "d4", "white")
+    page.wait_for_timeout(300)
+
+    expect(page.locator("#feedback-text")).to_contain_text("Correct")
+    expect(page.locator("#retry-btn")).not_to_be_visible()
+
+
+def test_wrong_move_fallback_without_wasm(page, pwa_url, console_errors):
+    """If Stockfish WASM fails to load, the old try-again behavior works."""
+    # Override Worker constructor to block Stockfish loading
+    # (page.route does not intercept Web Worker script loads)
+    page.add_init_script("""
+        const _OrigWorker = Worker;
+        window.Worker = function(url, opts) {
+            if (typeof url === 'string' && url.includes('stockfish')) {
+                throw new Error('WASM blocked for testing');
+            }
+            return new _OrigWorker(url, opts);
+        };
+    """)
+
+    _wait_for_board(page, pwa_url)
+
+    make_move(page, "a2", "a3", "white")
+    page.wait_for_timeout(3000)
+
+    # No Retry button (fallback resets the board automatically)
+    expect(page.locator("#retry-btn")).not_to_be_visible()
+    log_text = "\n".join(console_errors["messages"])
+    assert "[handleMove] Stockfish WASM unavailable" in log_text

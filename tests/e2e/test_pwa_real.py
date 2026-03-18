@@ -108,11 +108,16 @@ def test_real_see_moves_after_failure(page, pwa_real_url, console_errors):
     from_sq = chess.square_name(wrong_move.from_square)
     to_sq = chess.square_name(wrong_move.to_square)
 
-    for _ in range(3):
+    for i in range(3):
         page.wait_for_selector("cg-board piece", timeout=5000)
         page.wait_for_timeout(200)
         make_move(page, from_sq, to_sq, pos["player_color"])
-        page.wait_for_timeout(700)
+        if i < 2:
+            page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
+            page.locator("#retry-btn").click()
+            page.wait_for_timeout(500)
+        else:
+            page.wait_for_timeout(700)
 
     expect(page.locator("#feedback-text")).to_contain_text("answer was")
     expect(page.locator("#see-moves")).to_be_visible()
