@@ -699,6 +699,56 @@ def test_app_mode_refresh_modal(page, app_url, console_errors):
     assert "[refreshTraining]" in log_text
 
 
+def test_app_mode_config_modal(page, app_url, console_errors):
+    """[App] mode: Edit config modal opens, loads values, and saves."""
+    page.goto(app_url)
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    # Open menu
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+
+    # Config item should be visible and enabled
+    config_item = page.locator("#nav-config")
+    expect(config_item).to_be_visible()
+    expect(config_item).not_to_have_class("disabled")
+
+    # Click config
+    config_item.click()
+    page.wait_for_timeout(500)
+
+    # Modal should appear with values from test config.json
+    expect(page.locator("#config-modal")).to_be_visible()
+    expect(page.locator("#config-lichess")).to_have_value("testuser")
+    expect(page.locator("#config-chesscom")).to_have_value("testcom")
+    expect(page.locator("#config-depth")).to_have_value("18")
+
+    # Edit a value and save
+    page.locator("#config-lichess").fill("newuser")
+    page.locator("#save-config").click()
+    page.wait_for_timeout(500)
+
+    expect(page.locator("#config-status")).to_contain_text("Saved")
+
+    # Close and reopen to verify persistence
+    page.locator("#close-config").click()
+    expect(page.locator("#config-modal")).not_to_be_visible()
+
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+    page.locator("#nav-config").click()
+    page.wait_for_timeout(500)
+
+    expect(page.locator("#config-lichess")).to_have_value("newuser")
+
+    page.locator("#close-config").click()
+
+    # Verify console logs
+    log_text = "\n".join(console_errors["messages"])
+    assert "[showConfig]" in log_text
+    assert "[saveConfig]" in log_text
+
+
 def test_app_mode_journal_modal(page, app_url, console_errors):
     """[App] mode: Coaching journal menu item opens modal with topic list."""
     page.goto(app_url)
@@ -796,6 +846,7 @@ def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     expect(page.locator("#nav-cleanup")).not_to_be_visible()
     expect(page.locator("#nav-refresh")).not_to_be_visible()
     expect(page.locator("#nav-journal")).not_to_be_visible()
+    expect(page.locator("#nav-config")).not_to_be_visible()
 
     # Settings is visible in demo mode (not app-only)
     expect(page.locator("#nav-settings")).to_be_visible()

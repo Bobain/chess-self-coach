@@ -39,6 +39,7 @@
       <li id="nav-journal" class="nav-item nav-app-only hidden">Coaching journal</li>
       <li id="nav-import" class="nav-item nav-app-only hidden" title="Coming soon">Import games</li>
       <li class="nav-separator"></li>
+      <li id="nav-config" class="nav-item nav-app-only hidden">Edit config</li>
       <li id="nav-settings" class="nav-item">Settings</li>
       <li id="nav-about" class="nav-item">About</li>
     </ul>
@@ -84,6 +85,34 @@
       </div>
     </div>
   </main>
+
+  <!-- Config Modal -->
+  <div id="config-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Config</h2>
+      <label>
+        Lichess username:
+        <input type="text" id="config-lichess" placeholder="username">
+      </label>
+      <label>
+        Chess.com username:
+        <input type="text" id="config-chesscom" placeholder="username">
+      </label>
+      <label>
+        Default analysis depth:
+        <input type="number" id="config-depth" min="1" max="30" value="18">
+      </label>
+      <label>
+        Blunder threshold (cp):
+        <input type="number" id="config-threshold" min="0.1" max="5.0" step="0.1" value="1.0">
+      </label>
+      <div class="modal-actions">
+        <span id="config-status"></span>
+        <button id="save-config">Save</button>
+        <button id="close-config">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Settings Modal -->
   <div id="settings-modal" class="modal hidden">

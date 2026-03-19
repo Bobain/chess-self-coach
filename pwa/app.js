@@ -1337,6 +1337,76 @@ async function refreshTraining() {
   }
 }
 
+// --- Config modal ---
+
+/**
+ * Fetch config from backend and populate the config modal.
+ * @async
+ */
+async function showConfig() {
+  console.log('[showConfig] Fetching config...');
+  const modal = document.getElementById('config-modal');
+  const statusEl = document.getElementById('config-status');
+  statusEl.textContent = '';
+  modal.classList.remove('hidden');
+
+  try {
+    const resp = await fetch('/api/config');
+    if (!resp.ok) {
+      statusEl.textContent = 'Failed to load config.';
+      return;
+    }
+    const data = await resp.json();
+    console.log('[showConfig] Config loaded');
+
+    document.getElementById('config-lichess').value = data.players.lichess || '';
+    document.getElementById('config-chesscom').value = data.players.chesscom || '';
+    document.getElementById('config-depth').value = data.analysis.default_depth || 18;
+    document.getElementById('config-threshold').value = data.analysis.blunder_threshold || 1.0;
+  } catch (err) {
+    console.error('[showConfig] Fetch failed:', err);
+    statusEl.textContent = 'Failed to connect to server.';
+  }
+}
+
+/**
+ * Save config modal values to backend.
+ * @async
+ */
+async function saveConfig() {
+  console.log('[saveConfig] Saving config...');
+  const statusEl = document.getElementById('config-status');
+  statusEl.textContent = 'Saving...';
+
+  const body = {
+    players: {
+      lichess: document.getElementById('config-lichess').value.trim(),
+      chesscom: document.getElementById('config-chesscom').value.trim(),
+    },
+    analysis: {
+      default_depth: parseInt(document.getElementById('config-depth').value) || 18,
+      blunder_threshold: parseFloat(document.getElementById('config-threshold').value) || 1.0,
+    },
+  };
+
+  try {
+    const resp = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (resp.ok) {
+      console.log('[saveConfig] Config saved');
+      statusEl.textContent = 'Saved!';
+    } else {
+      statusEl.textContent = 'Failed to save.';
+    }
+  } catch (err) {
+    console.error('[saveConfig] Fetch failed:', err);
+    statusEl.textContent = 'Failed to connect to server.';
+  }
+}
+
 // --- Journal modal ---
 
 /**
@@ -1497,6 +1567,8 @@ async function init() {
       if (refreshItem) refreshItem.classList.remove('disabled');
       const journalItem = document.getElementById('nav-journal');
       if (journalItem) journalItem.classList.remove('disabled');
+      const configItem = document.getElementById('nav-config');
+      if (configItem) configItem.classList.remove('disabled');
 
       // Set version in menu
       const versionText = stockfishVersion
@@ -1710,6 +1782,27 @@ async function init() {
 
   document.getElementById('journal-back').addEventListener('click', () => {
     showJournal();
+  });
+
+  // Wire up nav-config (app-only)
+  const navConfig = document.getElementById('nav-config');
+  if (navConfig) {
+    navConfig.addEventListener('click', () => {
+      if (navConfig.classList.contains('disabled')) return;
+      console.log('[init] nav-config clicked');
+      closeMenu();
+      showConfig();
+    });
+  } else {
+    console.error('[init] nav-config element not found');
+  }
+
+  document.getElementById('save-config').addEventListener('click', () => {
+    saveConfig();
+  });
+
+  document.getElementById('close-config').addEventListener('click', () => {
+    document.getElementById('config-modal').classList.add('hidden');
   });
 
   // Wire up nav-about (both modes)

@@ -109,6 +109,16 @@ def app_url(tmp_path_factory):
     if coaching_src.exists():
         shutil.copytree(coaching_src, tmp_dir / "coaching")
 
+    # Create a test config.json for config API tests
+    import json
+    test_config = {
+        "stockfish": {"path": "/usr/games/stockfish"},
+        "players": {"lichess": "testuser", "chesscom": "testcom"},
+        "analysis": {"default_depth": 18, "blunder_threshold": 1.0},
+        "studies": {},
+    }
+    (tmp_dir / "config.json").write_text(json.dumps(test_config, indent=2))
+
     # Find a free port
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("127.0.0.1", 0))
