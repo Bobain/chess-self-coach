@@ -518,3 +518,15 @@ def test_clock_hidden_when_absent(page, pwa_url):
     clock_top = page.locator("#clock-top")
     expect(clock_bottom).not_to_be_visible()
     expect(clock_top).not_to_be_visible()
+
+
+# --- [App] mode ---
+
+
+def test_app_mode_smoke(page, app_url):
+    """[App] mode: board loads via FastAPI and /api/status returns mode='app'."""
+    page.goto(app_url)
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    status = page.evaluate("() => fetch('/api/status').then(r => r.json())")
+    assert status["mode"] == "app"

@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import http.server
 import shutil
+import socket
 import threading
 import time
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -81,6 +83,44 @@ def pwa_real_url(tmp_path_factory):
     url, server = _serve_pwa_dir(tmp_dir)
     yield url
     server.shutdown()
+
+
+@pytest.fixture(scope="session")
+def app_url(tmp_path_factory):
+    """Serve the FastAPI app with test fixture data ([App] mode).
+
+    Starts a uvicorn server in a background thread with _project_root
+    patched to a temp directory containing the test training_data.json.
+    The real PWA files are served via symlink.
+    """
+    import uvicorn
+
+    from chess_self_coach.server import app
+
+    # Create temp dir mimicking project root
+    tmp_dir = tmp_path_factory.mktemp("app_e2e")
+    shutil.copy2(FIXTURES_DIR / "training_data.json", tmp_dir / "training_data.json")
+    (tmp_dir / "pwa").symlink_to(PWA_DIR)
+
+    # Find a free port
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    with patch("chess_self_coach.server._find_project_root", return_value=tmp_dir):
+        config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
+        server = uvicorn.Server(config)
+
+        thread = threading.Thread(target=server.run, daemon=True)
+        thread.start()
+
+        while not server.started:
+            time.sleep(0.05)
+
+        yield f"http://127.0.0.1:{port}"
+
+        server.should_exit = True
+        thread.join(timeout=5)
 
 
 @pytest.fixture(autouse=True)
