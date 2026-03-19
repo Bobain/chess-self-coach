@@ -479,7 +479,7 @@ cg-container {
   margin-bottom: 0.25rem;
 }
 
-.validate-ok { color: var(--correct); }
+.validate-ok { color: var(--success); }
 .validate-warn { color: #f0ad4e; }
 .validate-error { color: var(--accent); }
 
@@ -498,7 +498,7 @@ cg-container {
   margin-bottom: 0.25rem;
 }
 
-.status-ok { color: var(--correct); }
+.status-ok { color: var(--success); }
 .status-warn { color: #f0ad4e; }
 
 .status-file {

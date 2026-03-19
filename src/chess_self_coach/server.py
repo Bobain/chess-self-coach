@@ -422,6 +422,8 @@ async def coaching_topic_detail(slug: str) -> TopicDetailResponse:
     """Read one coaching topic by slug."""
     topics_dir = _project_root / "coaching" / "topics"
     path = topics_dir / f"{slug}.md"
+    if not path.resolve().is_relative_to(topics_dir.resolve()):
+        raise HTTPException(status_code=400, detail="Invalid topic slug")
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Topic not found: {slug}")
     return TopicDetailResponse(slug=slug, content=path.read_text())
