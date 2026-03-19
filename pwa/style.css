@@ -94,6 +94,18 @@ main {
   position: relative;
 }
 
+.board-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clock {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
 .material-balance {
   height: 1.6rem;
   font-size: 1.3rem;
