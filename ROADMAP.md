@@ -40,8 +40,8 @@ An item is [x] when ALL applicable criteria are met:
 - [x] Extract get_stats_data() from print_stats (returns dict, CLI unchanged)
 - [x] GET /api/train/stats — stats in PWA (dashboard or menu item)
 - [x] Unit + E2E tests for /api/train/stats
-- [c] validate (CLI: validate_pgn) ← instant, no SSE needed
-- [ ] POST /api/pgn/validate — trigger from menu
+- [x] validate (CLI: validate_pgn) ← instant, no SSE needed
+- [x] POST /api/pgn/validate — trigger from menu
 - [c] status (CLI: show_status) ← instant
 - [ ] Extract get_status_data() from show_status (returns dict, CLI unchanged)
 - [ ] GET /api/pgn/status — trigger from menu
