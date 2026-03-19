@@ -69,11 +69,11 @@ An item is [x] when ALL applicable criteria are met:
 - [x] Click handler for `#nav-about`
 - [x] Works in [demo] (static info) and [app] (version from /api/status)
 
-### 4b. Coaching journal viewer
-- [ ] GET /api/coaching/topics — list topic files from coaching/topics/
-- [ ] GET /api/coaching/topics/{slug} — read one topic (return markdown)
-- [ ] PWA: journal browser modal (list → detail view, render markdown as HTML)
-- [ ] Menu item: "Coaching journal" (nav-app-only)
+### 4b. Coaching journal viewer — DONE
+- [x] GET /api/coaching/topics — list topic files from coaching/topics/
+- [x] GET /api/coaching/topics/{slug} — read one topic (return markdown)
+- [x] PWA: journal browser modal (list → detail view, plain text rendering)
+- [x] Menu item: "Coaching journal" (nav-app-only)
 
 ### 4c. PGN viewer
 - [ ] ⚠️ UX DESIGN PHASE: interactive board + move tree, or read-only text view?
