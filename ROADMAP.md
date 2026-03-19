@@ -52,9 +52,10 @@ An item is [x] when ALL applicable criteria are met:
 ### 3b. SSE job runner + long-running endpoints
 - [x] ⚠️ UX DESIGN PHASE: "Refresh training" button runs `train --prepare` in background.
       Individual commands (import, analyze, push, pull) deferred to future design phase.
-- [ ] Generic SSE job runner (POST starts job → 202, GET streams progress via SSE)
-- [c] train --prepare (CLI: prepare_training_data with --games, --depth, --engine, --fresh)
-- [ ] POST /api/train/prepare + GET /api/jobs/{id}/events (SSE)
+- [x] Generic SSE job runner (POST starts job → 202, GET streams progress via SSE)
+- [x] train --prepare (CLI: prepare_training_data with --games, --depth, --engine, --fresh)
+- [x] POST /api/train/prepare + GET /api/jobs/{id}/events (SSE)
+- [x] PWA "Refresh training" menu item + progress modal
 - Deferred to future design phase:
   - import/analyze/push/pull → individual PWA buttons (needs own design phase)
   - `--games N` → future PWA setting (default 20)
