@@ -13,6 +13,7 @@ import json
 import os
 import sys
 import time
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -767,6 +768,7 @@ def prepare_training_data(
     depth: int = 18,
     engine_path: str | None = None,
     fresh: bool = False,
+    on_progress: Callable[[dict], None] | None = None,
 ) -> None:
     """Fetch games, analyze with Stockfish, extract mistakes, export training JSON.
 
@@ -778,30 +780,34 @@ def prepare_training_data(
         depth: Stockfish analysis depth.
         engine_path: Override path to Stockfish binary.
         fresh: If True, discard existing data and start from scratch.
+        on_progress: Optional callback for structured progress events. When None,
+            all existing print() output is preserved unchanged.
     """
+    def _emit(event: dict) -> None:
+        if on_progress:
+            on_progress(event)
+
     config = load_config()
     players = config.get("players", {})
     lichess_user = players.get("lichess", "")
     chesscom_user = players.get("chesscom")
 
     if not lichess_user and not chesscom_user:
-        print(
-            "No player configured. Run 'chess-self-coach setup' to set your Lichess and/or chess.com username.",
-            file=sys.stderr,
+        raise RuntimeError(
+            "No player configured. Run 'chess-self-coach setup' to set your Lichess and/or chess.com username."
         )
-        sys.exit(1)
 
     # Find Stockfish
     if engine_path:
         sf_path = Path(engine_path)
         if not sf_path.exists():
-            print(f"Engine not found: {sf_path}", file=sys.stderr)
-            sys.exit(1)
+            raise FileNotFoundError(f"Engine not found: {sf_path}")
     else:
         sf_path = find_stockfish(config)
         expected = config.get("stockfish", {}).get("expected_version")
         version = check_stockfish_version(sf_path, expected)
         print(f"  Using {version} at {sf_path}")
+        _emit({"phase": "init", "message": f"Using {version}"})
 
     root = _find_project_root()
     output_path = root / "training_data.json"
@@ -821,6 +827,7 @@ def prepare_training_data(
 
     # Fetch games
     print("\n  Fetching games...")
+    _emit({"phase": "fetch", "message": "Fetching games...", "percent": 5})
     all_games: list[chess.pgn.Game] = []
 
     if lichess_user:
@@ -833,6 +840,7 @@ def prepare_training_data(
 
     if not all_games:
         print("  No games found.")
+        _emit({"phase": "done", "message": "No games found.", "percent": 100})
         return
 
     # Filter out already-analyzed games
@@ -847,10 +855,13 @@ def prepare_training_data(
     if skipped:
         print(f"  Skipped {skipped} already-analyzed game(s)")
 
+    _emit({"phase": "fetch", "message": f"Found {len(all_games)} game(s) ({len(new_games)} new)", "percent": 10})
+
     if not new_games:
         print("  No new games to analyze.")
         if existing_data:
             print(f"  Existing training data unchanged ({len(existing_positions)} positions)")
+        _emit({"phase": "done", "message": f"No new games. {len(existing_positions)} positions unchanged.", "percent": 100})
         return
 
     # Analyze new games
@@ -892,6 +903,15 @@ def prepare_training_data(
                 f"{len(mistakes)} mistake(s) ({elapsed:.1f}s) "
                 f"— ETA {eta_str}"
             )
+            # Progress: 15% to 90% spread across analysis tasks
+            pct = 15 + int(75 * done_count / total_tasks)
+            _emit({
+                "phase": "analyze",
+                "message": f"Analyzing {done_count}/{total_tasks}: {label}",
+                "percent": pct,
+                "current": done_count,
+                "total": total_tasks,
+            })
 
     # Merge new positions with existing (preserve SRS data)
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -938,6 +958,11 @@ def prepare_training_data(
     print(f"    Blunders: {blunders}")
     print(f"    Mistakes: {mistake_count}")
     print(f"    Inaccuracies: {inaccuracies}")
+    _emit({
+        "phase": "done",
+        "message": f"Done! {total} positions ({blunders} blunders, {mistake_count} mistakes, {inaccuracies} inaccuracies)",
+        "percent": 100,
+    })
 
 
 def refresh_explanations() -> None:

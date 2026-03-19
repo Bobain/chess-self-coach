@@ -311,12 +311,16 @@ def main(argv: list[str] | None = None) -> None:
 
             refresh_explanations()
         elif args.prepare:
-            prepare_training_data(
-                max_games=args.games,
-                depth=args.depth,
-                engine_path=args.engine,
-                fresh=args.fresh,
-            )
+            try:
+                prepare_training_data(
+                    max_games=args.games,
+                    depth=args.depth,
+                    engine_path=args.engine,
+                    fresh=args.fresh,
+                )
+            except (FileNotFoundError, RuntimeError) as e:
+                print(f"  {e}", file=sys.stderr)
+                sys.exit(1)
         elif args.serve:
             print("  Tip: you can now just run `chess-self-coach` directly.\n")
             _launch_server()
