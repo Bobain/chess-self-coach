@@ -627,6 +627,37 @@ def test_app_mode_status_modal(page, app_url, console_errors):
     assert "[showProjectStatus]" in log_text
 
 
+def test_app_mode_cleanup_modal(page, app_url, console_errors):
+    """[App] mode: Cleanup studies menu item opens modal."""
+    page.goto(app_url)
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    # Open menu
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+
+    # Cleanup item should be visible and enabled
+    cleanup_item = page.locator("#nav-cleanup")
+    expect(cleanup_item).to_be_visible()
+    expect(cleanup_item).not_to_have_class("disabled")
+
+    # Click cleanup (will show error — no token in test env)
+    cleanup_item.click()
+    page.wait_for_timeout(500)
+
+    # Modal should appear with some content
+    expect(page.locator("#cleanup-modal")).to_be_visible()
+    expect(page.locator("#cleanup-content")).not_to_be_empty()
+
+    # Close modal
+    page.locator("#close-cleanup").click()
+    expect(page.locator("#cleanup-modal")).not_to_be_visible()
+
+    # Verify console logs
+    log_text = "\n".join(console_errors["messages"])
+    assert "[showCleanup]" in log_text
+
+
 def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     """[Demo] mode: App-only menu items are hidden."""
     page.goto(pwa_url)
@@ -638,3 +669,4 @@ def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     expect(page.locator("#nav-stats")).not_to_be_visible()
     expect(page.locator("#nav-validate")).not_to_be_visible()
     expect(page.locator("#nav-status")).not_to_be_visible()
+    expect(page.locator("#nav-cleanup")).not_to_be_visible()
