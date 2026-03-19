@@ -79,6 +79,12 @@ let sessionAppearances = new Map();
 let completedCount = 0;
 /** @type {number} Total unique positions in original session */
 let sessionOriginalSize = 0;
+/** @type {?number} Timer ID for the wrong-move animation sequence */
+let animationTimer = null;
+
+// --- Animation constants ---
+const CATEGORY_LABELS = { blunder: '??', mistake: '?', inaccuracy: '?!' };
+const CATEGORY_COLORS = { blunder: '#e94560', mistake: '#f0a500', inaccuracy: '#999' };
 
 /**
  * @typedef {Object} SRSState
@@ -315,6 +321,94 @@ function updateMaterialBalance(fen, orientation) {
     topEl.textContent = blackCaptured + (whiteAdv > 0 ? diffStr : '');
     bottomEl.textContent = whiteCaptured + (whiteAdv > 0 ? '' : diffStr);
   }
+}
+
+/**
+ * Format seconds into MM:SS display.
+ * @param {number} seconds - Time in seconds.
+ * @returns {string} Formatted time string (e.g. "09:00").
+ */
+function formatClock(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/**
+ * Update clock displays for a position.
+ * Top clock = opponent, bottom clock = player (matches board orientation).
+ * Hides clocks if position.clock is absent.
+ * @param {Object} position - Training position with optional clock field.
+ */
+function updateClocks(position) {
+  const clockTop = document.getElementById('clock-top');
+  const clockBottom = document.getElementById('clock-bottom');
+  if (!position.clock) {
+    clockTop.classList.add('hidden');
+    clockBottom.classList.add('hidden');
+    return;
+  }
+  console.log(`[updateClocks] player=${position.clock.player}s, opponent=${position.clock.opponent}s`);
+  clockTop.textContent = formatClock(position.clock.opponent);
+  clockBottom.textContent = formatClock(position.clock.player);
+  clockTop.classList.remove('hidden');
+  clockBottom.classList.remove('hidden');
+}
+
+/**
+ * Animate the player's wrong move on the board, show annotation, then reset.
+ * Sequence: 500ms wait → animate move + show badge → 1500ms wait → reset + enable.
+ * If chess.move() fails (bad SAN), skips animation and falls back to text prompt.
+ * @param {Object} position - Training position.
+ */
+function animateWrongMove(position) {
+  const chess = new Chess(position.fen);
+  let move;
+  try {
+    move = chess.move(position.player_move);
+  } catch (err) {
+    console.log(`[animateWrongMove] Cannot parse player_move "${position.player_move}", skipping animation`);
+    document.getElementById('prompt').textContent =
+      `${position.context || ''} You played ${position.player_move}. Can you find a better move?`;
+    cg.set({ movable: { color: position.player_color, dests: getLegalDests(position.fen) } });
+    return;
+  }
+  if (!move) {
+    console.log(`[animateWrongMove] Invalid move "${position.player_move}", skipping animation`);
+    document.getElementById('prompt').textContent =
+      `${position.context || ''} You played ${position.player_move}. Can you find a better move?`;
+    cg.set({ movable: { color: position.player_color, dests: getLegalDests(position.fen) } });
+    return;
+  }
+
+  const from = move.from;
+  const to = move.to;
+  const category = position.category || 'mistake';
+  console.log(`[animateWrongMove] ${from}→${to}, category=${category}`);
+
+  // Disable moves during animation
+  cg.set({ movable: { dests: new Map() } });
+
+  // Step 1: 500ms delay, then animate the wrong move
+  animationTimer = setTimeout(() => {
+    cg.move(from, to);
+    // Show annotation badge via autoShapes
+    cg.set({ drawable: { autoShapes: [
+      { orig: to, label: { text: CATEGORY_LABELS[category], fill: CATEGORY_COLORS[category] } }
+    ]}});
+
+    // Step 2: 1500ms delay, then reset to original position
+    animationTimer = setTimeout(() => {
+      cg.set({
+        fen: position.fen,
+        lastMove: undefined,
+        drawable: { autoShapes: [] },
+        movable: { color: position.player_color, dests: getLegalDests(position.fen) },
+      });
+      document.getElementById('prompt').textContent = 'Can you find a better move?';
+      animationTimer = null;
+    }, 1500);
+  }, 500);
 }
 
 /**
@@ -714,6 +808,12 @@ function showPosition(index) {
     return;
   }
 
+  // Cancel any in-progress animation from a previous position
+  if (animationTimer) {
+    clearTimeout(animationTimer);
+    animationTimer = null;
+  }
+
   currentIndex = index;
   attempts = 0;
   const position = session[index];
@@ -724,9 +824,7 @@ function showPosition(index) {
   sessionAppearances.set(position.id, count);
 
   document.getElementById('progress').textContent = `${completedCount + 1} / ${sessionOriginalSize}`;
-  const context = position.context || '';
-  document.getElementById('prompt').textContent =
-    `${context} You played ${position.player_move}. Can you find a better move?`;
+  document.getElementById('prompt').textContent = position.context || '';
   document.getElementById('game-info').textContent = '';
 
   document.getElementById('feedback').classList.add('hidden');
@@ -736,10 +834,13 @@ function showPosition(index) {
   document.getElementById('pv-line').classList.add('hidden');
   document.getElementById('eval-summary').classList.add('hidden');
   document.getElementById('dismiss-btn').classList.add('hidden');
+  document.getElementById('retry-btn').classList.add('hidden');
   const seeMoves = document.getElementById('see-moves');
   if (seeMoves) seeMoves.classList.add('hidden');
 
   setupBoard(position);
+  updateClocks(position);
+  animateWrongMove(position);
 }
 
 function showSummary() {
