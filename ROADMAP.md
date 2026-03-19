@@ -34,12 +34,12 @@ An item is [x] when ALL applicable criteria are met:
 ## 3. Expose CLI → PWA (shared infrastructure)
 
 ### 3a. Menu wiring pattern + instant endpoints
-- [ ] Add E2E app_url fixture: FastAPI server for [App] mode testing (pwa_url stays for [Demo])
-- [ ] Establish menu → API → CLI wiring pattern (first end-to-end item)
-- [c] train --stats (CLI: print_stats) ← quickest win, proves the pattern
-- [ ] Extract get_stats_data() from print_stats (returns dict, CLI unchanged)
-- [ ] GET /api/train/stats — stats in PWA (dashboard or menu item)
-- [ ] Unit + E2E tests for /api/train/stats
+- [x] Add E2E app_url fixture: FastAPI server for [App] mode testing (pwa_url stays for [Demo])
+- [x] Establish menu → API → CLI wiring pattern (first end-to-end item)
+- [x] train --stats (CLI: print_stats) ← quickest win, proves the pattern
+- [x] Extract get_stats_data() from print_stats (returns dict, CLI unchanged)
+- [x] GET /api/train/stats — stats in PWA (dashboard or menu item)
+- [x] Unit + E2E tests for /api/train/stats
 - [c] validate (CLI: validate_pgn) ← instant, no SSE needed
 - [ ] POST /api/pgn/validate — trigger from menu
 - [c] status (CLI: show_status) ← instant
