@@ -135,6 +135,17 @@ Rules learned from debugging the "See moves" link (hours lost to silent failures
 
 ---
 
+## ROADMAP Maintenance
+
+The ROADMAP is a living document. Re-evaluate it at these triggers:
+- **After completing a sub-section** (e.g., 3a done → review before starting 3b)
+- **When hitting unexpected complexity** that changes priorities or reveals new dependencies
+- **When the user asks** (`/plan` or "réévalue la roadmap")
+
+A review checks: dependency ordering still correct? New gaps? DoD still clear? Priorities still make sense?
+
+---
+
 ## Chess Context
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for chess-specific context: player profile, repertoire, PGN conventions, 2-zone workflow, and coaching journal rules.
