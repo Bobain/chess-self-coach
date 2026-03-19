@@ -1067,46 +1067,69 @@ def refresh_explanations() -> None:
         print("  💡 Run /review-training to verify text quality")
 
 
+def get_stats_data(project_root: Path) -> dict:
+    """Compute training statistics from training_data.json.
+
+    Args:
+        project_root: Path to the project root containing training_data.json.
+
+    Returns:
+        Dict with keys: generated, total, by_category, by_source.
+
+    Raises:
+        FileNotFoundError: If training_data.json does not exist.
+    """
+    data_path = project_root / "training_data.json"
+    if not data_path.exists():
+        raise FileNotFoundError(f"No training data at {data_path}")
+
+    with open(data_path) as f:
+        data = json.load(f)
+
+    positions = data.get("positions", [])
+
+    categories: dict[str, int] = {}
+    for p in positions:
+        cat = p.get("category", "unknown")
+        categories[cat] = categories.get(cat, 0) + 1
+
+    sources: dict[str, int] = {}
+    for p in positions:
+        src = p.get("game", {}).get("source", "unknown")
+        sources[src] = sources.get(src, 0) + 1
+
+    return {
+        "generated": data.get("generated", "unknown"),
+        "total": len(positions),
+        "by_category": categories,
+        "by_source": sources,
+    }
+
+
 def print_stats() -> None:
     """Show training progress from training_data.json."""
     root = _find_project_root()
-    data_path = root / "training_data.json"
-
-    if not data_path.exists():
+    try:
+        stats = get_stats_data(root)
+    except FileNotFoundError:
         print(
             "No training data found. Run: chess-self-coach train --prepare",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    with open(data_path) as f:
-        data = json.load(f)
-
-    positions = data.get("positions", [])
-    if not positions:
+    if stats["total"] == 0:
         print("  No positions in training data.")
         return
 
     print("\n  Training Data Stats")
-    print(f"  Generated: {data.get('generated', '?')}")
-    print(f"  Total positions: {len(positions)}")
-
-    # By category
-    categories: dict[str, int] = {}
-    for p in positions:
-        cat = p.get("category", "unknown")
-        categories[cat] = categories.get(cat, 0) + 1
+    print(f"  Generated: {stats['generated']}")
+    print(f"  Total positions: {stats['total']}")
 
     print("\n  By category:")
     for cat in ["blunder", "mistake", "inaccuracy"]:
-        print(f"    {cat.capitalize()}: {categories.get(cat, 0)}")
-
-    # By source
-    sources: dict[str, int] = {}
-    for p in positions:
-        src = p.get("game", {}).get("source", "unknown")
-        sources[src] = sources.get(src, 0) + 1
+        print(f"    {cat.capitalize()}: {stats['by_category'].get(cat, 0)}")
 
     print("\n  By source:")
-    for src, count in sorted(sources.items()):
+    for src, count in sorted(stats["by_source"].items()):
         print(f"    {src}: {count}")
