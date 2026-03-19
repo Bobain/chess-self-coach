@@ -530,3 +530,46 @@ def test_app_mode_smoke(page, app_url):
 
     status = page.evaluate("() => fetch('/api/status').then(r => r.json())")
     assert status["mode"] == "app"
+
+
+def test_app_mode_stats_modal(page, app_url, console_errors):
+    """[App] mode: Training stats menu item opens modal with stats."""
+    page.goto(app_url)
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    # Open menu
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+
+    # Stats item should be visible and enabled
+    stats_item = page.locator("#nav-stats")
+    expect(stats_item).to_be_visible()
+    expect(stats_item).not_to_have_class("disabled")
+
+    # Click stats
+    stats_item.click()
+    page.wait_for_timeout(500)
+
+    # Modal should appear with stats from fixture data (4 positions)
+    expect(page.locator("#stats-modal")).to_be_visible()
+    expect(page.locator("#stats-content")).to_contain_text("Total positions")
+    expect(page.locator("#stats-content")).to_contain_text("4")
+
+    # Close modal
+    page.locator("#close-stats").click()
+    expect(page.locator("#stats-modal")).not_to_be_visible()
+
+    # Verify console logs
+    log_text = "\n".join(console_errors["messages"])
+    assert "[showStats]" in log_text
+
+
+def test_app_mode_stats_hidden_in_demo(page, pwa_url):
+    """[Demo] mode: Training stats menu item is hidden."""
+    page.goto(pwa_url)
+    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+
+    expect(page.locator("#nav-stats")).not_to_be_visible()
