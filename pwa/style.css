@@ -428,13 +428,19 @@ cg-container {
   font-size: 0.9rem;
 }
 
-#reset-progress {
-  background: var(--accent);
+.modal-close {
+  background: var(--primary);
   color: white;
 }
 
-#close-settings {
-  background: var(--primary);
+.modal-body {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+#reset-progress {
+  background: var(--accent);
   color: white;
 }
 
@@ -445,9 +451,7 @@ cg-container {
 }
 
 #stats-content {
-  margin-bottom: 1rem;
   font-size: 0.95rem;
-  line-height: 1.8;
 }
 
 #stats-content .stats-label {
@@ -459,14 +463,7 @@ cg-container {
   font-weight: 600;
 }
 
-#close-stats {
-  background: var(--primary);
-  color: white;
-}
-
 #validate-content {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
   line-height: 1.6;
   max-height: 60vh;
   overflow-y: auto;
@@ -492,17 +489,6 @@ cg-container {
   color: var(--text-dim);
 }
 
-#close-validate {
-  background: var(--primary);
-  color: white;
-}
-
-#status-content {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.8;
-}
-
 .status-section {
   margin-bottom: 0.75rem;
 }
@@ -517,28 +503,6 @@ cg-container {
 
 .status-file {
   padding-left: 1rem;
-}
-
-#close-status {
-  background: var(--primary);
-  color: white;
-}
-
-#cleanup-content {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.8;
-}
-
-#close-cleanup {
-  background: var(--primary);
-  color: white;
-}
-
-#refresh-content {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.8;
 }
 
 #refresh-progress {
@@ -569,14 +533,7 @@ cg-container {
   color: var(--text-dim);
 }
 
-#close-refresh {
-  background: var(--primary);
-  color: white;
-}
-
 #journal-content {
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
   line-height: 1.6;
   max-height: 60vh;
   overflow-y: auto;
@@ -636,15 +593,8 @@ cg-container {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
-#close-journal {
-  background: var(--primary);
-  color: white;
-}
-
 #about-content {
-  margin-bottom: 1rem;
   font-size: 0.95rem;
-  line-height: 1.8;
 }
 
 #about-content a {
@@ -663,11 +613,6 @@ cg-container {
   font-weight: 600;
 }
 
-#close-config {
-  background: var(--primary);
-  color: white;
-}
-
 .modal-content input[type="text"] {
   margin-left: 0.5rem;
   padding: 0.3rem 0.5rem;
@@ -675,11 +620,6 @@ cg-container {
   color: var(--text);
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 4px;
-}
-
-#close-about {
-  background: var(--primary);
-  color: white;
 }
 
 /* Desktop: side-by-side layout */
