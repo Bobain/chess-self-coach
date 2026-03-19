@@ -160,6 +160,38 @@ def test_train_stats_missing_data(tmp_path):
     assert resp.status_code == 404
 
 
+# --- /api/pgn/validate ---
+
+
+_TEST_PGN = """\
+[Event "Test Chapter"]
+[Site "?"]
+[Result "*"]
+
+1. e4 {Italian Game (ECO C50). THEORY: main line.} e5 {Plan: develop pieces.} *
+"""
+
+
+def test_pgn_validate_returns_results(tmp_path):
+    """POST /api/pgn/validate returns validation results for PGN files."""
+    (tmp_path / "test.pgn").write_text(_TEST_PGN)
+    with patch.object(server, "_project_root", tmp_path):
+        resp = client.post("/api/pgn/validate")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body["files"]) == 1
+    assert body["files"][0]["file"] == "test.pgn"
+    assert len(body["files"][0]["chapters"]) == 1
+    assert body["files"][0]["chapters"][0]["name"] == "Test Chapter"
+
+
+def test_pgn_validate_no_files(tmp_path):
+    """POST /api/pgn/validate returns 404 when no PGN files exist."""
+    with patch.object(server, "_project_root", tmp_path):
+        resp = client.post("/api/pgn/validate")
+    assert resp.status_code == 404
+
+
 # --- Port scanner ---
 
 

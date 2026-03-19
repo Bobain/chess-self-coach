@@ -111,6 +111,28 @@ class StatsResponse(BaseModel):
     by_source: dict[str, int]
 
 
+class ChapterResult(BaseModel):
+    """Validation result for one PGN chapter."""
+
+    name: str
+    errors: list[str]
+    warnings: list[str]
+    infos: list[str]
+
+
+class FileValidation(BaseModel):
+    """Validation result for one PGN file."""
+
+    file: str
+    chapters: list[ChapterResult]
+
+
+class ValidateResponse(BaseModel):
+    """Response body for /api/pgn/validate."""
+
+    files: list[FileValidation]
+
+
 # --- API routes ---
 
 
@@ -166,6 +188,25 @@ async def train_stats() -> StatsResponse:
             detail="No training data. Run: chess-self-coach train --prepare",
         )
     return StatsResponse(**stats)
+
+
+@app.post("/api/pgn/validate")
+async def pgn_validate() -> ValidateResponse:
+    """Validate all PGN files in the project root."""
+    from chess_self_coach.validate import validate_pgn
+
+    pgn_files = sorted(_project_root.glob("*.pgn"))
+    if not pgn_files:
+        raise HTTPException(status_code=404, detail="No PGN files found")
+
+    results = []
+    for pgn_path in pgn_files:
+        chapters = validate_pgn(pgn_path)
+        results.append(FileValidation(
+            file=pgn_path.name,
+            chapters=[ChapterResult(**ch) for ch in chapters],
+        ))
+    return ValidateResponse(files=results)
 
 
 # --- Dynamic file routes (before StaticFiles mount) ---
