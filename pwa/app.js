@@ -951,6 +951,44 @@ function startSession() {
   showPosition(0);
 }
 
+// --- Modal data helper ---
+
+/**
+ * Show a modal, fetch data from an API, and build content via callback.
+ * Handles loading state, error responses, and connection failures.
+ * @param {string} modalId - ID of the modal element.
+ * @param {string} contentId - ID of the content div inside the modal.
+ * @param {string} apiUrl - API endpoint to fetch.
+ * @param {Function} buildFn - Callback receiving (contentEl, data) to build DOM.
+ * @param {Object} [fetchOpts] - Optional fetch options (e.g. { method: 'POST' }).
+ * @async
+ */
+async function showModalWithData(modalId, contentId, apiUrl, buildFn, fetchOpts) {
+  const modal = document.getElementById(modalId);
+  const content = document.getElementById(contentId);
+  if (!modal || !content) {
+    console.error(`[showModalWithData] ${modalId} elements not found`);
+    return;
+  }
+  content.textContent = 'Loading...';
+  modal.classList.remove('hidden');
+  try {
+    const resp = await fetch(apiUrl, fetchOpts);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
+      console.log(`[showModalWithData] ${modalId} API error:`, resp.status, err.detail);
+      content.textContent = err.detail || 'Failed to load.';
+      return;
+    }
+    const data = await resp.json();
+    content.textContent = '';
+    buildFn(content, data);
+  } catch (err) {
+    console.error(`[showModalWithData] ${modalId} fetch failed:`, err);
+    content.textContent = 'Failed to connect to server.';
+  }
+}
+
 // --- Stats modal ---
 
 /**
@@ -960,28 +998,8 @@ function startSession() {
  */
 async function showStats() {
   console.log('[showStats] Fetching training stats...');
-  const modal = document.getElementById('stats-modal');
-  const content = document.getElementById('stats-content');
-  if (!modal || !content) {
-    console.error('[showStats] Modal or content element not found');
-    return;
-  }
-
-  content.textContent = 'Loading...';
-  modal.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/train/stats');
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[showStats] API error:', resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to load stats.';
-      return;
-    }
-    const stats = await resp.json();
+  await showModalWithData('stats-modal', 'stats-content', '/api/train/stats', (content, stats) => {
     console.log('[showStats] Stats received:', JSON.stringify(stats));
-
-    content.textContent = '';
 
     const addLine = (labelText, valueText) => {
       const p = document.createElement('p');
@@ -1021,10 +1039,7 @@ async function showStats() {
       const p = addLine(src + ': ', count);
       p.style.paddingLeft = '1rem';
     }
-  } catch (err) {
-    console.error('[showStats] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
-  }
+  });
 }
 
 // --- Cleanup modal ---
@@ -1036,28 +1051,8 @@ async function showStats() {
  */
 async function showCleanup() {
   console.log('[showCleanup] Triggering study cleanup...');
-  const modal = document.getElementById('cleanup-modal');
-  const content = document.getElementById('cleanup-content');
-  if (!modal || !content) {
-    console.error('[showCleanup] Modal or content element not found');
-    return;
-  }
-
-  content.textContent = 'Cleaning up...';
-  modal.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/pgn/cleanup', { method: 'POST' });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[showCleanup] API error:', resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to cleanup.';
-      return;
-    }
-    const data = await resp.json();
+  await showModalWithData('cleanup-modal', 'cleanup-content', '/api/pgn/cleanup', (content, data) => {
     console.log('[showCleanup] Results:', data.total_deleted, 'deleted');
-
-    content.textContent = '';
 
     if (data.total_deleted === 0) {
       content.textContent = 'No empty default chapters found.';
@@ -1077,10 +1072,7 @@ async function showCleanup() {
         content.appendChild(p);
       }
     }
-  } catch (err) {
-    console.error('[showCleanup] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
-  }
+  }, { method: 'POST' });
 }
 
 // --- Status modal ---
@@ -1092,28 +1084,8 @@ async function showCleanup() {
  */
 async function showProjectStatus() {
   console.log('[showProjectStatus] Fetching project status...');
-  const modal = document.getElementById('status-modal');
-  const content = document.getElementById('status-content');
-  if (!modal || !content) {
-    console.error('[showProjectStatus] Modal or content element not found');
-    return;
-  }
-
-  content.textContent = 'Loading...';
-  modal.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/pgn/status');
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[showProjectStatus] API error:', resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to load status.';
-      return;
-    }
-    const data = await resp.json();
+  await showModalWithData('status-modal', 'status-content', '/api/pgn/status', (content, data) => {
     console.log('[showProjectStatus] Status received, config_ok:', data.config_ok);
-
-    content.textContent = '';
 
     if (!data.config_ok) {
       content.textContent = 'config.json not found. Run chess-self-coach setup.';
@@ -1183,10 +1155,7 @@ async function showProjectStatus() {
       }
       content.appendChild(sugSection);
     }
-  } catch (err) {
-    console.error('[showProjectStatus] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
-  }
+  });
 }
 
 // --- Validate modal ---
@@ -1198,28 +1167,8 @@ async function showProjectStatus() {
  */
 async function showValidate() {
   console.log('[showValidate] Fetching PGN validation...');
-  const modal = document.getElementById('validate-modal');
-  const content = document.getElementById('validate-content');
-  if (!modal || !content) {
-    console.error('[showValidate] Modal or content element not found');
-    return;
-  }
-
-  content.textContent = 'Validating...';
-  modal.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/pgn/validate', { method: 'POST' });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[showValidate] API error:', resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to validate.';
-      return;
-    }
-    const data = await resp.json();
+  await showModalWithData('validate-modal', 'validate-content', '/api/pgn/validate', (content, data) => {
     console.log('[showValidate] Results received:', data.files.length, 'file(s)');
-
-    content.textContent = '';
 
     for (const file of data.files) {
       const fileEl = document.createElement('p');
@@ -1252,10 +1201,7 @@ async function showValidate() {
         }
       }
     }
-  } catch (err) {
-    console.error('[showValidate] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
-  }
+  }, { method: 'POST' });
 }
 
 // --- Refresh training ---
