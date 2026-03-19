@@ -909,6 +909,34 @@ function startSession() {
  */
 async function init() {
   console.log('[init] Chess Self-Coach PWA starting...');
+
+  // Detect app mode: try /api/status to see if FastAPI backend is running
+  try {
+    const statusResp = await fetch('/api/status');
+    if (statusResp.ok) {
+      const statusData = await statusResp.json();
+      appMode = 'app';
+      appVersion = statusData.version || '';
+      console.log(`[init] App mode detected: v${appVersion}, SF: ${statusData.stockfish_version}`);
+
+      // Hide demo banner
+      const banner = document.getElementById('demo-banner');
+      if (banner) banner.classList.add('hidden');
+
+      // Show app-only menu items (greyed out for now)
+      document.querySelectorAll('.nav-app-only').forEach((el) => {
+        el.classList.remove('hidden');
+        el.classList.add('disabled');
+      });
+
+      // Set version in menu
+      document.getElementById('nav-version').textContent = 'v' + appVersion;
+    }
+  } catch {
+    // No backend — demo mode (GitHub Pages)
+    console.log('[init] Demo mode (no backend)');
+  }
+
   // Load dependencies from CDN
   try {
     const [cgMod, chessMod] = await Promise.all([
