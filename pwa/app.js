@@ -1678,131 +1678,44 @@ async function init() {
   menuBtn.addEventListener('click', openMenu);
   navOverlay.addEventListener('click', closeMenu);
 
-  // Wire up nav-stats (app-only)
-  const navStats = document.getElementById('nav-stats');
-  if (navStats) {
-    navStats.addEventListener('click', () => {
-      if (navStats.classList.contains('disabled')) return;
-      console.log('[init] nav-stats clicked');
+  /**
+   * Wire a nav menu item: click → disabled check → closeMenu → show function.
+   * Optionally wire the modal's close button.
+   * @param {string} navId - ID of the nav <li> element.
+   * @param {Function} showFn - Function to call when clicked.
+   * @param {string} [modalId] - Modal ID; derives close button as "close-{name}".
+   */
+  function wireNavItem(navId, showFn, modalId) {
+    const item = document.getElementById(navId);
+    if (!item) { console.error(`[init] ${navId} not found`); return; }
+    item.addEventListener('click', () => {
+      if (item.classList.contains('disabled')) return;
+      console.log(`[init] ${navId} clicked`);
       closeMenu();
-      showStats();
+      showFn();
     });
-  } else {
-    console.error('[init] nav-stats element not found');
+    if (modalId) {
+      const closeId = 'close-' + modalId.replace('-modal', '');
+      document.getElementById(closeId).addEventListener('click', () => {
+        document.getElementById(modalId).classList.add('hidden');
+      });
+    }
   }
 
-  document.getElementById('close-stats').addEventListener('click', () => {
-    document.getElementById('stats-modal').classList.add('hidden');
-  });
-
-  // Wire up nav-validate (app-only)
-  const navValidate = document.getElementById('nav-validate');
-  if (navValidate) {
-    navValidate.addEventListener('click', () => {
-      if (navValidate.classList.contains('disabled')) return;
-      console.log('[init] nav-validate clicked');
-      closeMenu();
-      showValidate();
-    });
-  } else {
-    console.error('[init] nav-validate element not found');
-  }
-
-  document.getElementById('close-validate').addEventListener('click', () => {
-    document.getElementById('validate-modal').classList.add('hidden');
-  });
-
-  // Wire up nav-status (app-only)
-  const navStatus = document.getElementById('nav-status');
-  if (navStatus) {
-    navStatus.addEventListener('click', () => {
-      if (navStatus.classList.contains('disabled')) return;
-      console.log('[init] nav-status clicked');
-      closeMenu();
-      showProjectStatus();
-    });
-  } else {
-    console.error('[init] nav-status element not found');
-  }
-
-  document.getElementById('close-status').addEventListener('click', () => {
-    document.getElementById('status-modal').classList.add('hidden');
-  });
-
-  // Wire up nav-cleanup (app-only)
-  const navCleanup = document.getElementById('nav-cleanup');
-  if (navCleanup) {
-    navCleanup.addEventListener('click', () => {
-      if (navCleanup.classList.contains('disabled')) return;
-      console.log('[init] nav-cleanup clicked');
-      closeMenu();
-      showCleanup();
-    });
-  } else {
-    console.error('[init] nav-cleanup element not found');
-  }
-
-  document.getElementById('close-cleanup').addEventListener('click', () => {
-    document.getElementById('cleanup-modal').classList.add('hidden');
-  });
-
-  // Wire up nav-refresh (app-only)
-  const navRefresh = document.getElementById('nav-refresh');
-  if (navRefresh) {
-    navRefresh.addEventListener('click', () => {
-      if (navRefresh.classList.contains('disabled')) return;
-      console.log('[init] nav-refresh clicked');
-      closeMenu();
-      refreshTraining();
-    });
-  } else {
-    console.error('[init] nav-refresh element not found');
-  }
-
-  document.getElementById('close-refresh').addEventListener('click', () => {
-    document.getElementById('refresh-modal').classList.add('hidden');
-  });
-
-  // Wire up nav-journal (app-only)
-  const navJournal = document.getElementById('nav-journal');
-  if (navJournal) {
-    navJournal.addEventListener('click', () => {
-      if (navJournal.classList.contains('disabled')) return;
-      console.log('[init] nav-journal clicked');
-      closeMenu();
-      showJournal();
-    });
-  } else {
-    console.error('[init] nav-journal element not found');
-  }
-
-  document.getElementById('close-journal').addEventListener('click', () => {
-    document.getElementById('journal-modal').classList.add('hidden');
-  });
+  wireNavItem('nav-stats', showStats, 'stats-modal');
+  wireNavItem('nav-validate', showValidate, 'validate-modal');
+  wireNavItem('nav-status', showProjectStatus, 'status-modal');
+  wireNavItem('nav-cleanup', showCleanup, 'cleanup-modal');
+  wireNavItem('nav-refresh', refreshTraining, 'refresh-modal');
+  wireNavItem('nav-journal', showJournal, 'journal-modal');
+  wireNavItem('nav-config', showConfig, 'config-modal');
 
   document.getElementById('journal-back').addEventListener('click', () => {
     showJournal();
   });
 
-  // Wire up nav-config (app-only)
-  const navConfig = document.getElementById('nav-config');
-  if (navConfig) {
-    navConfig.addEventListener('click', () => {
-      if (navConfig.classList.contains('disabled')) return;
-      console.log('[init] nav-config clicked');
-      closeMenu();
-      showConfig();
-    });
-  } else {
-    console.error('[init] nav-config element not found');
-  }
-
   document.getElementById('save-config').addEventListener('click', () => {
     saveConfig();
-  });
-
-  document.getElementById('close-config').addEventListener('click', () => {
-    document.getElementById('config-modal').classList.add('hidden');
   });
 
   // Wire up nav-about (both modes)
