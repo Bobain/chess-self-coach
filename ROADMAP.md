@@ -70,9 +70,9 @@ An item is [x] when ALL applicable criteria are met:
 
 ## 5. Settings & Configuration
 
-### 5a. Settings UI (no backend needed)
-- [ ] Move settings into hamburger menu (replace gear icon)
-- [ ] Display Stockfish version in About/menu header
+### 5a. Settings UI (no backend needed) — DONE
+- [x] Move settings into hamburger menu (replace gear icon)
+- [x] Display Stockfish version in About/menu header
 
 ### 5b. Backend config (needs API endpoints)
 - [ ] Settings sync API — localStorage ↔ backend config.json
