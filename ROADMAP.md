@@ -63,10 +63,29 @@ An item is [x] when ALL applicable criteria are met:
   - `--engine /path` → future config setting
 
 ## 4. Chess Prep — New features
-- [ ] Coaching journal viewer (browse coaching/topics/)
-- [ ] PGN viewer/editor in PWA
-- [ ] Repertoire explorer (interactive tree)
-- [ ] Opening quiz mode (drill repertoire lines)
+
+### 4a. About modal (quick win)
+- [ ] About modal: app name, version, GitHub link, SF version (in [app] mode)
+- [ ] Click handler for `#nav-about` (currently no-op)
+- [ ] Works in [demo] (static info) and [app] (version from /api/status)
+
+### 4b. Coaching journal viewer
+- [ ] GET /api/coaching/topics — list topic files from coaching/topics/
+- [ ] GET /api/coaching/topics/{slug} — read one topic (return markdown)
+- [ ] PWA: journal browser modal (list → detail view, render markdown as HTML)
+- [ ] Menu item: "Coaching journal" (nav-app-only)
+
+### 4c. PGN viewer
+- [ ] ⚠️ UX DESIGN PHASE: interactive board + move tree, or read-only text view?
+- [ ] GET /api/pgn/files/{name} — read one PGN file
+- [ ] PWA: PGN viewer modal with chessboard (reuse chessground)
+- [ ] Menu item: "View PGN" (nav-app-only)
+
+### 4d. Repertoire explorer + Opening quiz (needs UX design phase)
+- [ ] ⚠️ UX DESIGN PHASE: tree rendering, drill mode, scoring
+- [ ] Repertoire explorer: interactive variation tree from PGN
+- [ ] Opening quiz: drill correct moves from repertoire lines
+- [ ] May depend on 5b (TBD after design phase)
 
 ## 5. Settings & Configuration
 
@@ -74,11 +93,12 @@ An item is [x] when ALL applicable criteria are met:
 - [x] Move settings into hamburger menu (replace gear icon)
 - [x] Display Stockfish version in About/menu header
 
-### 5b. Backend config (needs API endpoints)
+### 5b. Backend config (needs API endpoints) — low priority
 - [ ] Settings sync API — localStorage ↔ backend config.json
 - [ ] Edit config from PWA (usernames, token, SF path)
 Note: GET /api/config/status removed — already covered by GET /api/pgn/status
 (has_token, stockfish.available/version).
+Note: Users set config once via `chess-self-coach setup`. PWA editing is nice-to-have.
 
 ## Dependency diagram
 
@@ -91,14 +111,21 @@ Section 2 (Menu + Mode detection) ← DONE
      ├──► Section 3a (instant endpoints) ← DONE
      │         │
      │         ▼ (pattern established)
-     │    Section 3b (SSE job runner + long ops)
+     │    Section 3b (SSE job runner + long ops) ← DONE
      │
-     ├──► Section 5a (Settings UI) ← independent, localStorage only
+     ├──► Section 5a (Settings UI) ← DONE
      │
-     └──► Section 5b (Config API) ← after 3a (same endpoint pattern)
-               │
-               ▼
-          Section 4 (New features: journal, PGN viewer, quiz)
+     ├──► Section 4a (About modal) ← independent, no API needed for [demo]
+     │
+     ├──► Section 4b (Coaching journal) ← needs 2 new API endpoints
+     │         │
+     │         ▼ (API pattern reused)
+     │    Section 4c (PGN viewer) ← needs API + UX design
+     │         │
+     │         ▼ (PGN parsing reused)
+     │    Section 4d (Repertoire + quiz) ← needs UX design phase, may need 5b
+     │
+     └──► Section 5b (Config API) ← low priority, parallel with 4a-4c
 ```
 
 ## Existing but undocumented features
