@@ -371,6 +371,17 @@ cg-container {
   background: var(--primary-hover);
 }
 
+.thinking {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 .hidden {
   display: none !important;
 }

@@ -61,6 +61,8 @@
         <a id="see-moves" class="see-moves-link hidden" target="_blank" rel="noopener">See moves played during the game</a>
       </div>
 
+      <p id="thinking-indicator" class="thinking hidden">Analyzing...</p>
+
       <div id="feedback" class="hidden">
         <p id="feedback-text"></p>
         <p id="explanation"></p>
@@ -85,6 +87,10 @@
       <label>
         Positions per session:
         <input type="number" id="session-size" min="1" max="50" value="10">
+      </label>
+      <label>
+        Analysis depth:
+        <input type="number" id="analysis-depth" min="1" max="30" value="12">
       </label>
       <label>
         Difficulty:

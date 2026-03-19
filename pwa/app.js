@@ -102,8 +102,8 @@ const CATEGORY_COLORS = { blunder: '#e94560', mistake: '#f0a500', inaccuracy: '#
 
 // --- Settings ---
 
-/** @type {{sessionSize: number, difficulty: string}} */
-const DEFAULT_SETTINGS = { sessionSize: 10, difficulty: 'all' };
+/** @type {{sessionSize: number, difficulty: string, analysisDepth: number}} */
+const DEFAULT_SETTINGS = { sessionSize: 10, difficulty: 'all', analysisDepth: 12 };
 
 /**
  * Load user settings from localStorage.
@@ -452,6 +452,53 @@ function setupBoard(position) {
 }
 
 /**
+ * Show the "Analyzing..." thinking indicator.
+ */
+function showThinking() {
+  const el = document.getElementById('thinking-indicator');
+  if (el) el.classList.remove('hidden');
+}
+
+/**
+ * Hide the thinking indicator.
+ */
+function hideThinking() {
+  const el = document.getElementById('thinking-indicator');
+  if (el) el.classList.add('hidden');
+}
+
+/**
+ * Get Stockfish's best move, using backend API in [app] mode or WASM in [demo].
+ * Falls back to WASM if the API call fails (e.g. server restarted).
+ * @param {string} fen - Position in FEN notation.
+ * @returns {Promise<string|null>} Best move in UCI notation or null.
+ */
+async function getStockfishBestMove(fen) {
+  const settings = loadSettings();
+  const depth = settings.analysisDepth || (appMode === 'app' ? 18 : 12);
+
+  if (appMode === 'app') {
+    try {
+      const resp = await fetch('/api/stockfish/bestmove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fen, depth }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        console.log(`[getStockfishBestMove] API response: ${data.bestmove} (depth ${depth})`);
+        return data.bestmove;
+      }
+      console.log('[getStockfishBestMove] API error, falling back to WASM');
+    } catch (err) {
+      console.log(`[getStockfishBestMove] API unreachable, WASM fallback: ${err.message}`);
+    }
+  }
+  // Demo mode or API fallback → use WASM
+  return getBestMove(fen, depth);
+}
+
+/**
  * Handle a move made on the board. Validates with chess.js, compares to
  * acceptable moves, and shows feedback. Allows up to 3 attempts.
  * @param {string} orig - Source square (e.g. "e2").
@@ -483,18 +530,20 @@ async function handleMove(orig, dest) {
     showFeedback(false, position, true);
     recordResult(false);
   } else {
-    // Wrong — show punishment move, then let the player retry
+    // Wrong — show opponent response, then let the player retry
     console.log('[handleMove] → WRONG, try again');
     showTryAgain();
+    showThinking();
     try {
       const chessAfter = new Chess(position.fen);
       chessAfter.move(san);
-      const bestUci = await getBestMove(chessAfter.fen(), 12);
+      const bestUci = await getStockfishBestMove(chessAfter.fen());
+      hideThinking();
       if (bestUci) {
         const from = bestUci.slice(0, 2);
         const to = bestUci.slice(2, 4);
-        console.log(`[handleMove] Punishment: ${from}→${to}`);
-        // Show the player's wrong move, then animate the punishment response
+        console.log(`[handleMove] Opponent response: ${from}→${to}`);
+        // Show the player's wrong move, then animate the opponent's response
         cg.set({ fen: chessAfter.fen(), lastMove: [orig, dest], movable: { dests: new Map() } });
         setTimeout(() => {
           cg.move(from, to);
@@ -504,7 +553,8 @@ async function handleMove(orig, dest) {
         setTimeout(() => setupBoard(position), 400);
       }
     } catch (err) {
-      console.log('[handleMove] Stockfish WASM unavailable, fallback:', err.message);
+      hideThinking();
+      console.log('[handleMove] Stockfish unavailable, fallback:', err.message);
       setTimeout(() => setupBoard(position), 400);
     }
   }
@@ -983,13 +1033,17 @@ async function init() {
     const settings = loadSettings();
     document.getElementById('session-size').value = settings.sessionSize;
     document.getElementById('difficulty').value = settings.difficulty;
+    const defaultDepth = appMode === 'app' ? 18 : 12;
+    document.getElementById('analysis-depth').value = settings.analysisDepth || defaultDepth;
     modal.classList.remove('hidden');
   });
 
   document.getElementById('close-settings').addEventListener('click', () => {
+    const defaultDepth = appMode === 'app' ? 18 : 12;
     const settings = {
       sessionSize: parseInt(document.getElementById('session-size').value) || 10,
       difficulty: document.getElementById('difficulty').value,
+      analysisDepth: parseInt(document.getElementById('analysis-depth').value) || defaultDepth,
     };
     saveSettings(settings);
     document.getElementById('settings-modal').classList.add('hidden');

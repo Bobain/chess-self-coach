@@ -394,7 +394,7 @@ def test_wrong_move_shows_punishment(page, pwa_url, console_errors):
     page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
 
     log_text = "\n".join(console_errors["messages"])
-    assert "[handleMove] Punishment:" in log_text
+    assert "[handleMove] Opponent response:" in log_text
 
 
 def test_retry_resets_position(page, pwa_url, console_errors):
@@ -448,7 +448,7 @@ def test_wrong_move_fallback_without_wasm(page, pwa_url, console_errors):
     # No Retry button (fallback resets the board automatically)
     expect(page.locator("#retry-btn")).not_to_be_visible()
     log_text = "\n".join(console_errors["messages"])
-    assert "[handleMove] Stockfish WASM unavailable" in log_text
+    assert "[handleMove] Stockfish unavailable" in log_text
 
 
 # --- Wrong move animation ---
