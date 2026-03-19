@@ -18,6 +18,12 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // API requests: pass through, never cache
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   // CDN resources (never change): cache-first
   if (url.origin !== self.location.origin) {
     event.respondWith(
