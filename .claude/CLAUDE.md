@@ -130,7 +130,7 @@ Rules learned from debugging the "See moves" link (hours lost to silent failures
 
 - The PWA service worker MUST use **network-first** for same-origin assets (always serve fresh files from server, cache as offline fallback).
 - **Cache-first** is only for CDN resources (which never change).
-- `serve_pwa()` creates a temp dir on each launch — the SW must fetch fresh files, not serve stale cache.
+- `server.py` serves files dynamically (no temp dir) — the SW must fetch fresh files, not serve stale cache.
 - Lesson: `skipWaiting()` + `clients.claim()` are NOT enough to invalidate cache-first responses from the old SW's fetch handler.
 
 ---

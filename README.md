@@ -26,7 +26,7 @@ YOUR GAMES                    STOCKFISH ANALYSIS              TRAINING
 
 ```bash
 chess-self-coach train --prepare    # fetch games + Stockfish analysis (~5 min)
-chess-self-coach train --serve      # open training in browser
+chess-self-coach                    # open training in browser
 ```
 
 ### What you see
@@ -104,7 +104,7 @@ chess-self-coach train --prepare --games 50         # more games
 chess-self-coach train --prepare --depth 12         # faster analysis
 
 # Open the training interface
-chess-self-coach train --serve
+chess-self-coach
 
 # Check your stats
 chess-self-coach train --stats
