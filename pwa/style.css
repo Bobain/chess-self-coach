@@ -506,6 +506,33 @@ cg-container {
   color: white;
 }
 
+#status-content {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.status-section {
+  margin-bottom: 0.75rem;
+}
+
+.status-section-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.status-ok { color: var(--correct); }
+.status-warn { color: #f0ad4e; }
+
+.status-file {
+  padding-left: 1rem;
+}
+
+#close-status {
+  background: var(--primary);
+  color: white;
+}
+
 /* Desktop: side-by-side layout */
 @media (min-width: 768px) {
   main {

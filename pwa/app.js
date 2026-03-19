@@ -1025,6 +1025,112 @@ async function showStats() {
   }
 }
 
+// --- Status modal ---
+
+/**
+ * Fetch project status from the API and display in a modal.
+ * Only available in [App] mode.
+ * @async
+ */
+async function showProjectStatus() {
+  console.log('[showProjectStatus] Fetching project status...');
+  const modal = document.getElementById('status-modal');
+  const content = document.getElementById('status-content');
+  if (!modal || !content) {
+    console.error('[showProjectStatus] Modal or content element not found');
+    return;
+  }
+
+  content.textContent = 'Loading...';
+  modal.classList.remove('hidden');
+
+  try {
+    const resp = await fetch('/api/pgn/status');
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
+      console.log('[showProjectStatus] API error:', resp.status, err.detail);
+      content.textContent = err.detail || 'Failed to load status.';
+      return;
+    }
+    const data = await resp.json();
+    console.log('[showProjectStatus] Status received, config_ok:', data.config_ok);
+
+    content.textContent = '';
+
+    if (!data.config_ok) {
+      content.textContent = 'config.json not found. Run chess-self-coach setup.';
+      return;
+    }
+
+    // Stockfish
+    const sfSection = document.createElement('div');
+    sfSection.className = 'status-section';
+    const sfTitle = document.createElement('p');
+    sfTitle.className = 'status-section-title';
+    sfTitle.textContent = 'Stockfish:';
+    sfSection.appendChild(sfTitle);
+    const sfStatus = document.createElement('p');
+    sfStatus.style.paddingLeft = '1rem';
+    sfStatus.className = data.stockfish.available ? 'status-ok' : 'status-warn';
+    sfStatus.textContent = data.stockfish.available ? data.stockfish.version : 'Not found';
+    sfSection.appendChild(sfStatus);
+    content.appendChild(sfSection);
+
+    // Token
+    const tokenSection = document.createElement('div');
+    tokenSection.className = 'status-section';
+    const tokenTitle = document.createElement('p');
+    tokenTitle.className = 'status-section-title';
+    tokenTitle.textContent = 'Lichess token:';
+    tokenSection.appendChild(tokenTitle);
+    const tokenStatus = document.createElement('p');
+    tokenStatus.style.paddingLeft = '1rem';
+    tokenStatus.className = data.has_token ? 'status-ok' : 'status-warn';
+    tokenStatus.textContent = data.has_token ? 'Configured' : 'Not configured';
+    tokenSection.appendChild(tokenStatus);
+    content.appendChild(tokenSection);
+
+    // Files
+    if (data.files.length > 0) {
+      const filesSection = document.createElement('div');
+      filesSection.className = 'status-section';
+      const filesTitle = document.createElement('p');
+      filesTitle.className = 'status-section-title';
+      filesTitle.textContent = 'PGN files:';
+      filesSection.appendChild(filesTitle);
+      for (const f of data.files) {
+        const p = document.createElement('p');
+        p.className = 'status-file';
+        const icon = f.study_configured ? '\u2713' : '\u26A0';
+        p.textContent = icon + ' ' + f.file + ' (' + f.chapters + ' chapters, ' + f.modified + ')';
+        filesSection.appendChild(p);
+      }
+      content.appendChild(filesSection);
+    }
+
+    // Suggestions
+    if (data.suggestions.length > 0) {
+      const sugSection = document.createElement('div');
+      sugSection.className = 'status-section';
+      const sugTitle = document.createElement('p');
+      sugTitle.className = 'status-section-title';
+      sugTitle.textContent = 'Suggestions:';
+      sugSection.appendChild(sugTitle);
+      for (const s of data.suggestions) {
+        const p = document.createElement('p');
+        p.style.paddingLeft = '1rem';
+        p.className = 'status-warn';
+        p.textContent = s;
+        sugSection.appendChild(p);
+      }
+      content.appendChild(sugSection);
+    }
+  } catch (err) {
+    console.error('[showProjectStatus] Fetch failed:', err);
+    content.textContent = 'Failed to connect to server.';
+  }
+}
+
 // --- Validate modal ---
 
 /**
@@ -1129,6 +1235,8 @@ async function init() {
       if (statsItem) statsItem.classList.remove('disabled');
       const validateItem = document.getElementById('nav-validate');
       if (validateItem) validateItem.classList.remove('disabled');
+      const statusItem = document.getElementById('nav-status');
+      if (statusItem) statusItem.classList.remove('disabled');
 
       // Set version in menu
       document.getElementById('nav-version').textContent = 'v' + appVersion;
@@ -1266,6 +1374,23 @@ async function init() {
 
   document.getElementById('close-validate').addEventListener('click', () => {
     document.getElementById('validate-modal').classList.add('hidden');
+  });
+
+  // Wire up nav-status (app-only)
+  const navStatus = document.getElementById('nav-status');
+  if (navStatus) {
+    navStatus.addEventListener('click', () => {
+      if (navStatus.classList.contains('disabled')) return;
+      console.log('[init] nav-status clicked');
+      closeMenu();
+      showProjectStatus();
+    });
+  } else {
+    console.error('[init] nav-status element not found');
+  }
+
+  document.getElementById('close-status').addEventListener('click', () => {
+    document.getElementById('status-modal').classList.add('hidden');
   });
 
   // Set version in menu header (populated later by mode detection)
