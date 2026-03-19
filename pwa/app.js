@@ -1256,6 +1256,85 @@ async function showValidate() {
   }
 }
 
+// --- Refresh training ---
+
+/**
+ * Start a training refresh job and display progress in a modal.
+ * POSTs to /api/train/prepare, then opens an EventSource on
+ * /api/jobs/{id}/events to stream progress updates.
+ * @async
+ */
+async function refreshTraining() {
+  console.log('[refreshTraining] Starting refresh...');
+  const modal = document.getElementById('refresh-modal');
+  const message = document.getElementById('refresh-message');
+  const progress = document.getElementById('refresh-progress');
+  const closeBtn = document.getElementById('close-refresh');
+  if (!modal || !message || !progress || !closeBtn) {
+    console.error('[refreshTraining] Modal elements not found');
+    return;
+  }
+
+  message.textContent = 'Starting...';
+  progress.value = 0;
+  closeBtn.classList.add('hidden');
+  modal.classList.remove('hidden');
+
+  try {
+    const resp = await fetch('/api/train/prepare', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
+      console.log('[refreshTraining] API error:', resp.status, err.detail);
+      message.textContent = err.detail || 'Failed to start refresh.';
+      closeBtn.classList.remove('hidden');
+      return;
+    }
+    const data = await resp.json();
+    const jobId = data.job_id;
+    console.log('[refreshTraining] Job started:', jobId);
+
+    const eventSource = new EventSource('/api/jobs/' + jobId + '/events');
+    eventSource.onmessage = async (e) => {
+      const event = JSON.parse(e.data);
+      console.log('[refreshTraining] Event:', event.phase, event.percent);
+      message.textContent = event.message || '';
+      if (event.percent != null) {
+        progress.value = event.percent;
+      }
+
+      if (event.phase === 'done' || event.phase === 'error') {
+        eventSource.close();
+        closeBtn.classList.remove('hidden');
+
+        if (event.phase === 'done') {
+          // Reload training data and restart session
+          try {
+            const tdResp = await fetch('training_data.json');
+            if (tdResp.ok) {
+              trainingData = await tdResp.json();
+              console.log('[refreshTraining] Reloaded training data:', trainingData.positions.length, 'positions');
+              srsState = loadSRSState();
+              startSession();
+            }
+          } catch (err) {
+            console.error('[refreshTraining] Failed to reload training data:', err);
+          }
+        }
+      }
+    };
+    eventSource.onerror = () => {
+      console.log('[refreshTraining] EventSource error');
+      eventSource.close();
+      message.textContent = 'Connection lost. Check server logs.';
+      closeBtn.classList.remove('hidden');
+    };
+  } catch (err) {
+    console.error('[refreshTraining] Fetch failed:', err);
+    message.textContent = 'Failed to connect to server.';
+    closeBtn.classList.remove('hidden');
+  }
+}
+
 // --- Init ---
 
 /**
@@ -1295,6 +1374,8 @@ async function init() {
       if (statusItem) statusItem.classList.remove('disabled');
       const cleanupItem = document.getElementById('nav-cleanup');
       if (cleanupItem) cleanupItem.classList.remove('disabled');
+      const refreshItem = document.getElementById('nav-refresh');
+      if (refreshItem) refreshItem.classList.remove('disabled');
 
       // Set version in menu
       document.getElementById('nav-version').textContent = 'v' + appVersion;
@@ -1466,6 +1547,23 @@ async function init() {
 
   document.getElementById('close-cleanup').addEventListener('click', () => {
     document.getElementById('cleanup-modal').classList.add('hidden');
+  });
+
+  // Wire up nav-refresh (app-only)
+  const navRefresh = document.getElementById('nav-refresh');
+  if (navRefresh) {
+    navRefresh.addEventListener('click', () => {
+      if (navRefresh.classList.contains('disabled')) return;
+      console.log('[init] nav-refresh clicked');
+      closeMenu();
+      refreshTraining();
+    });
+  } else {
+    console.error('[init] nav-refresh element not found');
+  }
+
+  document.getElementById('close-refresh').addEventListener('click', () => {
+    document.getElementById('refresh-modal').classList.add('hidden');
   });
 
   // Set version in menu header (populated later by mode detection)

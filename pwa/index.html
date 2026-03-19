@@ -36,7 +36,7 @@
       <li id="nav-validate" class="nav-item nav-app-only hidden">Validate PGN</li>
       <li id="nav-status" class="nav-item nav-app-only hidden">Project status</li>
       <li id="nav-cleanup" class="nav-item nav-app-only hidden">Cleanup studies</li>
-      <li id="nav-prepare" class="nav-item nav-app-only hidden" title="Coming soon">Prepare training</li>
+      <li id="nav-refresh" class="nav-item nav-app-only hidden">Refresh training</li>
       <li id="nav-import" class="nav-item nav-app-only hidden" title="Coming soon">Import games</li>
       <li class="nav-separator"></li>
       <li id="nav-about" class="nav-item">About</li>
@@ -152,6 +152,21 @@
       <div class="modal-actions">
         <span></span>
         <button id="close-cleanup">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh Training Modal -->
+  <div id="refresh-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Refresh Training</h2>
+      <div id="refresh-content">
+        <p id="refresh-message">Starting...</p>
+        <progress id="refresh-progress" max="100" value="0"></progress>
+      </div>
+      <div class="modal-actions">
+        <span></span>
+        <button id="close-refresh" class="hidden">Close</button>
       </div>
     </div>
   </div>
