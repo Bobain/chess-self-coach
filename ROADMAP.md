@@ -93,12 +93,11 @@ An item is [x] when ALL applicable criteria are met:
 - [x] Move settings into hamburger menu (replace gear icon)
 - [x] Display Stockfish version in About/menu header
 
-### 5b. Backend config (needs API endpoints) — low priority
-- [ ] Settings sync API — localStorage ↔ backend config.json
-- [ ] Edit config from PWA (usernames, token, SF path)
+### 5b. Backend config — DONE
+- [x] Config API — GET/POST /api/config (players + analysis fields)
+- [x] Edit config from PWA (usernames, depth, threshold)
 Note: GET /api/config/status removed — already covered by GET /api/pgn/status
 (has_token, stockfish.available/version).
-Note: Users set config once via `chess-self-coach setup`. PWA editing is nice-to-have.
 
 ## Dependency diagram
 
