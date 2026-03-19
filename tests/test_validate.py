@@ -36,6 +36,6 @@ def test_validate_partial(fixtures_dir):
 
 
 def test_validate_nonexistent_file():
-    """Validating a nonexistent file should exit with error."""
-    with pytest.raises(SystemExit):
+    """Validating a nonexistent file raises FileNotFoundError."""
+    with pytest.raises(FileNotFoundError):
         validate_pgn("/nonexistent/path/to/file.pgn")

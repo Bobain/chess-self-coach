@@ -269,7 +269,11 @@ def main(argv: list[str] | None = None) -> None:
     elif args.command == "validate":
         from chess_self_coach.validate import print_report, validate_pgn
 
-        results = validate_pgn(args.pgn_file)
+        try:
+            results = validate_pgn(args.pgn_file)
+        except FileNotFoundError as e:
+            print(f"  {e}", file=sys.stderr)
+            sys.exit(1)
         has_errors = print_report(results)
         if has_errors:
             sys.exit(1)

@@ -7,7 +7,6 @@ opening names, ECO codes, theory markers, traps, plans, and move comments.
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
 
 import chess.pgn
@@ -113,8 +112,7 @@ def validate_pgn(pgn_path: str | Path) -> list[dict]:
     """
     pgn_path = Path(pgn_path)
     if not pgn_path.exists():
-        print(f"File not found: {pgn_path}", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"File not found: {pgn_path}")
 
     results = []
 
