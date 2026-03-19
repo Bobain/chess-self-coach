@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-03-18T15:57:12Z",
+  "generated": "2026-03-18T20:00:33Z",
   "player": {
     "lichess": "bobainbobain",
     "chesscom": "Tonigor1982"
@@ -27,7 +27,12 @@
         "Bh6",
         "Rxe1+",
         "Rxe1",
-        "Qxh6"
+        "Qxh6",
+        "Re8+",
+        "Kg7",
+        "Bf7+",
+        "Qg5",
+        "Rg8+"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -49,16 +54,63 @@
       }
     },
     {
+      "id": "d0fb65cc5a05",
+      "fen": "8/8/pp6/2p5/P1P3p1/2P5/4KPk1/8 b - - 6 44",
+      "player_color": "black",
+      "player_move": "Kg1",
+      "best_move": "a5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
+      "score_before": "-55.72",
+      "score_after": "+0.00",
+      "score_after_best": "-38.57",
+      "cp_loss": 5572,
+      "category": "blunder",
+      "explanation": "You played Kg1 (blunder, lost a decisive advantage). A better move was a5.",
+      "acceptable_moves": [
+        "a5"
+      ],
+      "pv": [
+        "a5",
+        "Ke3",
+        "Kf1",
+        "Ke4",
+        "Kxf2",
+        "Kd5",
+        "Ke3",
+        "Kc6",
+        "g3",
+        "Kxb6"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166054148592",
+        "source": "chess.com",
+        "opponent": "JARVIS42AI",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 717.4,
+        "opponent": 932.3
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
       "id": "4a080ab29dce",
       "fen": "8/p1k5/6K1/PP5p/6p1/8/7P/8 b - - 0 42",
       "player_color": "black",
       "player_move": "Kd6",
       "best_move": "h4",
       "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-9.94",
-      "score_after": "+7.83",
-      "score_after_best": "-37.41",
-      "cp_loss": 1777,
+      "score_before": "-12.68",
+      "score_after": "+12.97",
+      "score_after_best": "-36.18",
+      "cp_loss": 2565,
       "category": "blunder",
       "explanation": "You played Kd6 (blunder, lost a decisive advantage). A better move was h4.",
       "acceptable_moves": [
@@ -66,10 +118,15 @@
       ],
       "pv": [
         "h4",
-        "Kf5",
+        "Kg5",
         "g3",
-        "h3",
-        "g2"
+        "Kh5",
+        "gxh2",
+        "b6+",
+        "axb6",
+        "axb6+",
+        "Kxb6",
+        "Kg6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -111,7 +168,12 @@
         "Kg1",
         "Qc1+",
         "Kg2",
-        "Qf1+"
+        "Qf1+",
+        "Kg3",
+        "h5",
+        "Qxe6+",
+        "Kh7",
+        "Qf6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -124,48 +186,6 @@
       "clock": {
         "player": 508.0,
         "opponent": 758.0
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
-      "id": "d0fb65cc5a05",
-      "fen": "8/8/pp6/2p5/P1P3p1/2P5/4KPk1/8 b - - 6 44",
-      "player_color": "black",
-      "player_move": "Kg1",
-      "best_move": "a5",
-      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-11.02",
-      "score_after": "-0.07",
-      "score_after_best": "-81.15",
-      "cp_loss": 1095,
-      "category": "blunder",
-      "explanation": "You played Kg1 (blunder, lost a decisive advantage). A better move was a5.",
-      "acceptable_moves": [
-        "a5"
-      ],
-      "pv": [
-        "a5",
-        "Ke1",
-        "Kf3",
-        "Kf1",
-        "g3"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166054148592",
-        "source": "chess.com",
-        "opponent": "JARVIS42AI",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 717.4,
-        "opponent": 932.3
       },
       "srs": {
         "interval": 0,
@@ -195,7 +215,12 @@
         "f4",
         "g4",
         "hxg4+",
-        "Kxg4"
+        "Kxg4",
+        "Ke4",
+        "h3",
+        "a5",
+        "bxa5",
+        "Kd5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -237,7 +262,12 @@
         "Bf3",
         "d5",
         "Bf4",
-        "Rxe1+"
+        "Rxe1+",
+        "Rxe1",
+        "Nc6",
+        "c3",
+        "Bb6",
+        "Kf1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -265,10 +295,10 @@
       "player_move": "f5",
       "best_move": "Kh5",
       "context": "Endgame, playing as Black, you had a strong advantage. Your move lost a decisive advantage.",
-      "score_before": "-7.91",
-      "score_after": "-0.22",
-      "score_after_best": "-8.43",
-      "cp_loss": 769,
+      "score_before": "-7.51",
+      "score_after": "-0.06",
+      "score_after_best": "-7.06",
+      "cp_loss": 745,
       "category": "blunder",
       "explanation": "You played f5 (blunder, lost a decisive advantage). A better move was Kh5.",
       "acceptable_moves": [
@@ -276,10 +306,15 @@
       ],
       "pv": [
         "Kh5",
-        "Kf5",
+        "Kg3",
+        "a5",
+        "Kf4",
         "Kxh4",
-        "Kxf6",
-        "a5"
+        "Ke4",
+        "f5+",
+        "Kd5",
+        "f4",
+        "Kc6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -321,7 +356,12 @@
         "Rxe4",
         "g5",
         "Be5",
-        "Nb8"
+        "Nb8",
+        "Bxb8",
+        "Rxb8",
+        "Rd1",
+        "Bf6",
+        "Kg2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -363,7 +403,12 @@
         "Bg2",
         "Nc7",
         "Bf4",
-        "Qxa2"
+        "Qxa2",
+        "O-O",
+        "e5",
+        "Bg3",
+        "Qf7",
+        "f4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -1002,7 +1047,7 @@
       "player_color": "white",
       "player_move": "Rf8",
       "best_move": "Rb7",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost a decisive advantage.",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost a decisive advantage. You had more time (13min vs 6min) and could have taken longer on this move.",
       "score_before": "+5.63",
       "score_after": "+0.07",
       "score_after_best": "+5.61",
@@ -1017,7 +1062,12 @@
         "Kg8",
         "Be3",
         "Ra6",
-        "Rb8+"
+        "Rb8+",
+        "Kh7",
+        "Ra8",
+        "Rd6",
+        "Ra7",
+        "f5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -1059,7 +1109,12 @@
         "Ng2",
         "Rd8",
         "Qe2",
-        "Bd3"
+        "Bd3",
+        "Qxe3",
+        "Qxe3",
+        "Nxe3",
+        "Nxg4",
+        "Nxg4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -1101,7 +1156,12 @@
         "Bxf6",
         "Qxd5+",
         "Kh8",
-        "Rd1"
+        "Rd1",
+        "c3",
+        "Bb3",
+        "Rab8",
+        "Bc2",
+        "Rb2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -1114,6 +1174,53 @@
       "clock": {
         "player": 364.4,
         "opponent": 716.0
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "e20e852a3059",
+      "fen": "8/5Rpk/4p2p/4r3/8/7P/3B2P1/6K1 w - - 0 38",
+      "player_color": "white",
+      "player_move": "Bxh6",
+      "best_move": "Bc3",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost significant material (4.3 pawns). You had more time (10min vs 5min) and could have taken longer on this move.",
+      "score_before": "+4.38",
+      "score_after": "+0.03",
+      "score_after_best": "+4.40",
+      "cp_loss": 435,
+      "category": "blunder",
+      "explanation": "You played Bxh6 (blunder, lost 4.3 pawns). A better move was Bc3. Your bishop on h6 is left undefended.",
+      "acceptable_moves": [
+        "Bc3"
+      ],
+      "pv": [
+        "Bc3",
+        "Rg5",
+        "Re7",
+        "Kg8",
+        "Kh2",
+        "Kh7",
+        "Bb2",
+        "Rg6",
+        "Be5",
+        "Rg5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 600.2,
+        "opponent": 321.2
       },
       "srs": {
         "interval": 0,
@@ -1143,7 +1250,12 @@
         "Nc6",
         "Bxh8",
         "Nh5",
-        "c5"
+        "c5",
+        "Nd4",
+        "Re3",
+        "Kf8",
+        "Re4",
+        "Kg8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -1170,7 +1282,7 @@
       "player_color": "white",
       "player_move": "Qxc5",
       "best_move": "Qxh5",
-      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (4.2 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (4.2 pawns). You had more time (7min vs 2min) and could have taken longer on this move.",
       "score_before": "+7.61",
       "score_after": "+3.39",
       "score_after_best": "+7.74",
@@ -1185,7 +1297,12 @@
         "Nf6",
         "Qxh4",
         "Qe7",
-        "Qxh6"
+        "Qxh6",
+        "Nh7",
+        "Qe3",
+        "Ng5",
+        "Qg3",
+        "Rxf2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -1207,54 +1324,12 @@
       }
     },
     {
-      "id": "e20e852a3059",
-      "fen": "8/5Rpk/4p2p/4r3/8/7P/3B2P1/6K1 w - - 0 38",
-      "player_color": "white",
-      "player_move": "Bxh6",
-      "best_move": "Bc3",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost significant material (4.2 pawns).",
-      "score_before": "+4.22",
-      "score_after": "+0.00",
-      "score_after_best": "+4.30",
-      "cp_loss": 422,
-      "category": "blunder",
-      "explanation": "You played Bxh6 (blunder, lost 4.2 pawns). A better move was Bc3. Your bishop on h6 is left undefended.",
-      "acceptable_moves": [
-        "Bc3"
-      ],
-      "pv": [
-        "Bc3",
-        "Rg5",
-        "Re7",
-        "Kg8",
-        "Kh2"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 600.2,
-        "opponent": 321.2
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
       "id": "6be235cf1590",
       "fen": "8/p4k2/1p6/2p3PK/P4b1p/7P/2P2p2/5B2 b - - 26 55",
       "player_color": "black",
       "player_move": "Kg7",
       "best_move": "Bg3",
-      "context": "Endgame, playing as Black, the position was roughly equal. Your move lost significant material (4.0 pawns).",
+      "context": "Endgame, playing as Black, the position was roughly equal. Your move lost significant material (4.0 pawns). You had more time (8min vs 2min) and could have taken longer on this move.",
       "score_before": "+0.00",
       "score_after": "+4.05",
       "score_after_best": "+0.00",
@@ -1311,7 +1386,12 @@
         "Bd7",
         "Qxb4",
         "Ne7",
-        "Bg2"
+        "Bg2",
+        "Bc6",
+        "Bf4",
+        "Qf6",
+        "e4",
+        "a5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166024734408",
@@ -1353,7 +1433,12 @@
         "Nh5",
         "Qxf3",
         "Qe2",
-        "Qxe2+"
+        "Qxe2+",
+        "Kxe2",
+        "Kh8",
+        "Rxg7",
+        "Rg8",
+        "Rxg8+"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -1395,7 +1480,12 @@
         "Qd8",
         "Qe1",
         "Nxd5",
-        "Bc4"
+        "Bc4",
+        "Rf7",
+        "Rd1",
+        "Nxc3",
+        "Bxf7+",
+        "Kxf7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -1437,7 +1527,12 @@
         "Qd4",
         "Bxf3",
         "Bxf3",
-        "Qxa5"
+        "Qxa5",
+        "c5",
+        "Rfc8",
+        "c6",
+        "e5",
+        "Ra1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -1479,7 +1574,12 @@
         "Nc3",
         "dxc3",
         "Bxc6+",
-        "bxc6"
+        "bxc6",
+        "O-O",
+        "e6",
+        "Re1",
+        "Qc7",
+        "Bf4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166022550048",
@@ -1521,7 +1621,12 @@
         "Bf4",
         "d5",
         "c4",
-        "Nc6"
+        "Nc6",
+        "cxd5",
+        "Ne7",
+        "Bxc7",
+        "Nxd5",
+        "Bg3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -1563,7 +1668,12 @@
         "Bg5",
         "Nf6",
         "Kh1",
-        "Nbd7"
+        "Nbd7",
+        "Qd3",
+        "Bxf3",
+        "Qxf3",
+        "c6",
+        "Qh3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -1605,7 +1715,12 @@
         "g5",
         "Qxb4",
         "gxf4",
-        "Nc5"
+        "Nc5",
+        "b6",
+        "Nxe6",
+        "fxe6",
+        "Rxd7",
+        "Rxd7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166024734408",
@@ -1800,7 +1915,12 @@
         "Bd7",
         "Qxb4",
         "Ne7",
-        "O-O-O"
+        "O-O-O",
+        "O-O",
+        "e4",
+        "Ng6",
+        "Be3",
+        "Ne5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166024734408",
@@ -1842,7 +1962,12 @@
         "Rxe4",
         "g5",
         "Bg3",
-        "c4"
+        "c4",
+        "Rfe1",
+        "Nc5",
+        "Rxe7",
+        "Rxe7",
+        "Bd6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -1884,7 +2009,12 @@
         "Rb2",
         "Rc1",
         "Rd2",
-        "Re4"
+        "Re4",
+        "Rxa2",
+        "Ke1",
+        "a5",
+        "Re3",
+        "c2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165965658898",
@@ -1897,48 +2027,6 @@
       "clock": {
         "player": 726.8,
         "opponent": 790.2
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
-      "id": "231a0d4d3751",
-      "fen": "6k1/p5pp/4p1p1/4q3/1P6/P5Q1/5K1P/8 b - - 1 29",
-      "player_color": "black",
-      "player_move": "Qb2+",
-      "best_move": "Qxg3+",
-      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost significant material (2.6 pawns).",
-      "score_before": "-4.38",
-      "score_after": "-1.78",
-      "score_after_best": "-4.64",
-      "cp_loss": 260,
-      "category": "blunder",
-      "explanation": "You played Qb2+ (blunder, lost 2.6 pawns). You missed capturing the queen with Qxg3+. Qxg3+ also gives check.",
-      "acceptable_moves": [
-        "Qxg3+"
-      ],
-      "pv": [
-        "Qxg3+",
-        "hxg3",
-        "Kf8",
-        "g4",
-        "Ke7"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166067143160",
-        "source": "chess.com",
-        "opponent": "Ramadan0099",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 414.8,
-        "opponent": 735.6
       },
       "srs": {
         "interval": 0,
@@ -1968,7 +2056,12 @@
         "Rxd8",
         "Bxd8",
         "Kf2",
-        "Bh4+"
+        "Bh4+",
+        "Kf1",
+        "Bg5",
+        "Ke2",
+        "Bf4",
+        "Ba2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -2010,7 +2103,12 @@
         "Bg1",
         "O-O",
         "Nxg6",
-        "hxg6"
+        "hxg6",
+        "Nd2",
+        "Qc7",
+        "Nb3",
+        "c4",
+        "Nd4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -2052,7 +2150,12 @@
         "Bxe5",
         "Bd6",
         "Bg3",
-        "Qf6"
+        "Qf6",
+        "Rfe1",
+        "Nd7",
+        "Qe3",
+        "Rfd8",
+        "Rad1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -2074,39 +2177,44 @@
       }
     },
     {
-      "id": "2a93faaf1a0f",
-      "fen": "8/5Rp1/4p1kB/4r3/8/7P/6P1/6K1 w - - 1 39",
-      "player_color": "white",
-      "player_move": "Rxg7+",
-      "best_move": "Bf4",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move lost significant material (2.1 pawns).",
-      "score_before": "+4.26",
-      "score_after": "+2.12",
-      "score_after_best": "+4.18",
-      "cp_loss": 214,
+      "id": "231a0d4d3751",
+      "fen": "6k1/p5pp/4p1p1/4q3/1P6/P5Q1/5K1P/8 b - - 1 29",
+      "player_color": "black",
+      "player_move": "Qb2+",
+      "best_move": "Qxg3+",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move lost significant material (2.2 pawns).",
+      "score_before": "-4.25",
+      "score_after": "-2.04",
+      "score_after_best": "-4.29",
+      "cp_loss": 221,
       "category": "blunder",
-      "explanation": "You played Rxg7+ (blunder, lost 2.1 pawns). A better move was Bf4.",
+      "explanation": "You played Qb2+ (blunder, lost 2.2 pawns). You missed capturing the queen with Qxg3+. Qxg3+ also gives check.",
       "acceptable_moves": [
-        "Bf4"
+        "Qxg3+"
       ],
       "pv": [
-        "Bf4",
-        "Rb5",
-        "Rf8",
-        "Rb1+",
-        "Kf2"
+        "Qxg3+",
+        "Kxg3",
+        "Kf8",
+        "Kf4",
+        "Ke7",
+        "h4",
+        "Kd6",
+        "Ke3",
+        "h6",
+        "Ke4"
       ],
       "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
+        "id": "https://www.chess.com/game/live/166067143160",
         "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
         "opening": "Live Chess"
       },
       "clock": {
-        "player": 598.7,
-        "opponent": 328.0
+        "player": 414.8,
+        "opponent": 735.6
       },
       "srs": {
         "interval": 0,
@@ -2136,7 +2244,12 @@
         "Nxe4",
         "dxe4",
         "Nd2",
-        "Bxa1"
+        "Bxa1",
+        "c3",
+        "Bxc3",
+        "Nxe4",
+        "Qxd1",
+        "Rxd1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -2163,7 +2276,7 @@
       "player_color": "white",
       "player_move": "Bxa6",
       "best_move": "Bxf6",
-      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.0 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move lost significant material (2.0 pawns). You had more time (8min vs 3min) and could have taken longer on this move.",
       "score_before": "+3.66",
       "score_after": "+1.64",
       "score_after_best": "+3.48",
@@ -2178,7 +2291,12 @@
         "Nxf6",
         "Bc6",
         "Qe7",
-        "b5"
+        "b5",
+        "Rb6",
+        "h3",
+        "Rxc6",
+        "bxc6",
+        "Re8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -2220,7 +2338,12 @@
         "Qa4+",
         "b5",
         "cxb5",
-        "Nd5"
+        "Nd5",
+        "Bd2",
+        "O-O",
+        "a3",
+        "Ba5",
+        "Qd1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166023796044",
@@ -2262,7 +2385,12 @@
         "g6",
         "Nf3",
         "Nd7",
-        "Qg3"
+        "Qg3",
+        "b5",
+        "Qxc7",
+        "Ngf6",
+        "Ba3",
+        "Bb7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -2304,7 +2432,12 @@
         "Nh5",
         "Bf5",
         "Nxg7",
-        "Kxg7"
+        "Kxg7",
+        "Bh6+",
+        "Kh8",
+        "Bxf8",
+        "Rxf8",
+        "Be4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -2346,7 +2479,12 @@
         "Rd2",
         "Re4",
         "c2",
-        "Kf1"
+        "Kf1",
+        "Rcd6",
+        "Ree1",
+        "Kf7",
+        "a3",
+        "h5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165965658898",
@@ -2388,7 +2526,12 @@
         "Bxf3",
         "gxf3",
         "Ne5",
-        "e4"
+        "e4",
+        "Nd7",
+        "Qc2",
+        "Ngf6",
+        "Be3",
+        "O-O"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -2430,7 +2573,12 @@
         "f4",
         "Ra1",
         "f5",
-        "Kg7"
+        "Kg7",
+        "Rd2",
+        "Rxa2",
+        "Kf4",
+        "Kf6",
+        "Rd6+"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -2457,7 +2605,7 @@
       "player_color": "white",
       "player_move": "bxc5",
       "best_move": "e7",
-      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.7 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.7 pawns. You had more time (8min vs 2min) and could have taken longer on this move.",
       "score_before": "+6.13",
       "score_after": "+4.44",
       "score_after_best": "+6.02",
@@ -2472,7 +2620,12 @@
         "Rb8",
         "Qxf5",
         "Qg5",
-        "Qxg5+"
+        "Qxg5+",
+        "hxg5",
+        "bxc5",
+        "dxc5",
+        "e8=Q+",
+        "Nxe8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -2514,7 +2667,12 @@
         "Nxf6+",
         "exf6",
         "Bb3",
-        "d4"
+        "d4",
+        "Bh6",
+        "Re8",
+        "Re1",
+        "Nc6",
+        "Qf3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166032676560",
@@ -2556,7 +2714,12 @@
         "c3",
         "Be4",
         "Ne5",
-        "Qe6"
+        "Qe6",
+        "Bxe4",
+        "dxc3",
+        "Bxc3",
+        "Bxe5",
+        "Bxe5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -2598,7 +2761,12 @@
         "Bc4",
         "Ke5",
         "Bg8",
-        "h6"
+        "h6",
+        "Bf7",
+        "g5",
+        "Kd2",
+        "a6",
+        "Ke3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -2611,6 +2779,53 @@
       "clock": {
         "player": 745.4,
         "opponent": 522.5
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "2a93faaf1a0f",
+      "fen": "8/5Rp1/4p1kB/4r3/8/7P/6P1/6K1 w - - 1 39",
+      "player_color": "white",
+      "player_move": "Rxg7+",
+      "best_move": "Bf4",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move cost about 1.6 pawns. You had more time (10min vs 5min) and could have taken longer on this move.",
+      "score_before": "+4.17",
+      "score_after": "+2.60",
+      "score_after_best": "+4.28",
+      "cp_loss": 157,
+      "category": "mistake",
+      "explanation": "You played Rxg7+ (mistake, lost 1.6 pawns). A better move was Bf4.",
+      "acceptable_moves": [
+        "Bf4"
+      ],
+      "pv": [
+        "Bf4",
+        "Rb5",
+        "Rf8",
+        "e5",
+        "Be3",
+        "Rb2",
+        "Rf3",
+        "Rb3",
+        "Kf2",
+        "Rb2+"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 598.7,
+        "opponent": 328.0
       },
       "srs": {
         "interval": 0,
@@ -2640,7 +2855,12 @@
         "Nc5",
         "exd6",
         "Qxd6",
-        "Qxd6"
+        "Qxd6",
+        "cxd6",
+        "g4",
+        "Kd7",
+        "Bg2",
+        "Nc6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -2653,6 +2873,53 @@
       "clock": {
         "player": 753.3,
         "opponent": 837.0
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "deb8b9b0ca69",
+      "fen": "8/p5p1/3k2p1/PP2p2p/4K3/8/7P/8 b - - 0 38",
+      "player_color": "black",
+      "player_move": "Kc7",
+      "best_move": "g5",
+      "context": "Endgame, playing as Black, you had a strong advantage. Your move cost about 1.5 pawns.",
+      "score_before": "-6.27",
+      "score_after": "-4.74",
+      "score_after_best": "-6.35",
+      "cp_loss": 153,
+      "category": "mistake",
+      "explanation": "You played Kc7 (mistake, lost 1.5 pawns). A better move was g5.",
+      "acceptable_moves": [
+        "g5"
+      ],
+      "pv": [
+        "g5",
+        "Kf5",
+        "g4",
+        "b6",
+        "axb6",
+        "a6",
+        "Kc6",
+        "a7",
+        "Kb7",
+        "a8=Q+"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166067143160",
+        "source": "chess.com",
+        "opponent": "Ramadan0099",
+        "date": "2026.03.17",
+        "result": "1/2-1/2",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 436.1,
+        "opponent": 807.8
       },
       "srs": {
         "interval": 0,
@@ -2682,7 +2949,12 @@
         "f6",
         "Neg6",
         "Bxg6",
-        "Nxg6"
+        "Nxg6",
+        "Rfe8",
+        "bxc6",
+        "Rab8",
+        "cxb7",
+        "Qxb7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -2724,7 +2996,12 @@
         "Bg5",
         "Qd7",
         "Kh1",
-        "Nc6"
+        "Nc6",
+        "Bb5",
+        "Kh8",
+        "Rg1",
+        "f6",
+        "Be3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -2766,7 +3043,12 @@
         "Nh5",
         "Ne5",
         "Qf5",
-        "g4"
+        "g4",
+        "Qc8",
+        "h3",
+        "dxe5",
+        "d6+",
+        "Kg7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -2808,7 +3090,12 @@
         "a6",
         "Qd4",
         "Bxd5",
-        "Rae1"
+        "Rae1",
+        "Rae8",
+        "Ng5",
+        "Bd8",
+        "Rxe8",
+        "Rxe8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -2850,7 +3137,12 @@
         "Rd2",
         "Ra1",
         "Ke4",
-        "Rxa2"
+        "Rxa2",
+        "Kd5",
+        "h5",
+        "Ke5",
+        "Ra3",
+        "f4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -2892,7 +3184,12 @@
         "f4",
         "Kg4",
         "Ke4",
-        "Kh3"
+        "Kh3",
+        "Ke5",
+        "Kxh2",
+        "Kf6",
+        "Kg2",
+        "Kxf7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -2919,7 +3216,7 @@
       "player_color": "white",
       "player_move": "Bxb7",
       "best_move": "Bxf6",
-      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as White, you had a strong advantage. Your move cost about 1.4 pawns. You had more time (9min vs 3min) and could have taken longer on this move.",
       "score_before": "+2.09",
       "score_after": "+0.71",
       "score_after_best": "+2.33",
@@ -2934,7 +3231,12 @@
         "Qxf6",
         "Bxb7",
         "Kh7",
-        "Qd2"
+        "Qd2",
+        "Rxe6",
+        "Rxe6",
+        "Qxe6",
+        "Re1",
+        "Qd7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -2961,7 +3263,7 @@
       "player_color": "white",
       "player_move": "Ne6",
       "best_move": "Rad1",
-      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.4 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.4 pawns. You had more time (9min vs 5min) and could have taken longer on this move.",
       "score_before": "+1.98",
       "score_after": "+0.61",
       "score_after_best": "+1.89",
@@ -2976,7 +3278,12 @@
         "Nef6",
         "Bxf6",
         "Nxf6",
-        "c5"
+        "c5",
+        "a5",
+        "b5",
+        "dxc5",
+        "Qxc5",
+        "Ne4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -3018,7 +3325,12 @@
         "Rfe1",
         "c4",
         "a4",
-        "Qc6"
+        "Qc6",
+        "Rad1",
+        "Qxa4",
+        "Ra1",
+        "Qb5",
+        "Bd6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -3060,7 +3372,12 @@
         "Bd3",
         "Qc6",
         "Rxe8+",
-        "Qxe8"
+        "Qxe8",
+        "Bf4",
+        "Nc6",
+        "c3",
+        "Bb6",
+        "h3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -3102,7 +3419,12 @@
         "Rd8",
         "Kf1",
         "c2",
-        "Ke2"
+        "Ke2",
+        "Rdc8",
+        "Re3",
+        "Rh6",
+        "h3",
+        "Rhc6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165965658898",
@@ -3144,7 +3466,12 @@
         "Qa4+",
         "Bc6",
         "Qa3",
-        "Nh3+"
+        "Nh3+",
+        "Kg2",
+        "Ng5",
+        "Nxg5",
+        "Bxg5",
+        "b4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166022550048",
@@ -3186,7 +3513,12 @@
         "Bf4",
         "Bd6",
         "Bxd6",
-        "Qxd6"
+        "Qxd6",
+        "Re1",
+        "Nd7",
+        "c3",
+        "Nf6",
+        "d4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -3228,7 +3560,12 @@
         "Be3",
         "Nc6",
         "Qd2",
-        "f5"
+        "f5",
+        "Rad1",
+        "Qd6",
+        "Nb5",
+        "Qe7",
+        "c3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166032676560",
@@ -3255,7 +3592,7 @@
       "player_color": "white",
       "player_move": "Bf3",
       "best_move": "Bxh5",
-      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.3 pawns.",
+      "context": "Opening, playing as White, you had a slight advantage. Your move cost about 1.3 pawns. You had more time (9min vs 4min) and could have taken longer on this move.",
       "score_before": "+0.98",
       "score_after": "-0.30",
       "score_after_best": "+0.91",
@@ -3270,7 +3607,12 @@
         "gxh5",
         "Kh1",
         "Qg4",
-        "Bd8"
+        "Bd8",
+        "Rxe6",
+        "f3",
+        "Qg7",
+        "Bh4",
+        "Ng5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -3312,7 +3654,12 @@
         "Kh8",
         "f4",
         "Ra7",
-        "Bc2"
+        "Bc2",
+        "Nxc3",
+        "f5",
+        "Bd7",
+        "Ba3",
+        "Re8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165965658898",
@@ -3354,7 +3701,12 @@
         "c5",
         "d5",
         "Nf6",
-        "Bxc4"
+        "Bxc4",
+        "exd5",
+        "exd5",
+        "a6",
+        "Bf4",
+        "Bd6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -3396,7 +3748,12 @@
         "cxd6",
         "Rd5",
         "Qa5+",
-        "Bd2"
+        "Bd2",
+        "Qxa2",
+        "g4",
+        "Ne7",
+        "Rxd6",
+        "Ne4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -3438,7 +3795,12 @@
         "Ke5",
         "Kg7",
         "f4",
-        "Rh1"
+        "Rh1",
+        "f3",
+        "Rf1",
+        "Re3",
+        "Rf2",
+        "h4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -3480,7 +3842,12 @@
         "Be3",
         "Nd7",
         "Ng5",
-        "Bxa1"
+        "Bxa1",
+        "Qxa1",
+        "Nd6",
+        "Qd1",
+        "d4",
+        "Bxb7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -3522,7 +3889,12 @@
         "Ne7",
         "Bd3",
         "e5",
-        "c4"
+        "c4",
+        "Qb6",
+        "d5",
+        "a5",
+        "Nc3",
+        "Nd7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -3564,7 +3936,12 @@
         "Kh8",
         "Nxe5",
         "Nd7",
-        "Bd3"
+        "Bd3",
+        "g6",
+        "f4",
+        "Nxe5",
+        "dxe5",
+        "Ng7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -3606,7 +3983,12 @@
         "Re8",
         "Nf4",
         "Ne4",
-        "Ne5"
+        "Ne5",
+        "Nd6",
+        "Rfc1",
+        "Bf5",
+        "Qb3",
+        "a6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -3648,7 +4030,12 @@
         "b4",
         "Be7",
         "Nf3",
-        "Bf6"
+        "Bf6",
+        "Bc4",
+        "Bg7",
+        "Qh4",
+        "Qxe3+",
+        "Kh1"
       ],
       "game": {
         "id": "https://lichess.org/5x49xYvN",
@@ -3659,6 +4046,53 @@
         "opening": "rated correspondence game"
       },
       "clock": null,
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "7fe5a365fb6c",
+      "fen": "8/6pk/4p2p/4P2P/7r/8/3B1RPP/6K1 w - - 1 36",
+      "player_color": "white",
+      "player_move": "Rf7",
+      "best_move": "g3",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move cost about 1.1 pawns. You had more time (10min vs 5min) and could have taken longer on this move.",
+      "score_before": "+5.27",
+      "score_after": "+4.22",
+      "score_after_best": "+5.38",
+      "cp_loss": 105,
+      "category": "mistake",
+      "explanation": "You played Rf7 (mistake, lost 1.1 pawns). A better move was g3.",
+      "acceptable_moves": [
+        "g3"
+      ],
+      "pv": [
+        "g3",
+        "Rxh5",
+        "Bc3",
+        "Kg6",
+        "Kg2",
+        "Kh7",
+        "Rf4",
+        "Rf5",
+        "Rxf5",
+        "exf5"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 599.0,
+        "opponent": 319.8
+      },
       "srs": {
         "interval": 0,
         "ease": 2.5,
@@ -3687,7 +4121,12 @@
         "Nf6",
         "exd5",
         "Nxd5",
-        "Nxd5"
+        "Nxd5",
+        "Qxd5",
+        "Qxd5",
+        "cxd5",
+        "Rxd5",
+        "Be6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166024734408",
@@ -3729,7 +4168,12 @@
         "d4",
         "exd4",
         "Nxd4",
-        "Bb4"
+        "Bb4",
+        "Nxc6",
+        "bxc6",
+        "Bd3",
+        "d5",
+        "Bd2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -3771,7 +4215,12 @@
         "e3",
         "e5",
         "Nd2",
-        "Rab8"
+        "Rab8",
+        "Qe2",
+        "Rfe8",
+        "e4",
+        "c4",
+        "Nab1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -3813,7 +4262,12 @@
         "Bxd2",
         "Rxa8",
         "a4",
-        "Nc7"
+        "Nc7",
+        "a5",
+        "Rd8",
+        "Be3",
+        "h6",
+        "Rfd1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -3855,7 +4309,12 @@
         "Bf5",
         "bxc6",
         "Rac8",
-        "h3"
+        "h3",
+        "bxc6",
+        "Rxc6",
+        "Qe7",
+        "Nh5",
+        "Nd5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -3897,7 +4356,12 @@
         "O-O",
         "c5",
         "Nf3",
-        "Ne7"
+        "Ne7",
+        "c4",
+        "d4",
+        "Nbd2",
+        "Nf5",
+        "b4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166022550048",
@@ -3939,7 +4403,12 @@
         "Rb8",
         "Bg2",
         "Qd7",
-        "Qd4"
+        "Qd4",
+        "c5",
+        "Qa4",
+        "Qxa4",
+        "Nxa4",
+        "Nh5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166053850536",
@@ -3966,7 +4435,7 @@
       "player_color": "white",
       "player_move": "exd5",
       "best_move": "Nxd5",
-      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (1.0 pawns).",
+      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (1.0 pawns). You had more time (12min vs 8min) and could have taken longer on this move.",
       "score_before": "+0.60",
       "score_after": "-0.36",
       "score_after_best": "+0.62",
@@ -3981,7 +4450,12 @@
         "Qxe4",
         "Qd2",
         "c6",
-        "Nb6"
+        "Nb6",
+        "Bg4",
+        "Bf1",
+        "Qf5",
+        "Nxa8",
+        "Bxf3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -4008,7 +4482,7 @@
       "player_color": "white",
       "player_move": "bxc4",
       "best_move": "Bxf6",
-      "context": "Opening, playing as White, you had a slight advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
       "score_before": "+2.01",
       "score_after": "+1.06",
       "score_after_best": "+2.15",
@@ -4023,7 +4497,12 @@
         "Bxf3",
         "Rxe7",
         "Qxe7",
-        "Bxe7"
+        "Bxe7",
+        "Bxd1",
+        "Rxd1",
+        "Rfe8",
+        "Bg5",
+        "Re2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -4065,7 +4544,12 @@
         "Be6",
         "Bd3",
         "Rfe8",
-        "Rfc1"
+        "Rfc1",
+        "Bb3",
+        "Ng3",
+        "exd4",
+        "exd4",
+        "Nxd4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -4107,7 +4591,12 @@
         "Bh7",
         "b5",
         "g5",
-        "Nh5"
+        "Nh5",
+        "f6",
+        "Nd3",
+        "Bg6",
+        "bxc6",
+        "bxc6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -4149,7 +4638,12 @@
         "b4",
         "cxb4",
         "Qd4",
-        "Ng6"
+        "Ng6",
+        "Na4",
+        "Qc6",
+        "Nb6",
+        "Rb8",
+        "c4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166022550048",
@@ -4176,7 +4670,7 @@
       "player_color": "white",
       "player_move": "axb5",
       "best_move": "Bb4",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.9 pawns). You had more time (14min vs 8min) and could have taken longer on this move.",
       "score_before": "+5.79",
       "score_after": "+4.90",
       "score_after_best": "+6.06",
@@ -4191,7 +4685,12 @@
         "Re8",
         "Bd6",
         "Rb6",
-        "Bg3"
+        "Bg3",
+        "Kh7",
+        "Rc8",
+        "f5",
+        "Ra8",
+        "Rf6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -4233,7 +4732,12 @@
         "e4",
         "dxe3",
         "Nxe5",
-        "Qe6"
+        "Qe6",
+        "c6",
+        "Bxc6",
+        "Nxc6",
+        "e2",
+        "Bxd5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166069443312",
@@ -4275,7 +4779,12 @@
         "O-O",
         "O-O",
         "d3",
-        "a5"
+        "a5",
+        "a3",
+        "Nbd7",
+        "Kh1",
+        "c6",
+        "Ba2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -4317,7 +4826,12 @@
         "h3",
         "Bxf3",
         "Bxf3",
-        "Nc6"
+        "Nc6",
+        "b4",
+        "Rad8",
+        "Qc1",
+        "Qxc1",
+        "Rxc1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165962189758",
@@ -4359,7 +4873,12 @@
         "Rb5",
         "c6",
         "Rb3",
-        "Rd5"
+        "Rd5",
+        "Be4",
+        "Rd7",
+        "Bd3",
+        "f5",
+        "h3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -4401,7 +4920,12 @@
         "Qxc1",
         "a5",
         "Nd2",
-        "O-O"
+        "O-O",
+        "Rb1",
+        "axb4",
+        "axb4",
+        "Ra2",
+        "Rb2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -4414,48 +4938,6 @@
       "clock": {
         "player": 782.9,
         "opponent": 898.8
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
-      "id": "b6e7bc8fdeac",
-      "fen": "5R2/3r2pk/4p2p/7P/4P3/8/3B2PP/6K1 w - - 0 34",
-      "player_color": "white",
-      "player_move": "Rf2",
-      "best_move": "Be3",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
-      "score_before": "+5.53",
-      "score_after": "+4.68",
-      "score_after_best": "+5.51",
-      "cp_loss": 85,
-      "category": "inaccuracy",
-      "explanation": "You played Rf2 (inaccuracy, lost 0.8 pawns). A better move was Be3.",
-      "acceptable_moves": [
-        "Be3"
-      ],
-      "pv": [
-        "Be3",
-        "Rb7",
-        "Re8",
-        "Rb5",
-        "Rxe6"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 726.1,
-        "opponent": 310.9
       },
       "srs": {
         "interval": 0,
@@ -4485,7 +4967,12 @@
         "g5",
         "Bg3",
         "Nxg3",
-        "hxg3"
+        "hxg3",
+        "g4",
+        "Nh4",
+        "Ne5",
+        "f4",
+        "gxf3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -4527,7 +5014,12 @@
         "Ra1",
         "Bxc3",
         "Qa4+",
-        "Nd7"
+        "Nd7",
+        "Rxb1",
+        "c4",
+        "Bf4",
+        "Rc8",
+        "Rbc1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -4569,7 +5061,12 @@
         "Qe4",
         "c4",
         "Bd6",
-        "Nc5"
+        "Nc5",
+        "Bxc5",
+        "Qxc5",
+        "f4",
+        "b5",
+        "Re3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -4611,7 +5108,12 @@
         "Nxc3",
         "Nd4",
         "Qxb7",
-        "Qxc4"
+        "Qxc4",
+        "Be3",
+        "Rab8",
+        "Qe7",
+        "Ng4",
+        "Rab1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166023796044",
@@ -4624,48 +5126,6 @@
       "clock": {
         "player": 671.4,
         "opponent": 675.1
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
-      "id": "7fe5a365fb6c",
-      "fen": "8/6pk/4p2p/4P2P/7r/8/3B1RPP/6K1 w - - 1 36",
-      "player_color": "white",
-      "player_move": "Rf7",
-      "best_move": "g3",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
-      "score_before": "+5.02",
-      "score_after": "+4.19",
-      "score_after_best": "+5.27",
-      "cp_loss": 83,
-      "category": "inaccuracy",
-      "explanation": "You played Rf7 (inaccuracy, lost 0.8 pawns). A better move was g3.",
-      "acceptable_moves": [
-        "g3"
-      ],
-      "pv": [
-        "g3",
-        "Rxh5",
-        "Bc3",
-        "Rg5",
-        "Rf4"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166027839420",
-        "source": "chess.com",
-        "opponent": "Tarek25b",
-        "date": "2026.03.16",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 599.0,
-        "opponent": 319.8
       },
       "srs": {
         "interval": 0,
@@ -4695,7 +5155,12 @@
         "d4",
         "Bg4",
         "Be2",
-        "O-O-O"
+        "O-O-O",
+        "O-O",
+        "Nxd4",
+        "Nxd4",
+        "Bxe2",
+        "Qxe2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054009604",
@@ -4722,7 +5187,7 @@
       "player_color": "white",
       "player_move": "Qc2",
       "best_move": "Qe3",
-      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as White, you had a strong advantage. Your move was inaccurate (0.8 pawns). You had more time (10min vs 5min) and could have taken longer on this move.",
       "score_before": "+2.49",
       "score_after": "+1.68",
       "score_after_best": "+2.27",
@@ -4737,7 +5202,12 @@
         "f5",
         "Qxh6",
         "Qg7",
-        "Qxg7+"
+        "Qxg7+",
+        "Kxg7",
+        "Bd3",
+        "Re8",
+        "Bxe4",
+        "fxe4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -4779,7 +5249,12 @@
         "Nh5",
         "Rbe8",
         "Rg3",
-        "Kh8"
+        "Kh8",
+        "Nf4",
+        "Qf6",
+        "Nxg6+",
+        "fxg6",
+        "Kf1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -4821,7 +5296,12 @@
         "Nxb7",
         "Qc7",
         "Bxf7+",
-        "Qxf7"
+        "Qxf7",
+        "Nd6",
+        "Qf6",
+        "c3",
+        "Na6",
+        "Ne4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166032676560",
@@ -4848,7 +5328,7 @@
       "player_color": "white",
       "player_move": "Be2",
       "best_move": "e5",
-      "context": "Opening, playing as White, the position was roughly equal. Your move was inaccurate (0.8 pawns).",
+      "context": "Opening, playing as White, the position was roughly equal. Your move was inaccurate (0.8 pawns). You had more time (12min vs 8min) and could have taken longer on this move.",
       "score_before": "+0.25",
       "score_after": "-0.52",
       "score_after_best": "+0.29",
@@ -4863,7 +5343,12 @@
         "Nxd3",
         "Qxd3",
         "b5",
-        "cxb5"
+        "cxb5",
+        "axb5",
+        "Qxb5",
+        "Nf4",
+        "dxe6",
+        "Bxe6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166107314288",
@@ -4905,7 +5390,12 @@
         "e5",
         "O-O",
         "exd4",
-        "exd4"
+        "exd4",
+        "c5",
+        "dxc5",
+        "Nxc5",
+        "Qf3",
+        "Nfd7"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166061862468",
@@ -4947,7 +5437,12 @@
         "Nb3",
         "Rb1",
         "Na5",
-        "Nxd7"
+        "Nxd7",
+        "Qxd7",
+        "g5",
+        "Qe7",
+        "gxh6",
+        "Rab8"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -4989,7 +5484,12 @@
         "Qe2",
         "e5",
         "Nb3",
-        "Bb6"
+        "Bb6",
+        "N1d2",
+        "Nf6",
+        "Bf5",
+        "Bxf5",
+        "Rxf5"
       ],
       "game": {
         "id": "https://lichess.org/5x49xYvN",
@@ -5028,7 +5528,12 @@
         "Qd7",
         "Qxa7",
         "Qc8",
-        "e4"
+        "e4",
+        "Be7",
+        "e5",
+        "dxe5",
+        "Bxe5",
+        "O-O"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166053850536",
@@ -5070,7 +5575,12 @@
         "Bc4",
         "Kf6",
         "Rb3",
-        "Bf4"
+        "Bf4",
+        "Ke1",
+        "b6",
+        "Rd3",
+        "Rb7",
+        "Kf2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -5112,7 +5622,12 @@
         "g5",
         "fxg5",
         "Ne4",
-        "Re3"
+        "Re3",
+        "Nxg5",
+        "Bg2",
+        "c6",
+        "O-O",
+        "f5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -5154,7 +5669,12 @@
         "Rd1",
         "Qe6",
         "Bh6",
-        "Qf6"
+        "Qf6",
+        "Bg2",
+        "Bxh6",
+        "Qxh6",
+        "Qg7",
+        "Qe3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -5196,7 +5716,12 @@
         "Nxf3+",
         "gxf3",
         "c6",
-        "Qd2"
+        "Qd2",
+        "d5",
+        "e4",
+        "Nf6",
+        "O-O-O",
+        "dxe4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166053850536",
@@ -5238,7 +5763,12 @@
         "Bc8",
         "Qc2",
         "h6",
-        "Ne6"
+        "Ne6",
+        "Bxe6",
+        "dxe6",
+        "d5",
+        "Ba2",
+        "Nc6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049060862",
@@ -5260,54 +5790,12 @@
       }
     },
     {
-      "id": "753586272ccf",
-      "fen": "6k1/p5pp/4p1p1/8/1P1q4/P5Q1/6KP/8 b - - 5 31",
-      "player_color": "black",
-      "player_move": "e5",
-      "best_move": "Qd5+",
-      "context": "Endgame, playing as Black, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
-      "score_before": "-2.91",
-      "score_after": "-2.27",
-      "score_after_best": "-3.13",
-      "cp_loss": 64,
-      "category": "inaccuracy",
-      "explanation": "You played e5 (inaccuracy, lost 0.6 pawns). A better move was Qd5+. Qd5+ also gives check.",
-      "acceptable_moves": [
-        "Qd5+"
-      ],
-      "pv": [
-        "Qd5+",
-        "Kg1",
-        "e5",
-        "h3",
-        "Qd1+"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166067143160",
-        "source": "chess.com",
-        "opponent": "Ramadan0099",
-        "date": "2026.03.17",
-        "result": "1/2-1/2",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 415.0,
-        "opponent": 745.9
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-18",
-        "history": []
-      }
-    },
-    {
       "id": "6178fa44c4a2",
       "fen": "r2n1rk1/1p3pp1/p1p4p/7P/P2P4/4PB2/3B2PP/1R1R2K1 w - - 0 22",
       "player_color": "white",
       "player_move": "d5",
       "best_move": "e4",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns). You had more time (14min vs 8min) and could have taken longer on this move.",
       "score_before": "+5.51",
       "score_after": "+4.87",
       "score_after_best": "+5.40",
@@ -5322,7 +5810,12 @@
         "Ne6",
         "Be3",
         "b5",
-        "d5"
+        "d5",
+        "cxd5",
+        "exd5",
+        "Ng5",
+        "Bxg5",
+        "hxg5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -5364,7 +5857,12 @@
         "Rc1",
         "Qb2",
         "h5",
-        "Nc7"
+        "Nc7",
+        "Kf1",
+        "Nd5",
+        "Bg5",
+        "a5",
+        "d4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -5406,7 +5904,12 @@
         "b4",
         "Ng7",
         "Na4",
-        "Nf5"
+        "Nf5",
+        "Qc3",
+        "a5",
+        "a3",
+        "Be7",
+        "Nc5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166022550048",
@@ -5433,7 +5936,7 @@
       "player_color": "white",
       "player_move": "Rc5",
       "best_move": "Bb4",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns).",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.6 pawns). You had more time (14min vs 8min) and could have taken longer on this move.",
       "score_before": "+5.27",
       "score_after": "+4.65",
       "score_after_best": "+5.34",
@@ -5448,7 +5951,12 @@
         "Re8",
         "Bd6",
         "Rb6",
-        "Bc7"
+        "Bc7",
+        "Rf6",
+        "Rxb5",
+        "Ne6",
+        "Bg3",
+        "g6"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166027839420",
@@ -5490,7 +5998,12 @@
         "g4",
         "gxh4",
         "gxh5",
-        "Rg8+"
+        "Rg8+",
+        "Kh1",
+        "Qd6",
+        "Qe1",
+        "h3",
+        "Qh4"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -5532,7 +6045,12 @@
         "Ne5",
         "Qf6",
         "Bc4",
-        "Rf8"
+        "Rf8",
+        "Re1",
+        "Nc6",
+        "Ng4",
+        "Qg6",
+        "d5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -5574,7 +6092,12 @@
         "Be3",
         "e5",
         "Ne2",
-        "Bg4"
+        "Bg4",
+        "Rg1",
+        "Bxf3",
+        "Rxg6",
+        "hxg6",
+        "Qd2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -5616,7 +6139,12 @@
         "c5",
         "d5",
         "Bxc3+",
-        "bxc3"
+        "bxc3",
+        "Nf6",
+        "Bd3",
+        "e5",
+        "a4",
+        "a5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166048620794",
@@ -5658,7 +6186,12 @@
         "h4",
         "h5",
         "Be2",
-        "Bg7"
+        "Bg7",
+        "O-O",
+        "O-O",
+        "d4",
+        "Bg4",
+        "Ng5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166054148592",
@@ -5700,7 +6233,12 @@
         "Nxd5",
         "Qxe4+",
         "Qe2",
-        "Qxc2"
+        "Qxc2",
+        "Bd3",
+        "Qa4",
+        "Nxf6+",
+        "gxf6",
+        "b3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/165975879424",
@@ -5742,7 +6280,12 @@
         "Rd1",
         "Bg7",
         "Ne2",
-        "O-O"
+        "O-O",
+        "O-O",
+        "Nc6",
+        "Bg2",
+        "Rd8",
+        "Rfe1"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166049921898",
@@ -5784,7 +6327,12 @@
         "c3",
         "Bxf3",
         "Qxf3",
-        "Qxf3"
+        "Qxf3",
+        "gxf3",
+        "Nd7",
+        "a4",
+        "Nb6",
+        "Bd3"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166016258776",
@@ -5826,7 +6374,12 @@
         "Nbd7",
         "h3",
         "Nb6",
-        "Rac1"
+        "Rac1",
+        "Be6",
+        "g4",
+        "Nc4",
+        "Qf2",
+        "a5"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166006321118",
@@ -5868,7 +6421,12 @@
         "Ng2",
         "dxe3",
         "fxe5",
-        "Rd8"
+        "Rd8",
+        "Qe1",
+        "Nxg4",
+        "Qg3",
+        "Nf2+",
+        "Raxf2"
       ],
       "game": {
         "id": "https://www.chess.com/game/live/166067143160",
@@ -5881,6 +6439,53 @@
       "clock": {
         "player": 697.0,
         "opponent": 813.2
+      },
+      "srs": {
+        "interval": 0,
+        "ease": 2.5,
+        "next_review": "2026-03-18",
+        "history": []
+      }
+    },
+    {
+      "id": "b6e7bc8fdeac",
+      "fen": "5R2/3r2pk/4p2p/7P/4P3/8/3B2PP/6K1 w - - 0 34",
+      "player_color": "white",
+      "player_move": "Rf2",
+      "best_move": "Be3",
+      "context": "Middlegame, playing as White, you had a strong advantage. Your move was inaccurate (0.5 pawns). You had more time (12min vs 5min) and could have taken longer on this move.",
+      "score_before": "+5.05",
+      "score_after": "+4.55",
+      "score_after_best": "+5.49",
+      "cp_loss": 50,
+      "category": "inaccuracy",
+      "explanation": "You played Rf2 (inaccuracy, lost 0.5 pawns). A better move was Be3.",
+      "acceptable_moves": [
+        "Be3"
+      ],
+      "pv": [
+        "Be3",
+        "Rb7",
+        "Re8",
+        "Rb5",
+        "Rxe6",
+        "Rxh5",
+        "Rd6",
+        "Re5",
+        "Rd4",
+        "Re6"
+      ],
+      "game": {
+        "id": "https://www.chess.com/game/live/166027839420",
+        "source": "chess.com",
+        "opponent": "Tarek25b",
+        "date": "2026.03.16",
+        "result": "1-0",
+        "opening": "Live Chess"
+      },
+      "clock": {
+        "player": 726.1,
+        "opponent": 310.9
       },
       "srs": {
         "interval": 0,
