@@ -16,6 +16,8 @@
 let appMode = 'demo';
 /** @type {string} App version (populated from /api/status in app mode) */
 let appVersion = '';
+/** @type {string} Stockfish version (populated from /api/status in app mode) */
+let stockfishVersion = '';
 
 /** @type {Function} Chessground constructor (loaded from CDN) */
 let Chessground;
@@ -1353,7 +1355,8 @@ async function init() {
       const statusData = await statusResp.json();
       appMode = 'app';
       appVersion = statusData.version || '';
-      console.log(`[init] App mode detected: v${appVersion}, SF: ${statusData.stockfish_version}`);
+      stockfishVersion = statusData.stockfish_version || '';
+      console.log(`[init] App mode detected: v${appVersion}, SF: ${stockfishVersion}`);
 
       // Hide demo banner
       const banner = document.getElementById('demo-banner');
@@ -1378,7 +1381,10 @@ async function init() {
       if (refreshItem) refreshItem.classList.remove('disabled');
 
       // Set version in menu
-      document.getElementById('nav-version').textContent = 'v' + appVersion;
+      const versionText = stockfishVersion
+        ? 'v' + appVersion + ' · SF ' + stockfishVersion
+        : 'v' + appVersion;
+      document.getElementById('nav-version').textContent = versionText;
     }
   } catch {
     // No backend — demo mode (GitHub Pages)
@@ -1567,9 +1573,12 @@ async function init() {
     document.getElementById('refresh-modal').classList.add('hidden');
   });
 
-  // Set version in menu header (populated later by mode detection)
+  // Set version in menu header (populated earlier by mode detection)
   if (appVersion) {
-    document.getElementById('nav-version').textContent = 'v' + appVersion;
+    const versionText = stockfishVersion
+      ? 'v' + appVersion + ' · SF ' + stockfishVersion
+      : 'v' + appVersion;
+    document.getElementById('nav-version').textContent = versionText;
   }
 
   // Register service worker

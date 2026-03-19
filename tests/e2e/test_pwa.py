@@ -533,6 +533,12 @@ def test_app_mode_smoke(page, app_url):
     status = page.evaluate("() => fetch('/api/status').then(r => r.json())")
     assert status["mode"] == "app"
 
+    # Nav header shows Stockfish version
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+    version_text = page.locator("#nav-version").text_content()
+    assert "SF" in version_text, f"Expected SF version in nav header, got: {version_text}"
+
 
 def test_app_mode_stats_modal(page, app_url, console_errors):
     """[App] mode: Training stats menu item opens modal with stats."""
