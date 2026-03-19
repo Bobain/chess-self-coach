@@ -193,8 +193,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     if args.command is None:
-        parser.print_help()
-        sys.exit(0)
+        _launch_server()
+        return
 
     if args.command == "analyze":
         from chess_self_coach.analyze import analyze_pgn
@@ -292,7 +292,6 @@ def main(argv: list[str] | None = None) -> None:
         from chess_self_coach.trainer import (
             prepare_training_data,
             print_stats,
-            serve_pwa,
         )
 
         if args.refresh_explanations:
@@ -307,26 +306,35 @@ def main(argv: list[str] | None = None) -> None:
                 fresh=args.fresh,
             )
         elif args.serve:
-            from chess_self_coach.updater import check_update
-
-            available, latest = check_update()
-            if available:
-                answer = input(
-                    f"  Version {latest} available (current: {__version__}). "
-                    "Update now? [y/N] ",
-                )
-                if answer.strip().lower() == "y":
-                    from chess_self_coach.updater import update
-
-                    update()
-                    print("  Please re-run: chess-self-coach train --serve")
-                    sys.exit(0)
-            serve_pwa()
+            print("  Tip: you can now just run `chess-self-coach` directly.\n")
+            _launch_server()
         elif args.stats:
             print_stats()
         else:
             print("Usage: chess-self-coach train [--prepare|--serve|--stats]")
             print("Run 'chess-self-coach train -h' for details.")
+
+
+def _launch_server() -> None:
+    """Check for updates and start the FastAPI server."""
+    from chess_self_coach.updater import check_update
+
+    available, latest = check_update()
+    if available:
+        answer = input(
+            f"  Version {latest} available (current: {__version__}). "
+            "Update now? [y/N] ",
+        )
+        if answer.strip().lower() == "y":
+            from chess_self_coach.updater import update
+
+            update()
+            print("  Please re-run: chess-self-coach")
+            sys.exit(0)
+
+    from chess_self_coach.server import run_server
+
+    run_server()
 
 
 if __name__ == "__main__":

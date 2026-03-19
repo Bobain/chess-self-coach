@@ -21,13 +21,11 @@ def test_cli_version():
     assert exc_info.value.code == 0
 
 
-def test_cli_no_command(capsys):
-    """No command prints help and exits 0."""
-    with pytest.raises(SystemExit) as exc_info:
-        main([])
-    assert exc_info.value.code == 0
-    captured = capsys.readouterr()
-    assert "chess-self-coach" in captured.out
+def test_cli_no_command(mocker):
+    """No command launches the server."""
+    mock_launch = mocker.patch("chess_self_coach.cli._launch_server")
+    main([])
+    mock_launch.assert_called_once()
 
 
 def test_cli_validate_present(capsys):
