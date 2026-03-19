@@ -69,7 +69,7 @@ For multi-step tasks, state a brief plan:
 - **Docstrings**: Required on every module, class, and function (Google style).
 - **Type hints**: Use `from __future__ import annotations` and type all function signatures.
 - **Formatting**: Follow PEP 8. Use `ruff` if available.
-- **Commits**: Commit at each logical step — don't accumulate changes. Each commit = one self-contained unit.
+- **Commits**: Commit automatically at each logical step — don't ask, don't accumulate. Each commit = one self-contained unit.
 
 ---
 
