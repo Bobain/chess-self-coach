@@ -33,18 +33,21 @@ See [`.claude/CLAUDE.md`](.claude/CLAUDE.md) for detailed guidelines:
 
 ### Demo vs Application
 
-The PWA has **identical features** everywhere (Stockfish WASM runs in the browser for interactive analysis). The only difference is the data source.
+The PWA detects its mode automatically via `/api/status`. If a FastAPI backend responds, it's [app] mode; otherwise [demo] mode. All JS works without a backend.
 
 | | Demo | Application |
 |---|---|---|
 | **Distribution** | GitHub Pages | `pipx install` (one-liner) |
-| **PWA features** | All (same JS, same WASM) | All (same JS, same WASM) |
+| **Launch** | Static hosting | `chess-self-coach` (FastAPI server) |
+| **Opponent response engine** | Stockfish WASM (browser) | Native Stockfish (backend API, depth 18) |
+| **Analysis depth default** | 12 | 18 |
 | **Data** | Sample `training_data.json` | Generated from your own games |
 | **CLI tools** | None | fetch, analyze, repertoire management |
+| **Menu** | About only | App-specific items (coming soon) |
 
 The **demo** showcases the training interface with sample data. Install the app to train on your own games.
 
-The **application** CLI (`chess-self-coach`) fetches your games from Lichess/chess.com, runs batch Stockfish analysis (native, depth 18, multi-core), and generates your personal `training_data.json`. This pipeline cannot run in the browser (API auth, deep analysis, parallel processing).
+The **application** (`chess-self-coach`) starts a FastAPI backend that serves the PWA with API endpoints for native Stockfish analysis. The CLI also fetches games from Lichess/chess.com, runs batch Stockfish analysis (native, depth 18, multi-core), and generates your personal `training_data.json`.
 
 **Critical constraint**: never break the `[demo]`. All JS must work without a backend.
 
