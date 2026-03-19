@@ -102,6 +102,15 @@ class StatusResponse(BaseModel):
     stockfish_version: str
 
 
+class StatsResponse(BaseModel):
+    """Response body for /api/train/stats."""
+
+    generated: str
+    total: int
+    by_category: dict[str, int]
+    by_source: dict[str, int]
+
+
 # --- API routes ---
 
 
@@ -142,6 +151,21 @@ async def bestmove(req: BestMoveRequest) -> BestMoveResponse:
                 raise HTTPException(status_code=503, detail="Stockfish crashed and cannot restart")
 
     return BestMoveResponse(bestmove=str(result.move))
+
+
+@app.get("/api/train/stats")
+async def train_stats() -> StatsResponse:
+    """Return training data statistics."""
+    from chess_self_coach.trainer import get_stats_data
+
+    try:
+        stats = get_stats_data(_project_root)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="No training data. Run: chess-self-coach train --prepare",
+        )
+    return StatsResponse(**stats)
 
 
 # --- Dynamic file routes (before StaticFiles mount) ---
