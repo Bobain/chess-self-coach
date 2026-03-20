@@ -838,12 +838,13 @@ def prepare_training_data(
     if existing_data:
         # Primary source: explicit list (handles 0-mistake games)
         for gid in existing_data.get("analyzed_game_ids", []):
-            existing_game_ids.add(gid)
+            if gid and gid != "?":
+                existing_game_ids.add(gid)
         # Fallback: also extract from positions (backward compat with old files)
         for pos in existing_data.get("positions", []):
             existing_positions[pos["id"]] = pos
             game_id = pos.get("game", {}).get("id", "")
-            if game_id:
+            if game_id and game_id != "?":
                 existing_game_ids.add(game_id)
         if existing_game_ids:
             print(f"  Loaded {len(existing_positions)} existing position(s) from {len(existing_game_ids)} game(s)")
@@ -889,9 +890,12 @@ def prepare_training_data(
 
     # Build analysis tasks (filter games where player is identifiable)
     tasks = []
+    task_game_ids: list[str] = []
     skipped_color = 0
     for i, game in enumerate(new_games):
         game_id = game.headers.get("Link", game.headers.get("Site", ""))
+        if game_id == "?":
+            game_id = ""
         player_color = _determine_player_color(game, lichess_user, chesscom_user)
         if player_color is None:
             white = game.headers.get("White", "?")
@@ -905,8 +909,7 @@ def prepare_training_data(
         black = game.headers.get("Black", "?")
         exporter = chess.pgn.StringExporter(headers=True, variations=True, comments=True)
         pgn_str = game.accept(exporter)
-        if game_id:
-            existing_game_ids.add(game_id)
+        task_game_ids.append(game_id)
         tasks.append((pgn_str, str(sf_path), depth, player_color, i + 1, len(new_games), f"{white} vs {black}"))
 
     if not tasks:
@@ -933,11 +936,23 @@ def prepare_training_data(
 
     pool = ProcessPoolExecutor(max_workers=workers)
     try:
-        futures = {pool.submit(_analyze_game_worker, *t): t for t in tasks}
+        future_to_gid = {}
+        for task, gid in zip(tasks, task_game_ids):
+            f = pool.submit(_analyze_game_worker, *task)
+            future_to_gid[f] = gid
         wall_start = time.time()
-        for future in as_completed(futures):
-            idx, total, label, mistakes, elapsed = future.result()
+        for future in as_completed(future_to_gid):
+            gid = future_to_gid[future]
             done_count += 1
+            try:
+                idx, total, label, mistakes, elapsed = future.result()
+            except Exception as exc:
+                print(f"  [{done_count}/{total_tasks}] Error: {exc}")
+                continue  # Don't track — will be retried on next run
+
+            # Only track after successful analysis
+            if gid:
+                existing_game_ids.add(gid)
 
             # Merge this game's positions immediately (preserve SRS)
             for m in mistakes:

@@ -33,10 +33,19 @@ def _make_pgn_game(game_id: str, white: str, black: str) -> chess.pgn.Game:
     return chess.pgn.read_game(io.StringIO(pgn))
 
 
+def _extract_game_id(pgn_str: str) -> str:
+    """Extract game ID from PGN string, matching real worker behavior."""
+    game = chess.pgn.read_game(io.StringIO(pgn_str))
+    if game is None:
+        return ""
+    return game.headers.get("Link", game.headers.get("Site", ""))
+
+
 def _fake_worker_with_mistakes(
     pgn_str, sf_path_str, depth, player_color, idx, total, label,
 ):
     """Mock worker returning one fake mistake position."""
+    game_id = _extract_game_id(pgn_str)
     position_id = f"pos_{label.replace(' ', '_')}"
     mistakes = [
         {
@@ -55,7 +64,7 @@ def _fake_worker_with_mistakes(
             "score_after": "-1.00",
             "score_after_best": "+0.50",
             "game": {
-                "id": label,  # Will be overwritten, but keep for shape
+                "id": game_id,
                 "source": "lichess",
                 "opponent": "opp",
                 "date": "2026-01-01",
