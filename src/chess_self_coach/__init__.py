@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 
 def worker_count() -> int:

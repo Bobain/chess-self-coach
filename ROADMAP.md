@@ -62,6 +62,11 @@ An item is [x] when ALL applicable criteria are met:
   - `--fresh` → future "Force re-analysis" option
   - `--engine /path` → future config setting
 
+### 3c. Interrupt resilience & data recovery
+- [x] Interrupt button + incremental atomic writes (crash-safe pipeline)
+- [ ] Legacy data migration: load training_data.json from older versions
+      (different fields, missing SRS, etc.) — reuse what can be reused
+
 ## 4. Chess Prep — New features
 
 ### 4a. About modal (quick win) — DONE
@@ -111,6 +116,9 @@ Section 2 (Menu + Mode detection) ← DONE
      │         │
      │         ▼ (pattern established)
      │    Section 3b (SSE job runner + long ops) ← DONE
+     │         │
+     │         ▼
+     │    Section 3c (Interrupt resilience + data recovery)
      │
      ├──► Section 5a (Settings UI) ← DONE
      │
