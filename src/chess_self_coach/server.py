@@ -446,9 +446,10 @@ def _run_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
     """
     global _current_job
 
-    from chess_self_coach.trainer import prepare_training_data
+    from chess_self_coach.trainer import TrainingInterrupted, prepare_training_data
 
     queue = _current_job["queue"]
+    cancel = _current_job["cancel"]
 
     def _push(item: dict | None) -> None:
         try:
@@ -460,8 +461,11 @@ def _run_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
         _push(event)
 
     try:
-        prepare_training_data(on_progress=on_progress)
+        prepare_training_data(on_progress=on_progress, cancel=cancel)
         _current_job["status"] = "done"
+    except TrainingInterrupted as exc:
+        _push({"phase": "interrupted", "message": str(exc), "percent": 100})
+        _current_job["status"] = "interrupted"
     except (Exception, SystemExit) as exc:
         error_event = {"phase": "error", "message": str(exc), "percent": 0}
         _push(error_event)
@@ -491,6 +495,7 @@ async def train_prepare() -> JobStartResponse:
             "id": job_id,
             "status": "running",
             "queue": asyncio.Queue(),
+            "cancel": threading.Event(),
         }
 
     loop = asyncio.get_event_loop()
@@ -516,6 +521,17 @@ async def job_events(job_id: str):
             yield {"data": json.dumps(event)}
 
     return EventSourceResponse(event_generator())
+
+
+@app.post("/api/jobs/{job_id}/cancel", status_code=202)
+async def job_cancel(job_id: str):
+    """Request cancellation of a running job."""
+    if not _current_job or _current_job["id"] != job_id:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if _current_job["status"] != "running":
+        raise HTTPException(status_code=409, detail="Job is not running")
+    _current_job["cancel"].set()
+    return {"status": "cancelling"}
 
 
 # --- Dynamic file routes (before StaticFiles mount) ---
