@@ -1216,6 +1216,7 @@ async function refreshTraining() {
   console.log('[refreshTraining] Starting refresh...');
   const modal = document.getElementById('refresh-modal');
   const stepsContainer = document.getElementById('refresh-steps');
+  const interruptBtn = document.getElementById('interrupt-refresh');
   if (!modal || !stepsContainer) {
     console.error('[refreshTraining] Modal elements not found');
     return;
@@ -1304,6 +1305,23 @@ async function refreshTraining() {
     const jobId = data.job_id;
     console.log('[refreshTraining] Job started:', jobId);
 
+    // Show interrupt button and wire cancel
+    if (interruptBtn) {
+      interruptBtn.classList.remove('hidden');
+      interruptBtn.disabled = false;
+      interruptBtn.textContent = 'Interrupt';
+      interruptBtn.addEventListener('click', async () => {
+        console.log('[refreshTraining] Interrupt requested');
+        interruptBtn.disabled = true;
+        interruptBtn.textContent = 'Stopping\u2026';
+        try {
+          await fetch('/api/jobs/' + jobId + '/cancel', { method: 'POST' });
+        } catch (err) {
+          console.error('[refreshTraining] Cancel request failed:', err);
+        }
+      }, { once: true });
+    }
+
     const eventSource = new EventSource('/api/jobs/' + jobId + '/events');
     eventSource.onmessage = async (e) => {
       const event = JSON.parse(e.data);
@@ -1325,6 +1343,7 @@ async function refreshTraining() {
         setStep('analyze', 'active', 'Analyzing games  ' + label, event.percent);
       } else if (event.phase === 'done') {
         eventSource.close();
+        if (interruptBtn) interruptBtn.classList.add('hidden');
         // If no analyze events were received, remove the analyze step
         if (!sawAnalyze) {
           stepEls.analyze.remove();
@@ -1346,8 +1365,32 @@ async function refreshTraining() {
         } catch (err) {
           console.error('[refreshTraining] Failed to reload training data:', err);
         }
+      } else if (event.phase === 'interrupted') {
+        eventSource.close();
+        if (interruptBtn) interruptBtn.classList.add('hidden');
+        if (!sawAnalyze) {
+          stepEls.analyze.remove();
+        } else {
+          setStep('analyze', 'done', 'Analysis interrupted \u2014 partial results saved');
+        }
+        markPriorDone('finalize');
+        setStep('finalize', 'done', event.message);
+
+        // Reload partial training data
+        try {
+          const tdResp = await fetch('training_data.json');
+          if (tdResp.ok) {
+            trainingData = await tdResp.json();
+            console.log('[refreshTraining] Reloaded partial training data:', trainingData.positions.length, 'positions');
+            srsState = loadSRSState();
+            startSession();
+          }
+        } catch (err) {
+          console.error('[refreshTraining] Failed to reload training data:', err);
+        }
       } else if (event.phase === 'error') {
         eventSource.close();
+        if (interruptBtn) interruptBtn.classList.add('hidden');
         // Mark current active step as error, or init if none active
         let marked = false;
         for (const step of STEPS) {
@@ -1363,6 +1406,7 @@ async function refreshTraining() {
     eventSource.onerror = () => {
       console.log('[refreshTraining] EventSource error');
       eventSource.close();
+      if (interruptBtn) interruptBtn.classList.add('hidden');
       // Mark active step as error
       for (const step of STEPS) {
         if (stepEls[step.id] && stepEls[step.id].classList.contains('step-active')) {

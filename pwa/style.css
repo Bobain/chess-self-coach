@@ -433,6 +433,11 @@ cg-container {
   color: white;
 }
 
+.modal-interrupt {
+  background: var(--accent);
+  color: white;
+}
+
 .modal-body {
   margin-bottom: 1rem;
   font-size: 0.9rem;
