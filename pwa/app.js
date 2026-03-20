@@ -1351,7 +1351,11 @@ async function refreshTraining() {
           setStep('analyze', 'done', 'Analysis complete');
         }
         markPriorDone('finalize');
-        setStep('finalize', 'done', event.message);
+        setStep('finalize', 'done', 'Training data saved');
+        const summary = document.createElement('p');
+        summary.className = 'refresh-summary';
+        summary.textContent = event.message;
+        stepsContainer.after(summary);
 
         // Reload training data and restart session
         try {
@@ -1374,7 +1378,11 @@ async function refreshTraining() {
           setStep('analyze', 'done', 'Analysis interrupted \u2014 partial results saved');
         }
         markPriorDone('finalize');
-        setStep('finalize', 'done', event.message);
+        setStep('finalize', 'done', 'Training data saved');
+        const intSummary = document.createElement('p');
+        intSummary.className = 'refresh-summary';
+        intSummary.textContent = event.message;
+        stepsContainer.after(intSummary);
 
         // Reload partial training data
         try {
