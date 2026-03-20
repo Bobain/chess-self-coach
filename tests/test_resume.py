@@ -353,3 +353,121 @@ def test_backward_compat_no_analyzed_game_ids(project_dir):
     old_pos = [p for p in output["positions"] if p["id"] == "existing_pos_1"]
     assert len(old_pos) == 1
     assert old_pos[0]["srs"]["interval"] == 3
+
+
+def test_worker_crash_does_not_track_game(project_dir):
+    """A worker exception should not mark that game as analyzed."""
+    games = [
+        _make_pgn_game("https://lichess.org/ok1", "testplayer", "opp1"),
+        _make_pgn_game("https://lichess.org/crash1", "testplayer", "opp2"),
+        _make_pgn_game("https://lichess.org/ok2", "testplayer", "opp3"),
+    ]
+
+    def crashing_worker(*args):
+        label = args[6]
+        if "opp2" in label:
+            raise RuntimeError("Stockfish engine terminated")
+        return _fake_worker_with_mistakes(*args)
+
+    patches = _common_patches(project_dir, games, crashing_worker)
+    with patch.multiple("chess_self_coach.trainer", **patches):
+        prepare_training_data()
+
+    output = _read_output(project_dir)
+    tracked = set(output["analyzed_game_ids"])
+    assert "https://lichess.org/ok1" in tracked
+    assert "https://lichess.org/ok2" in tracked
+    assert "https://lichess.org/crash1" not in tracked
+
+    # Run again: crashed game should be retried
+    call_log = []
+
+    def tracking_worker(*args):
+        call_log.append(args[6])
+        return _fake_worker_with_mistakes(*args)
+
+    patches2 = _common_patches(project_dir, games, tracking_worker)
+    with patch.multiple("chess_self_coach.trainer", **patches2):
+        prepare_training_data()
+
+    # Only crash1 should have been re-analyzed
+    assert len(call_log) == 1
+    assert "opp2" in call_log[0]
+
+    output2 = _read_output(project_dir)
+    assert "https://lichess.org/crash1" in set(output2["analyzed_game_ids"])
+
+
+def test_resume_with_existing_data_and_bogus_ids(project_dir):
+    """Simulate production data: positions + tracked IDs + bogus '?' entry."""
+    # Pre-populate with data mimicking the production bug
+    initial = {
+        "version": "1.0",
+        "generated": "2026-01-01T00:00:00Z",
+        "player": {"lichess": "testplayer", "chesscom": ""},
+        "positions": [
+            {
+                "id": "pos_game1",
+                "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+                "player_color": "white",
+                "player_move": "a3",
+                "best_move": "d4",
+                "cp_loss": 150,
+                "category": "mistake",
+                "context": "test",
+                "explanation": "test",
+                "acceptable_moves": ["d4"],
+                "pv": ["d4"],
+                "score_before": "+0.50",
+                "score_after": "-1.00",
+                "score_after_best": "+0.50",
+                "game": {
+                    "id": "https://lichess.org/done1",
+                    "source": "lichess",
+                    "opponent": "opp",
+                    "date": "2026-01-01",
+                    "result": "1-0",
+                    "opening": "Test",
+                },
+                "srs": {"interval": 5, "ease": 2.5, "next_review": "2026-02-01", "history": []},
+            }
+        ],
+        "analyzed_game_ids": [
+            "https://lichess.org/done1",
+            "https://lichess.org/done2",
+            "?",  # Bogus entry from PGN default
+        ],
+    }
+    (project_dir / "training_data.json").write_text(json.dumps(initial))
+
+    games = [
+        _make_pgn_game("https://lichess.org/done1", "testplayer", "opp1"),
+        _make_pgn_game("https://lichess.org/done2", "testplayer", "opp2"),
+        _make_pgn_game("https://lichess.org/new1", "testplayer", "opp3"),
+    ]
+
+    call_log = []
+
+    def tracking_worker(*args):
+        call_log.append(args[6])
+        return _fake_worker_with_mistakes(*args)
+
+    patches = _common_patches(project_dir, games, tracking_worker)
+    with patch.multiple("chess_self_coach.trainer", **patches):
+        prepare_training_data()
+
+    # Only new1 should be analyzed (done1/done2 skipped, "?" filtered)
+    assert len(call_log) == 1
+    assert "opp3" in call_log[0]
+
+    output = _read_output(project_dir)
+    tracked = set(output["analyzed_game_ids"])
+    assert "https://lichess.org/new1" in tracked
+    assert "https://lichess.org/done1" in tracked
+    assert "https://lichess.org/done2" in tracked
+    assert "?" not in tracked
+
+    # SRS from existing position should be preserved
+    pos = [p for p in output["positions"] if p["id"] == "pos_game1"]
+    assert len(pos) == 1
+    assert pos[0]["srs"]["interval"] == 5
