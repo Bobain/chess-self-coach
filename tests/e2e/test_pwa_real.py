@@ -90,12 +90,10 @@ def test_real_see_moves_after_correct(page, pwa_real_url, console_errors):
 
 
 def test_real_see_moves_after_failure(page, pwa_real_url, console_errors):
-    """The 'See moves' link appears after 3 wrong attempts on real data."""
+    """The 'See moves' link appears after 2 wrong attempts on real data."""
     _wait_for_board(page, pwa_real_url)
     _wait_for_animation(page)
 
-    # Play 3 wrong moves (a-pawn push is almost never the best move)
-    # We need to find a legal but wrong move for the first position
     pos = _get_first_position()
     if pos is None:
         import pytest
@@ -116,16 +114,18 @@ def test_real_see_moves_after_failure(page, pwa_real_url, console_errors):
     from_sq = chess.square_name(wrong_move.from_square)
     to_sq = chess.square_name(wrong_move.to_square)
 
-    for i in range(3):
+    # Play 2 wrong moves — "See moves" link appears after 2 wrong attempts
+    for i in range(2):
         page.wait_for_selector("cg-board piece", timeout=5000)
         page.wait_for_timeout(200)
         make_move(page, from_sq, to_sq, pos["player_color"])
-        if i < 2:
+        if i < 1:
             page.locator("#retry-btn").wait_for(state="visible", timeout=15000)
             page.locator("#retry-btn").click()
             page.wait_for_timeout(500)
         else:
             page.wait_for_timeout(700)
 
-    expect(page.locator("#feedback-text")).to_contain_text("answer was")
+    # After 2 wrong attempts, "See moves" should be visible (no auto-reveal)
+    expect(page.locator("#feedback-text")).to_contain_text("Not quite")
     expect(page.locator("#see-moves")).to_be_visible()
