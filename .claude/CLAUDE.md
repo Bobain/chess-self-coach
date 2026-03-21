@@ -84,6 +84,8 @@ The PWA has identical features everywhere (Stockfish WASM runs in the browser). 
 
 Full architecture table: see CONTRIBUTING.md § Architecture.
 
+Detailed flow diagrams: see [docs/flows/](../../docs/flows/) — training session, data lifecycle, CI/CD, Stockfish, PGN sync, and more. Hooks auto-remind to update them when flow-relevant code changes.
+
 ---
 
 ## E2E Testing & Silent Errors

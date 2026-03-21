@@ -51,6 +51,8 @@ The **application** (`chess-self-coach`) starts a FastAPI backend that serves th
 
 **Critical constraint**: never break the `[demo]`. All JS must work without a backend.
 
+For detailed flow diagrams (training, analysis, CI/CD, Stockfish, PGN sync): see [docs/flows/](docs/flows/).
+
 ### Feature Development Protocol
 
 When developing a new feature:
