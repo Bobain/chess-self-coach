@@ -43,7 +43,7 @@ The PWA detects its mode automatically via `/api/status`. If a FastAPI backend r
 | **Analysis depth default** | 12 | 18 |
 | **Data** | Sample `training_data.json` | Generated from your own games |
 | **CLI tools** | None | fetch, analyze, repertoire management |
-| **Menu** | Settings, About | Stats, Validate, Status, Cleanup, Refresh training, Coaching journal, Edit config, Settings, About |
+| **Menu** | Raw data summary, Settings, About | Analyse latest games, Edit config, Coming soon ▸, Raw data summary, Settings, About |
 
 The **demo** showcases the training interface with sample data. Install the app to train on your own games.
 
@@ -64,15 +64,12 @@ When developing a new feature:
 The CLI has many separate commands (`import → analyze → push → pull → validate → cleanup`),
 but the PWA simplifies this into a single action:
 
-- **"Refresh training"** button in the hamburger menu (replaces the disabled "Prepare training" placeholder)
+- **"Analyse latest games"** button in the hamburger menu
 - Runs `train --prepare` in the background via `POST /api/train/prepare`
 - Progress displayed via **SSE** (Server-Sent Events) in a modal with a step checklist (init → fetch → analyze → finalize)
 - On completion, reloads `training_data.json` and refreshes the PWA session
 
-Future phases (deferred):
-- Individual commands (import, analyze, push, pull) as separate menu items
-- Configurable parameters (`--games N`, `--fresh`, `--engine /path`) as PWA settings
-- Advanced workflow orchestration
+Deferred features are grouped in a **"Coming soon"** submenu (Validate PGN, Cleanup studies, Import games, Coaching journal, Project status).
 
 ---
 
