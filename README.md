@@ -8,19 +8,7 @@
 
 ## How It Works
 
-```
-YOUR GAMES                    STOCKFISH ANALYSIS              TRAINING
-┌───────────────────┐        ┌───────────────────┐        ┌───────────────────┐
-│ Lichess + chess.com│  ───→  │ Parallel analysis  │  ───→  │ Find the Better   │
-│ 20 recent games    │        │ adaptive, parallel │        │ Move (PWA)        │
-└───────────────────┘        └───────────────────┘        └───────────────────┘
-                                                           • Board position shown
-                                                           • Context: phase, advantage
-                                                           • Drag the better move
-                                                           • Explanation + best line
-                                                           • Spaced repetition (SM-2)
-                                                           • Link to original game
-```
+**Your games → Stockfish analysis → Spaced repetition training**
 
 ### One command to start
 
@@ -99,7 +87,7 @@ The `setup` command will:
 
 ```bash
 # Fetch your games and analyze with Stockfish
-chess-self-coach train --prepare                    # 20 games, adaptive depth, parallel
+chess-self-coach train --prepare                    # 20 games, depth 18, parallel
 chess-self-coach train --prepare --games 50         # more games
 chess-self-coach train --prepare --depth 12         # faster analysis
 
@@ -137,14 +125,6 @@ chess-self-coach setup                  # interactive configuration wizard
 - `training_data.json` is stored locally (gitignored)
 - Drill progress is in your browser's localStorage
 - No server, no account, no tracking
-
-## GitHub Pages
-
-| URL | Content |
-|-----|---------|
-| [/chess-self-coach/](https://bobain.github.io/chess-self-coach/) | Landing page |
-| [/chess-self-coach/train/](https://bobain.github.io/chess-self-coach/train/) | Static demo |
-| [/chess-self-coach/docs/](https://bobain.github.io/chess-self-coach/docs/) | Documentation |
 
 ## Contributing
 
