@@ -1650,18 +1650,12 @@ async function init() {
       // Enable ready endpoints
       const statsItem = document.getElementById('nav-stats');
       if (statsItem) statsItem.classList.remove('disabled');
-      const validateItem = document.getElementById('nav-validate');
-      if (validateItem) validateItem.classList.remove('disabled');
-      const statusItem = document.getElementById('nav-status');
-      if (statusItem) statusItem.classList.remove('disabled');
-      const cleanupItem = document.getElementById('nav-cleanup');
-      if (cleanupItem) cleanupItem.classList.remove('disabled');
       const refreshItem = document.getElementById('nav-refresh');
       if (refreshItem) refreshItem.classList.remove('disabled');
-      const journalItem = document.getElementById('nav-journal');
-      if (journalItem) journalItem.classList.remove('disabled');
       const configItem = document.getElementById('nav-config');
       if (configItem) configItem.classList.remove('disabled');
+      const comingSoonItem = document.getElementById('nav-coming-soon');
+      if (comingSoonItem) comingSoonItem.classList.remove('disabled');
 
       // Set version in menu
       const versionText = stockfishVersion
@@ -1797,16 +1791,21 @@ async function init() {
   }
 
   wireNavItem('nav-stats', showStats, 'stats-modal');
-  wireNavItem('nav-validate', showValidate, 'validate-modal');
-  wireNavItem('nav-status', showProjectStatus, 'status-modal');
-  wireNavItem('nav-cleanup', showCleanup, 'cleanup-modal');
   wireNavItem('nav-refresh', refreshTraining, 'refresh-modal');
-  wireNavItem('nav-journal', showJournal, 'journal-modal');
   wireNavItem('nav-config', showConfig, 'config-modal');
 
-  document.getElementById('journal-back').addEventListener('click', () => {
-    showJournal();
-  });
+  // Wire "Coming soon" submenu toggle
+  const comingSoonToggle = document.getElementById('nav-coming-soon');
+  const comingSoonItems = document.getElementById('nav-coming-soon-items');
+  if (comingSoonToggle && comingSoonItems) {
+    comingSoonToggle.addEventListener('click', () => {
+      const expanded = !comingSoonItems.classList.contains('hidden');
+      comingSoonItems.classList.toggle('hidden');
+      comingSoonToggle.classList.toggle('expanded', !expanded);
+      console.log('[nav] Coming soon', expanded ? 'collapsed' : 'expanded');
+    });
+    comingSoonItems.addEventListener('click', (e) => e.stopPropagation());
+  }
 
   document.getElementById('save-config').addEventListener('click', () => {
     saveConfig();

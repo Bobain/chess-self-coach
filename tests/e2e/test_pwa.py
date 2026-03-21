@@ -572,8 +572,8 @@ def test_app_mode_stats_modal(page, app_url, console_errors):
     assert "[showStats]" in log_text
 
 
-def test_app_mode_validate_modal(page, app_url, console_errors):
-    """[App] mode: Validate PGN menu item opens modal with results."""
+def test_coming_soon_submenu_toggle(page, app_url, console_errors):
+    """[App] mode: Coming soon submenu expands/collapses and items are not clickable."""
     page.goto(app_url)
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
 
@@ -581,89 +581,40 @@ def test_app_mode_validate_modal(page, app_url, console_errors):
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
 
-    # Validate item should be visible and enabled
-    validate_item = page.locator("#nav-validate")
-    expect(validate_item).to_be_visible()
-    expect(validate_item).not_to_have_class("disabled")
+    # Coming soon toggle should be visible
+    toggle_label = page.locator("#nav-coming-soon .nav-submenu-label")
+    expect(toggle_label).to_be_visible()
 
-    # Click validate
-    validate_item.click()
-    page.wait_for_timeout(500)
+    # Sub-items should be hidden initially
+    submenu = page.locator("#nav-coming-soon-items")
+    expect(submenu).not_to_be_visible()
 
-    # Modal should appear with results from fixture PGN
-    expect(page.locator("#validate-modal")).to_be_visible()
-    expect(page.locator("#validate-content")).to_contain_text("test.pgn")
-    expect(page.locator("#validate-content")).to_contain_text("Test Chapter")
+    # Click label to expand
+    toggle_label.click()
+    page.wait_for_timeout(300)
+    expect(submenu).to_be_visible()
 
-    # Close modal
-    page.locator("#close-validate").click()
+    # Verify sub-items are visible with workflow headers
+    expect(page.locator("#nav-validate")).to_be_visible()
+    expect(page.locator("#nav-cleanup")).to_be_visible()
+    expect(page.locator("#nav-import")).to_be_visible()
+    expect(page.locator("#nav-journal")).to_be_visible()
+    expect(page.locator("#nav-status")).to_be_visible()
+
+    # Click a sub-item — no modal should open, menu stays open
+    page.locator("#nav-validate").click()
+    page.wait_for_timeout(300)
     expect(page.locator("#validate-modal")).not_to_be_visible()
+    expect(submenu).to_be_visible()
 
-    # Verify console logs
-    log_text = "\n".join(console_errors["messages"])
-    assert "[showValidate]" in log_text
-
-
-def test_app_mode_status_modal(page, app_url, console_errors):
-    """[App] mode: Project status menu item opens modal."""
-    page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
-
-    # Open menu
-    page.locator("#menu-btn").click()
+    # Click label again to collapse
+    toggle_label.click()
     page.wait_for_timeout(300)
+    expect(submenu).not_to_be_visible()
 
-    # Status item should be visible and enabled
-    status_item = page.locator("#nav-status")
-    expect(status_item).to_be_visible()
-    expect(status_item).not_to_have_class("disabled")
-
-    # Click status
-    status_item.click()
-    page.wait_for_timeout(500)
-
-    # Modal should appear (no config.json in test fixture → shows message)
-    expect(page.locator("#status-modal")).to_be_visible()
-    expect(page.locator("#status-content")).not_to_be_empty()
-
-    # Close modal
-    page.locator("#close-status").click()
-    expect(page.locator("#status-modal")).not_to_be_visible()
-
-    # Verify console logs
     log_text = "\n".join(console_errors["messages"])
-    assert "[showProjectStatus]" in log_text
-
-
-def test_app_mode_cleanup_modal(page, app_url, console_errors):
-    """[App] mode: Cleanup studies menu item opens modal."""
-    page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
-
-    # Open menu
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    # Cleanup item should be visible and enabled
-    cleanup_item = page.locator("#nav-cleanup")
-    expect(cleanup_item).to_be_visible()
-    expect(cleanup_item).not_to_have_class("disabled")
-
-    # Click cleanup (will show error — no token in test env)
-    cleanup_item.click()
-    page.wait_for_timeout(500)
-
-    # Modal should appear with some content
-    expect(page.locator("#cleanup-modal")).to_be_visible()
-    expect(page.locator("#cleanup-content")).not_to_be_empty()
-
-    # Close modal
-    page.locator("#close-cleanup").click()
-    expect(page.locator("#cleanup-modal")).not_to_be_visible()
-
-    # Verify console logs
-    log_text = "\n".join(console_errors["messages"])
-    assert "[showCleanup]" in log_text
+    assert "[nav] Coming soon expanded" in log_text
+    assert "[nav] Coming soon collapsed" in log_text
 
 
 def test_app_mode_refresh_modal(page, app_url, console_errors):
@@ -749,50 +700,25 @@ def test_app_mode_config_modal(page, app_url, console_errors):
     assert "[saveConfig]" in log_text
 
 
-def test_app_mode_journal_modal(page, app_url, console_errors):
-    """[App] mode: Coaching journal menu item opens modal with topic list."""
+def test_coming_soon_journal_not_clickable(page, app_url, console_errors):
+    """[App] mode: Journal is in Coming soon submenu and not clickable."""
     page.goto(app_url)
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
 
-    # Open menu
+    # Open menu and expand Coming soon
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
+    page.locator("#nav-coming-soon .nav-submenu-label").click()
+    page.wait_for_timeout(300)
 
-    # Journal item should be visible and enabled
+    # Journal should be visible in submenu
     journal_item = page.locator("#nav-journal")
     expect(journal_item).to_be_visible()
-    expect(journal_item).not_to_have_class("disabled")
 
-    # Click journal
+    # Click journal — no modal should open
     journal_item.click()
-    page.wait_for_timeout(500)
-
-    # Modal should appear with topic list
-    expect(page.locator("#journal-modal")).to_be_visible()
-    expect(page.locator("#journal-content")).to_contain_text("Budapest Gambit")
-
-    # Click a topic to see detail
-    page.locator(".journal-topic").first.click()
-    page.wait_for_timeout(500)
-
-    # Back button should appear, detail content should load
-    expect(page.locator("#journal-back")).to_be_visible()
-    expect(page.locator("#journal-content")).not_to_be_empty()
-
-    # Click back to return to list
-    page.locator("#journal-back").click()
-    page.wait_for_timeout(500)
-    expect(page.locator("#journal-back")).not_to_be_visible()
-    expect(page.locator("#journal-content")).to_contain_text("Budapest Gambit")
-
-    # Close modal
-    page.locator("#close-journal").click()
+    page.wait_for_timeout(300)
     expect(page.locator("#journal-modal")).not_to_be_visible()
-
-    # Verify console logs
-    log_text = "\n".join(console_errors["messages"])
-    assert "[showJournal]" in log_text
-    assert "[showJournalTopic]" in log_text
 
 
 def test_about_modal_opens_and_closes(page, pwa_url):
@@ -841,12 +767,9 @@ def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     page.wait_for_timeout(300)
 
     expect(page.locator("#nav-stats")).not_to_be_visible()
-    expect(page.locator("#nav-validate")).not_to_be_visible()
-    expect(page.locator("#nav-status")).not_to_be_visible()
-    expect(page.locator("#nav-cleanup")).not_to_be_visible()
     expect(page.locator("#nav-refresh")).not_to_be_visible()
-    expect(page.locator("#nav-journal")).not_to_be_visible()
     expect(page.locator("#nav-config")).not_to_be_visible()
+    expect(page.locator("#nav-coming-soon")).not_to_be_visible()
 
     # Settings is visible in demo mode (not app-only)
     expect(page.locator("#nav-settings")).to_be_visible()
