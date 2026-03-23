@@ -21,16 +21,16 @@ plugins:
             show_source: true
 nav:
   - Home: index.md
-  - Setup Guide: setup.md
-  - CLI Reference: cli.md
   - Training Mode: training.md
   - Flows:
     - Overview: flows/index.md
     - User flows: flows/user-flows.md
     - Data flows: flows/data-flows.md
     - System flows: flows/system-flows.md
-    - Coming soon: flows/coming-soon-flows.md
+    - "Coming soon : WIP": flows/coming-soon-flows.md
     - Meta flows: flows/meta-flows.md
+  - Dev Setup: setup.md
+  - CLI Reference: cli.md
   - API Reference:
     - Python: api.md
     - PWA (JavaScript): pwa-api.md

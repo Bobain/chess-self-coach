@@ -1,4 +1,4 @@
-# Coming soon flows
+# Coming soon : WIP
 
 Planned features — implemented in CLI but not yet fully integrated into the PWA.
 
