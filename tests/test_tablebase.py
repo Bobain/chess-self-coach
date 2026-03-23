@@ -191,3 +191,48 @@ def test_cp_loss_white_win_to_loss_is_blunder():
     """White WIN→LOSS (no flip needed): 600cp blunder."""
     cp = tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE)
     assert cp == 600, f"Expected 600 cp_loss for WIN→LOSS, got {cp}"
+
+
+# --- probe_position_full ---
+
+
+from unittest.mock import MagicMock, patch
+
+from chess_self_coach.tablebase import probe_position_full
+
+
+@patch("chess_self_coach.tablebase.requests.get")
+def test_probe_position_full_returns_complete_data(mock_get: MagicMock):
+    """Returns full API response including all moves."""
+    api_data = {
+        "category": "win",
+        "dtz": -20,
+        "dtm": -20,
+        "precise_dtz": -20,
+        "dtw": None,
+        "dtc": None,
+        "checkmate": False,
+        "stalemate": False,
+        "moves": [
+            {"uci": "h1h7", "san": "Rh7", "category": "loss", "dtz": -20, "dtm": -20},
+        ],
+    }
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = api_data
+    mock_get.return_value = mock_resp
+
+    result = probe_position_full("4k3/8/8/8/8/8/8/4K2R w K - 0 1")
+    assert result is not None
+    assert result["category"] == "win"
+    assert result["tier"] == "WIN"
+    assert len(result["moves"]) == 1
+    assert result["moves"][0]["san"] == "Rh7"
+
+
+@patch("chess_self_coach.tablebase.requests.get")
+def test_probe_position_full_too_many_pieces(mock_get: MagicMock):
+    """Returns None for positions with more than 7 pieces."""
+    result = probe_position_full("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
+    assert result is None
+    mock_get.assert_not_called()
