@@ -1,5 +1,53 @@
 # CLI Reference
 
+!!! note
+    The CLI is for **dev and batch operations**. The primary training experience is the [PWA](training.md).
+
+## train
+
+Training mode: extract mistakes from your games and generate training data.
+
+```bash
+chess-self-coach train [options]
+```
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--prepare` | off | Analyze games and export `training_data.json` |
+| `--serve` | off | Open the training PWA in the browser |
+| `--stats` | off | Show training progress statistics |
+| `--games N` | 20 | Maximum games to fetch per source |
+| `--depth N` | 18 | Stockfish analysis depth |
+| `--engine PATH` | config.json | Override Stockfish binary path |
+| `--refresh-explanations` | off | [Dev] Regenerate explanations without re-running Stockfish |
+| `--fresh` | off | [Dev] Discard existing training data and start from scratch |
+
+### Examples
+
+```bash
+# Fetch games + Stockfish analysis
+chess-self-coach train --prepare
+
+# Limit to 5 games at depth 12
+chess-self-coach train --prepare --games 5 --depth 12
+
+# Open the training interface
+chess-self-coach train --serve
+
+# Check your stats
+chess-self-coach train --stats
+```
+
+## update
+
+Update chess-self-coach to the latest version.
+
+```bash
+chess-self-coach update
+```
+
 ## analyze
 
 Analyze a PGN file with Stockfish and add `[%eval]` annotations.
