@@ -631,7 +631,7 @@ def test_coming_soon_submenu_toggle(page, app_url, console_errors):
 
 
 def test_app_mode_refresh_modal(page, app_url, console_errors):
-    """[App] mode: Refresh training menu item opens modal with progress bar."""
+    """[App] mode: Refresh menu item opens analysis settings modal."""
     page.goto(app_url)
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
 
@@ -644,23 +644,22 @@ def test_app_mode_refresh_modal(page, app_url, console_errors):
     expect(refresh_item).to_be_visible()
     expect(refresh_item).not_to_have_class("disabled")
 
-    # Click refresh (will likely error — no config in test env, but modal should open)
+    # Click refresh → opens analysis settings modal (2-step flow)
     refresh_item.click()
     page.wait_for_timeout(500)
 
-    # Modal should appear with step checklist
-    expect(page.locator("#refresh-modal")).to_be_visible()
-    expect(page.locator("#refresh-steps")).to_be_visible()
-    expect(page.locator("#refresh-steps .refresh-step")).to_have_count(4)
+    # Analysis settings modal should appear
+    expect(page.locator("#analysis-modal")).to_be_visible()
+    expect(page.locator("#analysis-threads")).to_be_visible()
+    expect(page.locator("#start-analysis")).to_be_visible()
 
-    # Wait for close button to appear (job finishes or errors quickly)
-    page.locator("#close-refresh").wait_for(state="visible", timeout=10000)
-    page.locator("#close-refresh").click()
-    expect(page.locator("#refresh-modal")).not_to_be_visible()
+    # Close via cancel button
+    page.locator("#close-analysis").click()
+    expect(page.locator("#analysis-modal")).not_to_be_visible()
 
     # Verify console logs
     log_text = "\n".join(console_errors["messages"])
-    assert "[refreshTraining]" in log_text
+    assert "[showAnalysisSettings]" in log_text
 
 
 def test_app_mode_config_modal(page, app_url, console_errors):
