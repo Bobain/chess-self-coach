@@ -397,6 +397,7 @@ def collect_game_data(
     player_color: chess.Color,
     settings: AnalysisSettings,
     lichess_token: str | None = None,
+    game_id: str = "",
 ) -> dict:
     """Collect full per-move analysis data for one game (Phase 1).
 
@@ -409,6 +410,8 @@ def collect_game_data(
         player_color: Which color the player was.
         settings: Analysis settings (for limits and storage).
         lichess_token: Lichess API token for Opening Explorer. None to skip.
+        game_id: Unique game identifier. Passed to engine.analyse() so python-chess
+            sends ucinewgame between different games (hash table reset).
 
     Returns:
         Dict with game headers, settings, and moves[] array ready for
@@ -504,7 +507,7 @@ def collect_game_data(
                     eval_before = _cloud_eval_to_eval(cloud, board)
                     _eb_src = "cloud_eval"
                 else:
-                    info = engine.analyse(board, _analysis_limit_from_settings(board, limits))
+                    info = engine.analyse(board, _analysis_limit_from_settings(board, limits), game=game_id)
                     eval_before = _extract_eval(info, board)
                     _eb_src = "sf_fallback"
             eval_before_ms = (_time.time() - t0) * 1000
@@ -517,7 +520,7 @@ def collect_game_data(
                 _ea_src = "cloud_eval"
             else:
                 info_after = engine.analyse(
-                    board_after, _analysis_limit_from_settings(board_after, limits),
+                    board_after, _analysis_limit_from_settings(board_after, limits), game=game_id,
                 )
                 eval_after = _extract_eval(info_after, board_after)
                 _ea_src = "sf_fallback"
@@ -557,7 +560,7 @@ def collect_game_data(
                 eval_source = "tablebase"
                 _eb_src = "tablebase"
             else:
-                info = engine.analyse(board, _analysis_limit_from_settings(board, limits))
+                info = engine.analyse(board, _analysis_limit_from_settings(board, limits), game=game_id)
                 eval_before = _extract_eval(info, board)
                 _eb_src = "stockfish"
                 if tb_before:
@@ -579,7 +582,7 @@ def collect_game_data(
                 _ea_src = "tablebase"
             else:
                 info_after = engine.analyse(
-                    board_after, _analysis_limit_from_settings(board_after, limits),
+                    board_after, _analysis_limit_from_settings(board_after, limits), game=game_id,
                 )
                 eval_after = _extract_eval(info_after, board_after)
                 cached_eval = eval_after
@@ -587,12 +590,24 @@ def collect_game_data(
                 _ea_src = "stockfish"
             eval_after_ms = (_time.time() - t0) * 1000
 
-            # --- Eval after best move (only if best differs from actual) ---
+            # --- cp_loss (computed before eval_after_best to skip it when low) ---
+            cp_loss = 0
+            before_cp = eval_before.get("score_cp")
+            after_cp = eval_after.get("score_cp")
+            if before_cp is not None and after_cp is not None:
+                if board.turn == chess.WHITE:
+                    cp_loss = max(0, before_cp - after_cp)
+                else:
+                    cp_loss = max(0, after_cp - before_cp)
+
+            # --- Eval after best move (only if cp_loss >= 50 and best differs) ---
             t0 = _time.time()
             eval_after_best: dict | None = None
             _eab_src: str | None = None
             best_uci = eval_before.get("best_move_uci")
-            if best_uci and best_uci != actual_move.uci():
+            if cp_loss < 50:
+                _eab_src = None  # skip: not needed for training data
+            elif best_uci and best_uci != actual_move.uci():
                 best_move_obj = chess.Move.from_uci(best_uci)
                 board_after_best = board.copy()
                 board_after_best.push(best_move_obj)
@@ -609,6 +624,7 @@ def collect_game_data(
                     info_ab = engine.analyse(
                         board_after_best,
                         _analysis_limit_from_settings(board_after_best, limits),
+                        game=game_id,
                     )
                     eval_after_best = _extract_eval_score_only(info_ab)
                     _eab_src = "stockfish"
@@ -623,22 +639,13 @@ def collect_game_data(
             eval_after_best_ms = (_time.time() - t0) * 1000 if _eab_src else None
 
             _log.info(
-                "  ply %d %s: %s — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s)%s",
+                "  ply %d %s: %s — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s) cp_loss=%d%s",
                 ply + 1, board.san(actual_move), eval_source,
                 _eb_src, eval_before_ms, eval_before.get("score_cp"),
                 _ea_src, eval_after_ms, eval_after.get("score_cp"),
+                cp_loss,
                 f" best={_eab_src}({eval_after_best_ms:.0f}ms)" if _eab_src and eval_after_best_ms is not None else "",
             )
-
-            # --- cp_loss ---
-            cp_loss = 0
-            before_cp = eval_before.get("score_cp")
-            after_cp = eval_after.get("score_cp")
-            if before_cp is not None and after_cp is not None:
-                if board.turn == chess.WHITE:
-                    cp_loss = max(0, before_cp - after_cp)
-                else:
-                    cp_loss = max(0, after_cp - before_cp)
 
             # --- Tablebase: store full responses ---
             tb_before_stored = tb_before
@@ -921,6 +928,7 @@ def analyze_games(
             try:
                 game_data = collect_game_data(
                     game, engine, player_color, settings, lichess_token,
+                    game_id=game_id,
                 )
             except Exception as exc:
                 print(f"  [{done_count}/{total_tasks}] Error analyzing {label}: {exc}")
