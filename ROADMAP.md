@@ -81,6 +81,47 @@ Then POSTs to `POST /api/analysis/start` which:
 **Next priority:**
 - [ ] import/analyze/push/pull → individual PWA buttons (needs own design phase)
 
+### 3c. Game Review & Analysis UI — HIGH PRIORITY
+
+Chess.com-quality game review experience in both [demo] and [app].
+Data source: `analysis_data.json` (full per-move analysis from Phase 1).
+All rendering is client-side JS — no backend needed → works in [demo] with sample data.
+
+#### 3c-i. Game review page — full-game navigation (foundation)
+- [ ] "Review games" menu item (visible in both [demo] and [app])
+- [ ] Game selector: list analyzed games with opponent, date, result, opening
+- [ ] Move list panel: algebraic notation, clickable to jump to position
+- [ ] Board updates to show position at selected move (reuse Chessground)
+- [ ] Keyboard navigation: ← → (prev/next move), Home/End (first/last)
+- [ ] Auto-play button with configurable speed
+- [ ] [Demo] loads sample `analysis_data.json`; [App] loads real data
+- [ ] E2E test: navigate game moves, verify board position changes
+
+#### 3c-ii. Eval bar + score chart
+- [ ] Vertical eval bar next to board (white fill = White advantage, black = Black)
+- [ ] Numeric display: centipawn value or "M3" for mate
+- [ ] Smooth CSS transition on move changes
+- [ ] Score chart below board: eval curve over all moves (Canvas, no external lib)
+- [ ] Click on chart point → jump to that move
+- [ ] E2E test: eval bar reflects position, chart clickable
+
+#### 3c-iii. Move classifications + accuracy + board arrows
+- [ ] Color-coded moves in move list:
+      Brilliant (!!) / Great (!) / Best / Excellent / Good / Book /
+      Inaccuracy (?!) / Mistake (?) / Blunder (??) / Missed Win
+- [ ] Classification algorithm: cp_loss thresholds (extend existing `_classify_mistake()`)
+- [ ] Accuracy score per player: CAPS-like formula from per-move cp_loss
+- [ ] Game summary panel: accuracy %, classification counts per player, opening name
+- [ ] Chessground arrows: green = best move, red/orange = played mistake
+- [ ] E2E test: move colors match classifications, accuracy displayed
+
+#### 3c-iv. Engine lines + opening info
+- [ ] Top PV line displayed for selected move (from `pv_san` in analysis_data.json)
+- [ ] Opening name + ECO code at top of move list
+- [ ] Theory departure indicator (move where player left known openings)
+- [ ] Depth indicator (from `depth` field)
+- [ ] E2E test: PV line shown, opening name correct
+
 ### 3d. Legacy cleanup — old parallel analysis pipeline — DONE
 The old parallel pipeline was removed. `trainer.py` now contains only explanation/context
 generation, move classification, and training data utilities. Analysis lives in `analysis.py`.
@@ -157,6 +198,8 @@ Section 2 (Menu + Mode detection) ← DONE
      │         │
      │         ▼ (pattern established)
      │    Section 3b (SSE + full analysis pipeline) ← DONE
+     │         │
+     │         ├──► Section 3c (Game Review & Analysis UI) ← HIGH PRIORITY, NEXT
      │         │
      │         ▼
      │    Section 3d (Legacy cleanup) ← DONE
