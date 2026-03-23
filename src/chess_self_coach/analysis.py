@@ -420,92 +420,118 @@ def collect_game_data(
             if opponent_clock is not None and prev_opponent_clock is not None:
                 time_spent = prev_opponent_clock - opponent_clock
 
-        # --- Eval source + eval_before ---
-        tb_before = None
-        eval_source = "stockfish"
-
-        if piece_count <= MAX_PIECES:
-            tb_before = probe_position_full(board.fen())
-
-        if cached_eval is not None:
-            eval_before = cached_eval
-            if cached_tb is not None:
-                tb_before = cached_tb
-                eval_source = "tablebase" if cached_eval.get("depth") is None else "stockfish+tablebase"
-        elif tb_before:
-            eval_before = _tb_to_eval(tb_before, board.turn)
-            eval_source = "tablebase"
-        else:
-            info = engine.analyse(board, _analysis_limit_from_settings(board, limits))
-            eval_before = _extract_eval(info, board)
-            if tb_before:
-                eval_source = "stockfish+tablebase"
-
-        # --- Eval after actual move (will be cached as eval_before for next ply) ---
-        board_after_fen = board_after.fen()
-        pc_after = len(board_after.piece_map())
-        tb_after = None
-
-        if pc_after <= MAX_PIECES:
-            tb_after = probe_position_full(board_after_fen)
-
-        if tb_after:
-            eval_after = _tb_to_eval(tb_after, board_after.turn)
-            cached_eval = eval_after
-            cached_tb = tb_after
-        else:
-            info_after = engine.analyse(
-                board_after, _analysis_limit_from_settings(board_after, limits),
-            )
-            eval_after = _extract_eval(info_after, board_after)
-            cached_eval = eval_after
-            cached_tb = None
-
-        # --- Eval after best move (only if best differs from actual) ---
-        eval_after_best: dict | None = None
-        best_uci = eval_before.get("best_move_uci")
-        if best_uci and best_uci != actual_move.uci():
-            best_move_obj = chess.Move.from_uci(best_uci)
-            board_after_best = board.copy()
-            board_after_best.push(best_move_obj)
-            pc_ab = len(board_after_best.piece_map())
-            tb_ab = probe_position_full(board_after_best.fen()) if pc_ab <= MAX_PIECES else None
-            if tb_ab:
-                eval_after_best = {
-                    "score_cp": _tb_to_eval(tb_ab, board_after_best.turn)["score_cp"],
-                    "is_mate": _tb_to_eval(tb_ab, board_after_best.turn)["is_mate"],
-                    "mate_in": _tb_to_eval(tb_ab, board_after_best.turn)["mate_in"],
-                }
-            else:
-                info_ab = engine.analyse(
-                    board_after_best,
-                    _analysis_limit_from_settings(board_after_best, limits),
-                )
-                eval_after_best = _extract_eval_score_only(info_ab)
-        elif best_uci and best_uci == actual_move.uci():
-            # Best move == actual move: eval_after_best = eval_after
-            eval_after_best = {
-                "score_cp": eval_after["score_cp"],
-                "is_mate": eval_after["is_mate"],
-                "mate_in": eval_after.get("mate_in"),
-            }
-
-        # --- cp_loss ---
-        cp_loss = 0
-        before_cp = eval_before.get("score_cp")
-        after_cp = eval_after.get("score_cp")
-        if before_cp is not None and after_cp is not None:
-            if board.turn == chess.WHITE:
-                cp_loss = max(0, before_cp - after_cp)
-            else:
-                cp_loss = max(0, after_cp - before_cp)
-
-        # --- Tablebase: store full responses (remove redundant for after) ---
-        tb_before_stored = tb_before
-        tb_after_stored = tb_after
-
-        # --- Opening Explorer ---
+        # --- Opening Explorer: determine if move is in opening theory ---
         explorer_data = explorer_results[ply] if ply < len(explorer_results) else None
+        in_opening = False
+        if explorer_data is not None:
+            known_moves_uci = {m["uci"] for m in explorer_data.get("moves", [])}
+            in_opening = actual_move.uci() in known_moves_uci
+
+        # --- Eval: board_after_fen needed by both branches ---
+        board_after_fen = board_after.fen()
+
+        # --- Eval source + eval_before ---
+        if in_opening:
+            # Opening book move: skip Stockfish entirely
+            eval_source = "opening_explorer"
+            _opening_eval = {
+                "score_cp": None, "is_mate": False, "mate_in": None,
+                "depth": None, "seldepth": None, "nodes": None, "nps": None,
+                "time_ms": None, "tbhits": None, "hashfull": None,
+                "pv_san": [], "pv_uci": [],
+                "best_move_san": None, "best_move_uci": None,
+            }
+            eval_before = _opening_eval
+            eval_after = dict(_opening_eval)
+            eval_after_best = None
+            cp_loss = 0
+            # Don't cache: first post-opening move needs real Stockfish eval_before
+            cached_eval = None
+            cached_tb = None
+            tb_before_stored = None
+            tb_after_stored = None
+        else:
+            tb_before = None
+            eval_source = "stockfish"
+
+            if piece_count <= MAX_PIECES:
+                tb_before = probe_position_full(board.fen())
+
+            if cached_eval is not None:
+                eval_before = cached_eval
+                if cached_tb is not None:
+                    tb_before = cached_tb
+                    eval_source = "tablebase" if cached_eval.get("depth") is None else "stockfish+tablebase"
+            elif tb_before:
+                eval_before = _tb_to_eval(tb_before, board.turn)
+                eval_source = "tablebase"
+            else:
+                info = engine.analyse(board, _analysis_limit_from_settings(board, limits))
+                eval_before = _extract_eval(info, board)
+                if tb_before:
+                    eval_source = "stockfish+tablebase"
+
+            # --- Eval after actual move (will be cached as eval_before for next ply) ---
+            pc_after = len(board_after.piece_map())
+            tb_after = None
+
+            if pc_after <= MAX_PIECES:
+                tb_after = probe_position_full(board_after_fen)
+
+            if tb_after:
+                eval_after = _tb_to_eval(tb_after, board_after.turn)
+                cached_eval = eval_after
+                cached_tb = tb_after
+            else:
+                info_after = engine.analyse(
+                    board_after, _analysis_limit_from_settings(board_after, limits),
+                )
+                eval_after = _extract_eval(info_after, board_after)
+                cached_eval = eval_after
+                cached_tb = None
+
+            # --- Eval after best move (only if best differs from actual) ---
+            eval_after_best: dict | None = None
+            best_uci = eval_before.get("best_move_uci")
+            if best_uci and best_uci != actual_move.uci():
+                best_move_obj = chess.Move.from_uci(best_uci)
+                board_after_best = board.copy()
+                board_after_best.push(best_move_obj)
+                pc_ab = len(board_after_best.piece_map())
+                tb_ab = probe_position_full(board_after_best.fen()) if pc_ab <= MAX_PIECES else None
+                if tb_ab:
+                    eval_after_best = {
+                        "score_cp": _tb_to_eval(tb_ab, board_after_best.turn)["score_cp"],
+                        "is_mate": _tb_to_eval(tb_ab, board_after_best.turn)["is_mate"],
+                        "mate_in": _tb_to_eval(tb_ab, board_after_best.turn)["mate_in"],
+                    }
+                else:
+                    info_ab = engine.analyse(
+                        board_after_best,
+                        _analysis_limit_from_settings(board_after_best, limits),
+                    )
+                    eval_after_best = _extract_eval_score_only(info_ab)
+            elif best_uci and best_uci == actual_move.uci():
+                # Best move == actual move: eval_after_best = eval_after
+                eval_after_best = {
+                    "score_cp": eval_after["score_cp"],
+                    "is_mate": eval_after["is_mate"],
+                    "mate_in": eval_after.get("mate_in"),
+                }
+
+            # --- cp_loss ---
+            cp_loss = 0
+            before_cp = eval_before.get("score_cp")
+            after_cp = eval_after.get("score_cp")
+            if before_cp is not None and after_cp is not None:
+                if board.turn == chess.WHITE:
+                    cp_loss = max(0, before_cp - after_cp)
+                else:
+                    cp_loss = max(0, after_cp - before_cp)
+
+            # --- Tablebase: store full responses (remove redundant for after) ---
+            tb_before_stored = tb_before
+            tb_after_stored = tb_after
 
         # --- Build move dict ---
         move_dict = {
