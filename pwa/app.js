@@ -2036,7 +2036,7 @@ function computeAccuracy(moves, classifications, color) {
     sum += moveAcc;
     count++;
   }
-  return count > 0 ? Math.round((sum / count) * 100) : 0;
+  return count > 0 ? Math.round((sum / count) * 100) : null;
 }
 
 /**
@@ -2194,13 +2194,16 @@ function renderGameSummary() {
   }
 
   for (const color of ['white', 'black']) {
+    const acc = color === 'white' ? whiteAcc : blackAcc;
     const block = document.createElement('div');
     block.className = 'accuracy-block';
 
-    const val = document.createElement('div');
-    val.className = 'accuracy-value';
-    val.textContent = `${color === 'white' ? whiteAcc : blackAcc}%`;
-    block.appendChild(val);
+    if (acc !== null) {
+      const val = document.createElement('div');
+      val.className = 'accuracy-value';
+      val.textContent = `${acc}%`;
+      block.appendChild(val);
+    }
 
     const label = document.createElement('div');
     label.className = 'accuracy-label';
