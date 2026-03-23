@@ -148,6 +148,17 @@ Lichess auto-creates an empty "Chapter 1" when a study is created. After importi
 !!! note
     `push` runs cleanup automatically after import — you only need this command for manual cleanup.
 
+## syzygy
+
+Manage Syzygy endgame tablebases (3-5 pieces, ~1 GB).
+
+```bash
+chess-self-coach syzygy download    # download tables to ~/.local/share/syzygy/
+chess-self-coach syzygy status      # show installed tables info
+```
+
+Stockfish uses these tables during search for faster, exact endgame analysis. Tables are also downloaded automatically during `setup` and `install.sh`.
+
 ## status
 
 Show sync status of all repertoire files.

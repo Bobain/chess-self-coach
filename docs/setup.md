@@ -44,11 +44,12 @@ chess-self-coach setup
 
 The `setup` command will:
 
-1. Verify your Lichess authentication
-2. Check Stockfish availability
-3. List your existing Lichess studies
-4. Auto-match studies to PGN files by name
-5. Save your personal configuration to `config.json`
+1. Check Stockfish availability
+2. Download Syzygy endgame tablebases (3-5 pieces, ~1 GB) if not already installed
+3. Verify your Lichess authentication
+4. List your existing Lichess studies
+5. Auto-match studies to PGN files by name
+6. Save your personal configuration to `config.json`
 
 !!! note
     Both `config.json` and `.env` are gitignored — they contain your personal data (study IDs, API token) and will never be pushed to the repository.

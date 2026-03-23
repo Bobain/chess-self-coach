@@ -120,6 +120,7 @@ chess-self-coach analyze <file.pgn>     # Stockfish analysis with [%eval] annota
 chess-self-coach push <file.pgn>        # push PGN to Lichess Study
 chess-self-coach pull <file.pgn>        # pull from Lichess Study
 chess-self-coach cleanup [file.pgn]     # remove empty default chapters
+chess-self-coach syzygy [download|status]  # manage Syzygy endgame tablebases
 chess-self-coach status                 # sync status of all repertoire files
 chess-self-coach setup                  # interactive configuration wizard
 ```
