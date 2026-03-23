@@ -2217,7 +2217,6 @@ function renderGameSummary() {
       { key: 'best', label: '\u2605', color: '#96bc4b' },
       { key: 'excellent', label: '!', color: '#96bc4b' },
       { key: 'good', label: 'good', color: '#95b776' },
-      { key: 'book', label: '\u2657', color: '#a88764' },
       { key: 'inaccuracy', label: '?!', color: '#f7c631' },
       { key: 'mistake', label: '?', color: '#e6912a' },
       { key: 'blunder', label: '??', color: '#ca3431' },
