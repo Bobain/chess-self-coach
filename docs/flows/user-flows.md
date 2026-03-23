@@ -45,6 +45,54 @@ sequenceDiagram
 
 ---
 
+## Game review (Analysis mode, PWA)
+
+The player reviews full games move-by-move with eval visualization. Available in both [demo] and [app] modes.
+
+![Game review flow](images/game-review.svg)
+
+```mermaid
+sequenceDiagram
+    participant U as Player
+    participant PWA as Browser (PWA)
+
+    U->>PWA: Click "Analysis" in mode toggle
+    PWA->>PWA: Fetch analysis_data.json
+    PWA->>U: Show game selector (list of games)
+
+    U->>PWA: Click a game card
+    PWA->>PWA: classifyAllMoves() — win probability model
+    PWA->>PWA: computeAccuracy() — per player
+    PWA->>U: Show review: board + eval bar + move list + score chart
+
+    loop Navigate moves
+        alt Click move / Arrow key / Auto-play
+            U->>PWA: Navigate to ply N
+            PWA->>PWA: goToMove(N)
+            PWA->>U: Update board (FEN + lastMove)
+            PWA->>U: Update eval bar (sigmoid)
+            PWA->>U: Update arrows (green=best, red=mistake)
+            PWA->>U: Update PV line + score chart cursor
+        end
+    end
+
+    U->>PWA: Click "Back"
+    PWA->>U: Return to game selector
+```
+
+### Key details
+
+- **Mode toggle**: segmented control `[Training | Analysis]` in the header.
+- **Game selector**: cards showing opponent, date, result (W/D/L badge), opening name, move count.
+- **Move classifications**: win probability model — `winProb(cp) = 1/(1+10^(-cp/400))`, thresholds: Best ≤0, Excellent ≤0.02, Good ≤0.05, Inaccuracy ≤0.10, Mistake ≤0.20, Blunder >0.20.
+- **Eval bar**: sigmoid mapping, 50% at equal, smooth CSS transition. Shows "Book" for opening moves, "M3" for mate.
+- **Score chart**: Canvas, click to jump to any move, colored dots at mistakes/blunders.
+- **Board arrows**: `reviewCg.set({drawable: {autoShapes: [...]}})` — green for best move, red for played mistake.
+- **Keyboard**: ArrowLeft/Right, Home/End. Active only in analysis view.
+- **Flip board**: toggles `reviewOrientation` on the second Chessground instance.
+
+---
+
 ## Analyse latest games (app mode)
 
 Fetches recent games, runs full analysis (Stockfish + APIs), and generates training positions.
@@ -107,6 +155,7 @@ sequenceDiagram
     API-->>PWA: SSE: done (summary)
     PWA->>PWA: Reload training_data.json
     PWA->>PWA: Restart session
+    Note over PWA: analysis_data.json also updated<br/>(available for Analysis mode)
 ```
 
 ### Key details

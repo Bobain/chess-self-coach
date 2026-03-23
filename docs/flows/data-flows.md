@@ -32,9 +32,14 @@ flowchart LR
         DER[annotate_and_derive<br/>filter + explain]
     end
 
-    subgraph PWA
+    subgraph "PWA — Training mode"
         SEL[Session selector<br/>SM-2 priority]
         QUIZ[Quiz interface<br/>board + feedback]
+    end
+
+    subgraph "PWA — Analysis mode"
+        GSEL[Game selector]
+        REV[Game review<br/>eval bar + score chart<br/>+ classifications]
     end
 
     LI --> IMP
@@ -51,13 +56,15 @@ flowchart LR
     LS --> SEL
     SEL --> QUIZ
     QUIZ --> LS
+    AD --> GSEL
+    GSEL --> REV
 ```
 
 ### Two-layer data model
 
 | File | Content | Used by |
 |------|---------|---------|
-| `analysis_data.json` | All moves, all evals, per game (App only) | Phase 2 derivation |
+| `analysis_data.json` | All moves, all evals, per game | Phase 2 derivation + Analysis mode (game review UI) |
 | `training_data.json` | Filtered mistakes (unchanged schema) | App + Demo |
 
 Phase 2 can be re-run cheaply without re-running Stockfish (`chess-self-coach train --derive`).

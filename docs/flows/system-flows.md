@@ -65,6 +65,7 @@ site/
     ├── sw.js
     ├── manifest.json
     ├── training_data.json
+    ├── analysis_data.json
     └── stockfish/
 ```
 
@@ -82,8 +83,8 @@ flowchart TD
     FETCH -->|200 OK| APP[App mode]
     FETCH -->|Network error / 404| DEMO[Demo mode]
 
-    APP --> SHOW[Show app-only menu items<br/>Enable native Stockfish<br/>Set depth=18]
-    DEMO --> HIDE[Hide app-only items<br/>Use WASM Stockfish<br/>Set depth=12]
+    APP --> SHOW[Show app-only menu items<br/>Enable native Stockfish<br/>Set depth=18<br/>Serve analysis_data.json fresh]
+    DEMO --> HIDE[Hide app-only items<br/>Use WASM Stockfish<br/>Set depth=12<br/>Use bundled analysis_data.json]
 
     APP --> VER{Version check}
     VER -->|Newer available| PROMPT[Show update prompt]

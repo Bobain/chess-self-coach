@@ -2,13 +2,18 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, and drills you on the correct moves with spaced repetition.
+**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, drills you on the correct moves with spaced repetition, and provides chess.com-quality game review with eval bar, score chart, and move classifications.
 
 **[Static demo](https://bobain.github.io/chess-self-coach/train/)** | **[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
 
 ## How It Works
 
-**Your games → Stockfish analysis → Spaced repetition training**
+**Your games → Stockfish analysis → Training drills + Game review**
+
+The PWA has two modes, toggled via the header:
+
+- **Training**: spaced repetition drill — find the better move for each mistake
+- **Analysis**: chess.com-style game review — browse all moves with eval bar, score chart, and move classifications
 
 ### One command to start
 
@@ -122,7 +127,7 @@ chess-self-coach setup                  # interactive configuration wizard
 ## Data & Privacy
 
 - Your games are fetched from public APIs (Lichess, chess.com)
-- `training_data.json` is stored locally (gitignored)
+- `training_data.json` and `analysis_data.json` are stored locally (gitignored)
 - Drill progress is in your browser's localStorage
 - No server, no account, no tracking
 

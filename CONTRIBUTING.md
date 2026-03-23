@@ -41,11 +41,12 @@ The PWA detects its mode automatically via `/api/status`. If a FastAPI backend r
 | **Launch** | Static hosting | `chess-self-coach` (FastAPI server) |
 | **Opponent response engine** | Stockfish WASM (browser) | Native Stockfish (backend API, depth 18) |
 | **Analysis depth default** | 12 | 18 |
-| **Data** | Sample `training_data.json` | Generated from your own games |
+| **Data** | Sample `training_data.json` + `analysis_data.json` | Generated from your own games |
 | **CLI tools** | None | fetch, analyze, repertoire management |
 | **Menu** | Raw data summary, Settings, About | Analyse latest games, Edit config, Coming soon ▸, Raw data summary, Settings, About |
+| **Mode toggle** | [Training \| Analysis] — both modes work in both distributions |
 
-The **demo** showcases the training interface with sample data. Install the app to train on your own games.
+The **demo** showcases the training and analysis interfaces with sample data. Install the app to train on your own games.
 
 The **application** (`chess-self-coach`) starts a FastAPI backend that serves the PWA with API endpoints for native Stockfish analysis. The CLI also fetches games from Lichess/chess.com, runs batch Stockfish analysis (native, depth 18, multi-core), and generates your personal `training_data.json`.
 
@@ -70,6 +71,7 @@ but the PWA simplifies this into a single action:
 - Runs the full analysis pipeline in the background via `POST /api/analysis/start`
 - Progress displayed via **SSE** (Server-Sent Events) in a modal with a step checklist (init → fetch → analyze → finalize)
 - On completion, reloads `training_data.json` and refreshes the PWA session
+- The resulting `analysis_data.json` is also used by the **Analysis mode** for game review
 
 Deferred features are grouped in a **"Coming soon"** submenu (Validate PGN, Cleanup studies, Import games, Coaching journal, Project status).
 
