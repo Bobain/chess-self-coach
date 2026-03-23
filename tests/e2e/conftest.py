@@ -40,10 +40,10 @@ def _serve_pwa_dir(tmp_dir):
     return f"http://127.0.0.1:{port}", server
 
 
-def _copy_pwa_files(tmp_dir, training_data_path):
+def _copy_pwa_files(tmp_dir, training_data_path, analysis_data_path=None):
     """Copy PWA files + training data to a temp directory."""
     for f in PWA_DIR.iterdir():
-        if f.is_file() and f.name != "training_data.json":
+        if f.is_file() and f.name not in ("training_data.json", "analysis_data.json"):
             shutil.copy2(f, tmp_dir / f.name)
 
     # Copy Stockfish WASM directory if present
@@ -58,12 +58,21 @@ def _copy_pwa_files(tmp_dir, training_data_path):
 
     shutil.copy2(training_data_path, tmp_dir / "training_data.json")
 
+    # Copy analysis data if provided
+    if analysis_data_path and analysis_data_path.exists():
+        shutil.copy2(analysis_data_path, tmp_dir / "analysis_data.json")
+
 
 @pytest.fixture(scope="session")
 def pwa_url(tmp_path_factory):
     """Serve the PWA with test fixture data (simplified positions)."""
     tmp_dir = tmp_path_factory.mktemp("pwa_e2e")
-    _copy_pwa_files(tmp_dir, FIXTURES_DIR / "training_data.json")
+    analysis_fixture = FIXTURES_DIR / "analysis_data.json"
+    _copy_pwa_files(
+        tmp_dir,
+        FIXTURES_DIR / "training_data.json",
+        analysis_fixture if analysis_fixture.exists() else None,
+    )
     url, server = _serve_pwa_dir(tmp_dir)
     yield url
     server.shutdown()
@@ -79,7 +88,12 @@ def pwa_real_url(tmp_path_factory):
     if not real_data.exists():
         pytest.skip("training_data.json not found (run train --prepare first)")
     tmp_dir = tmp_path_factory.mktemp("pwa_e2e_real")
-    _copy_pwa_files(tmp_dir, real_data)
+    real_analysis = PROJECT_ROOT / "analysis_data.json"
+    _copy_pwa_files(
+        tmp_dir,
+        real_data,
+        real_analysis if real_analysis.exists() else None,
+    )
     url, server = _serve_pwa_dir(tmp_dir)
     yield url
     server.shutdown()
@@ -100,6 +114,9 @@ def app_url(tmp_path_factory):
     # Create temp dir mimicking project root
     tmp_dir = tmp_path_factory.mktemp("app_e2e")
     shutil.copy2(FIXTURES_DIR / "training_data.json", tmp_dir / "training_data.json")
+    analysis_fixture = FIXTURES_DIR / "analysis_data.json"
+    if analysis_fixture.exists():
+        shutil.copy2(analysis_fixture, tmp_dir / "analysis_data.json")
     for pgn in FIXTURES_DIR.glob("*.pgn"):
         shutil.copy2(pgn, tmp_dir / pgn.name)
     (tmp_dir / "pwa").symlink_to(PWA_DIR)

@@ -89,6 +89,24 @@ let sessionOriginalSize = 0;
 /** @type {?number} Timer ID for the wrong-move animation sequence */
 let animationTimer = null;
 
+// --- Analysis mode state ---
+/** @type {string} Current view: 'training' or 'analysis' */
+let appView = 'training';
+/** @type {?Object} Parsed analysis_data.json */
+let analysisData = null;
+/** @type {?Object} Currently selected game for review */
+let reviewGame = null;
+/** @type {number} Current ply in review (0 = starting position) */
+let currentPly = 0;
+/** @type {?Object} Second chessground instance for review board */
+let reviewCg = null;
+/** @type {string} Review board orientation */
+let reviewOrientation = 'white';
+/** @type {?number} Auto-play interval ID */
+let autoPlayTimer = null;
+/** @type {?Array} Classified moves for current game */
+let classifiedMoves = null;
+
 // --- Animation constants ---
 const CATEGORY_LABELS = { blunder: '??', mistake: '?', inaccuracy: '?!' };
 const CATEGORY_COLORS = { blunder: '#e94560', mistake: '#f0a500', inaccuracy: '#999' };
@@ -1854,6 +1872,843 @@ async function showJournalTopic(slug) {
   }
 }
 
+// --- Analysis mode ---
+
+/**
+ * Switch to training view.
+ */
+function showTrainingMode() {
+  console.log('[showTrainingMode] Switching to training');
+  appView = 'training';
+  document.getElementById('training-view').classList.remove('hidden');
+  document.getElementById('analysis-view').classList.add('hidden');
+  document.getElementById('mode-training').classList.add('active');
+  document.getElementById('mode-analysis').classList.remove('active');
+  if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+}
+
+/**
+ * Switch to analysis view.
+ */
+function showAnalysisMode() {
+  console.log('[showAnalysisMode] Switching to analysis');
+  appView = 'analysis';
+  document.getElementById('training-view').classList.add('hidden');
+  document.getElementById('analysis-view').classList.remove('hidden');
+  document.getElementById('mode-training').classList.remove('active');
+  document.getElementById('mode-analysis').classList.add('active');
+  document.getElementById('progress').textContent = '';
+  if (!analysisData) {
+    loadAnalysisData();
+  } else {
+    showGameSelector();
+  }
+}
+
+/**
+ * Load analysis_data.json from server or static file.
+ */
+async function loadAnalysisData() {
+  console.log('[loadAnalysisData] Fetching analysis data...');
+  const selector = document.getElementById('game-selector');
+  selector.textContent = 'Loading analysis data...';
+  try {
+    const resp = await fetch('analysis_data.json');
+    if (!resp.ok) {
+      selector.textContent = appMode === 'app'
+        ? 'No analysis data. Use menu → Analyse latest games.'
+        : 'No analysis data available.';
+      console.log('[loadAnalysisData] Not found:', resp.status);
+      return;
+    }
+    analysisData = await resp.json();
+    console.log(`[loadAnalysisData] Loaded ${Object.keys(analysisData.games || {}).length} game(s)`);
+    showGameSelector();
+  } catch (err) {
+    console.error('[loadAnalysisData] Failed:', err);
+    selector.textContent = 'Failed to load analysis data.';
+  }
+}
+
+/**
+ * Compute win probability from centipawn score (chess.com model).
+ * @param {number} cp - Centipawn score from white's perspective.
+ * @returns {number} Win probability for the side (0-1).
+ */
+function winProb(cp) {
+  return 1 / (1 + Math.pow(10, -cp / 400));
+}
+
+/**
+ * Classify a move based on expected points lost.
+ * @param {Object} move - Move data from analysis_data.json.
+ * @param {string} playerColor - 'white' or 'black'.
+ * @returns {{category: string, symbol: string, color: string, cssClass: string}}
+ */
+function classifyMove(move, playerColor) {
+  // Book moves
+  if (move.eval_source === 'opening_explorer') {
+    return { category: 'book', symbol: '\u2657', color: '#a88764', cssClass: 'class-book' };
+  }
+
+  const evalBefore = move.eval_before;
+  const evalAfter = move.eval_after;
+
+  // No eval data available
+  if (!evalBefore || evalBefore.score_cp == null || !evalAfter || evalAfter.score_cp == null) {
+    return null;
+  }
+
+  // Mate detection
+  if (evalBefore.is_mate && evalBefore.mate_in != null) {
+    const mateForPlayer = (playerColor === 'white') ? evalBefore.mate_in > 0 : evalBefore.mate_in < 0;
+    if (mateForPlayer) {
+      // Player had mate, check if they played best
+      if (evalAfter.is_mate && evalAfter.mate_in != null) {
+        const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
+        if (!stillMate) {
+          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431', cssClass: 'class-missed-win' };
+        }
+      } else {
+        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431', cssClass: 'class-missed-win' };
+      }
+    }
+  }
+
+  // Win probability model
+  const sign = playerColor === 'white' ? 1 : -1;
+  const wpBefore = winProb(evalBefore.score_cp * sign);
+  const wpAfter = winProb(evalAfter.score_cp * sign);
+  const eplLost = wpBefore - wpAfter;
+
+  if (eplLost <= 0) {
+    return { category: 'best', symbol: '\u2605', color: '#96bc4b', cssClass: 'class-best' };
+  } else if (eplLost <= 0.02) {
+    return { category: 'excellent', symbol: '!', color: '#96bc4b', cssClass: 'class-excellent' };
+  } else if (eplLost <= 0.05) {
+    return { category: 'good', symbol: '', color: '#95b776', cssClass: 'class-good' };
+  } else if (eplLost <= 0.10) {
+    return { category: 'inaccuracy', symbol: '?!', color: '#f7c631', cssClass: 'class-inaccuracy' };
+  } else if (eplLost <= 0.20) {
+    return { category: 'mistake', symbol: '?', color: '#e6912a', cssClass: 'class-mistake' };
+  } else {
+    return { category: 'blunder', symbol: '??', color: '#ca3431', cssClass: 'class-blunder' };
+  }
+}
+
+/**
+ * Classify all moves in a game for both players.
+ * @param {Array} moves - Array of move objects.
+ * @param {string} playerColor - Player's color.
+ * @returns {Array} Array of classification objects (one per move, null if unclassifiable).
+ */
+function classifyAllMoves(moves, playerColor) {
+  return moves.map(move => {
+    const color = move.side;
+    return classifyMove(move, color);
+  });
+}
+
+/**
+ * Compute accuracy percentage for a color.
+ * @param {Array} moves - All moves.
+ * @param {Array} classifications - Classification for each move.
+ * @param {string} color - 'white' or 'black'.
+ * @returns {number} Accuracy 0-100.
+ */
+function computeAccuracy(moves, classifications, color) {
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < moves.length; i++) {
+    const move = moves[i];
+    if (move.side !== color) continue;
+    if (move.eval_source === 'opening_explorer') continue;
+    const eb = move.eval_before;
+    const ea = move.eval_after;
+    if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) continue;
+
+    const sign = color === 'white' ? 1 : -1;
+    const wpBefore = winProb(eb.score_cp * sign);
+    const wpAfter = winProb(ea.score_cp * sign);
+
+    if (wpBefore <= 0) continue; // avoid division by zero
+    const moveAcc = Math.min(wpAfter / wpBefore, 1.0);
+    sum += moveAcc;
+    count++;
+  }
+  return count > 0 ? Math.round((sum / count) * 100) : 0;
+}
+
+/**
+ * Render the game selector list.
+ */
+function showGameSelector() {
+  console.log('[showGameSelector] Rendering game list');
+  const selector = document.getElementById('game-selector');
+  const review = document.getElementById('game-review');
+  selector.textContent = '';
+  selector.classList.remove('hidden');
+  review.classList.add('hidden');
+
+  if (!analysisData || !analysisData.games || Object.keys(analysisData.games).length === 0) {
+    selector.textContent = 'No analyzed games available.';
+    return;
+  }
+
+  // Sort games by date descending
+  const gameEntries = Object.entries(analysisData.games);
+  gameEntries.sort((a, b) => {
+    const da = a[1].headers.date || '';
+    const db = b[1].headers.date || '';
+    return db.localeCompare(da);
+  });
+
+  for (const [gameId, game] of gameEntries) {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.addEventListener('click', () => selectGame(gameId));
+
+    // Result badge
+    const resultEl = document.createElement('div');
+    resultEl.className = 'game-card-result';
+    const result = game.headers.result;
+    const playerColor = game.player_color;
+    const isWin = (result === '1-0' && playerColor === 'white') || (result === '0-1' && playerColor === 'black');
+    const isLoss = (result === '1-0' && playerColor === 'black') || (result === '0-1' && playerColor === 'white');
+    if (isWin) {
+      resultEl.textContent = 'W';
+      resultEl.classList.add('win');
+    } else if (isLoss) {
+      resultEl.textContent = 'L';
+      resultEl.classList.add('loss');
+    } else {
+      resultEl.textContent = 'D';
+      resultEl.classList.add('draw');
+    }
+    card.appendChild(resultEl);
+
+    // Info
+    const infoEl = document.createElement('div');
+    infoEl.className = 'game-card-info';
+    const opponent = document.createElement('div');
+    opponent.className = 'game-card-opponent';
+    const opponentName = playerColor === 'white' ? game.headers.black : game.headers.white;
+    opponent.textContent = `vs ${opponentName}`;
+    infoEl.appendChild(opponent);
+
+    const meta = document.createElement('div');
+    meta.className = 'game-card-meta';
+    const dateStr = (game.headers.date || '').replace(/\./g, '-');
+    // Find opening name from first opening_explorer move
+    let openingName = '';
+    for (const m of game.moves) {
+      if (m.opening_explorer && m.opening_explorer.moves) {
+        for (const om of m.opening_explorer.moves) {
+          if (om.opening && om.opening.name && om.uci === m.move_uci) {
+            openingName = om.opening.name;
+            break;
+          }
+        }
+        if (openingName) break;
+      }
+    }
+    meta.textContent = `${dateStr} · ${game.moves.length} moves${openingName ? ' · ' + openingName : ''}`;
+    infoEl.appendChild(meta);
+    card.appendChild(infoEl);
+
+    selector.appendChild(card);
+  }
+}
+
+/**
+ * Select a game for review.
+ * @param {string} gameId - Game URL key.
+ */
+function selectGame(gameId) {
+  console.log('[selectGame] Selected:', gameId);
+  reviewGame = analysisData.games[gameId];
+  reviewGame._id = gameId;
+  currentPly = 0;
+  reviewOrientation = reviewGame.player_color;
+
+  // Classify all moves
+  classifiedMoves = classifyAllMoves(reviewGame.moves, reviewGame.player_color);
+
+  // Hide selector, show review
+  document.getElementById('game-selector').classList.add('hidden');
+  document.getElementById('game-review').classList.remove('hidden');
+
+  // Game info bar
+  const infoEl = document.getElementById('review-game-info');
+  const result = reviewGame.headers.result;
+  infoEl.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+
+  // Render components
+  renderGameSummary();
+  renderOpeningInfo();
+  renderMoveList();
+  setupReviewBoard();
+  goToMove(0);
+  renderScoreChart();
+}
+
+/**
+ * Find the opening name from the game moves.
+ * @returns {string} Opening name or empty string.
+ */
+function getOpeningName() {
+  let name = '';
+  let eco = '';
+  if (!reviewGame) return '';
+  for (const m of reviewGame.moves) {
+    if (m.opening_explorer && m.opening_explorer.moves) {
+      for (const om of m.opening_explorer.moves) {
+        if (om.opening && om.opening.name && om.uci === m.move_uci) {
+          name = om.opening.name;
+          eco = om.opening.eco || '';
+        }
+      }
+    }
+  }
+  return eco ? `${eco}: ${name}` : name;
+}
+
+/**
+ * Render the game summary (accuracy + classification counts).
+ */
+function renderGameSummary() {
+  const el = document.getElementById('review-summary');
+  el.textContent = '';
+
+  const whiteAcc = computeAccuracy(reviewGame.moves, classifiedMoves, 'white');
+  const blackAcc = computeAccuracy(reviewGame.moves, classifiedMoves, 'black');
+
+  // Count classifications per color
+  const counts = { white: {}, black: {} };
+  for (let i = 0; i < reviewGame.moves.length; i++) {
+    const cls = classifiedMoves[i];
+    const side = reviewGame.moves[i].side;
+    if (cls) {
+      counts[side][cls.category] = (counts[side][cls.category] || 0) + 1;
+    }
+  }
+
+  for (const color of ['white', 'black']) {
+    const block = document.createElement('div');
+    block.className = 'accuracy-block';
+
+    const val = document.createElement('div');
+    val.className = 'accuracy-value';
+    val.textContent = `${color === 'white' ? whiteAcc : blackAcc}%`;
+    block.appendChild(val);
+
+    const label = document.createElement('div');
+    label.className = 'accuracy-label';
+    label.textContent = color === 'white' ? reviewGame.headers.white : reviewGame.headers.black;
+    block.appendChild(label);
+
+    // Classification badges
+    const badges = document.createElement('div');
+    badges.className = 'classification-badges';
+    const categories = [
+      { key: 'best', label: '\u2605', color: '#96bc4b' },
+      { key: 'excellent', label: '!', color: '#96bc4b' },
+      { key: 'good', label: 'good', color: '#95b776' },
+      { key: 'book', label: '\u2657', color: '#a88764' },
+      { key: 'inaccuracy', label: '?!', color: '#f7c631' },
+      { key: 'mistake', label: '?', color: '#e6912a' },
+      { key: 'blunder', label: '??', color: '#ca3431' },
+    ];
+    for (const cat of categories) {
+      const c = counts[color][cat.key] || 0;
+      if (c > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'class-badge';
+        badge.style.color = cat.color;
+        badge.style.border = `1px solid ${cat.color}`;
+        badge.textContent = `${c}${cat.label}`;
+        badges.appendChild(badge);
+      }
+    }
+    block.appendChild(badges);
+    el.appendChild(block);
+  }
+}
+
+/**
+ * Render opening info.
+ */
+function renderOpeningInfo() {
+  const el = document.getElementById('review-opening');
+  const name = getOpeningName();
+  el.textContent = name || '';
+}
+
+/**
+ * Render the two-column move list.
+ */
+function renderMoveList() {
+  const el = document.getElementById('review-moves');
+  el.textContent = '';
+
+  const moves = reviewGame.moves;
+  // Find theory departure point
+  let theoryDeparture = -1;
+  for (let i = 0; i < moves.length; i++) {
+    if (i > 0 && moves[i].eval_source !== 'opening_explorer' && moves[i - 1].eval_source === 'opening_explorer') {
+      theoryDeparture = i;
+      break;
+    }
+  }
+
+  for (let i = 0; i < moves.length; i += 2) {
+    const moveNum = Math.floor(i / 2) + 1;
+
+    // Move number
+    const numEl = document.createElement('div');
+    numEl.className = 'move-number';
+    numEl.textContent = moveNum + '.';
+    el.appendChild(numEl);
+
+    // White move
+    const whiteCell = createMoveCell(i, moves[i], classifiedMoves[i], theoryDeparture);
+    el.appendChild(whiteCell);
+
+    // Black move
+    if (i + 1 < moves.length) {
+      const blackCell = createMoveCell(i + 1, moves[i + 1], classifiedMoves[i + 1], theoryDeparture);
+      el.appendChild(blackCell);
+    } else {
+      el.appendChild(document.createElement('div'));
+    }
+  }
+}
+
+/**
+ * Create a move cell element for the move list.
+ * @param {number} idx - Move index in the moves array.
+ * @param {Object} move - Move data.
+ * @param {?Object} cls - Classification data.
+ * @param {number} theoryDep - Index of theory departure.
+ * @returns {HTMLElement}
+ */
+function createMoveCell(idx, move, cls, theoryDep) {
+  const cell = document.createElement('div');
+  cell.className = 'move-cell';
+  cell.dataset.ply = move.ply;
+  if (idx === theoryDep) cell.classList.add('theory-marker');
+
+  if (cls) {
+    const dot = document.createElement('span');
+    dot.className = 'class-dot';
+    dot.style.backgroundColor = cls.color;
+    cell.appendChild(dot);
+
+    if (cls.symbol) {
+      const sym = document.createElement('span');
+      sym.className = 'class-symbol';
+      sym.style.color = cls.color;
+      sym.textContent = cls.symbol;
+      cell.appendChild(sym);
+    }
+  }
+
+  const san = document.createElement('span');
+  san.textContent = move.move_san;
+  cell.appendChild(san);
+
+  cell.addEventListener('click', () => goToMove(move.ply));
+  return cell;
+}
+
+/**
+ * Navigate to a specific ply in the review.
+ * @param {number} ply - Move ply (0 = starting position).
+ */
+function goToMove(ply) {
+  if (!reviewGame) return;
+  ply = Math.max(0, Math.min(ply, reviewGame.moves.length));
+  currentPly = ply;
+
+  // Determine FEN
+  let fen;
+  if (ply === 0) {
+    fen = reviewGame.moves.length > 0 ? reviewGame.moves[0].fen_before : 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  } else {
+    fen = reviewGame.moves[ply - 1].fen_after;
+  }
+
+  // Determine last move highlight
+  let lastMove = undefined;
+  if (ply > 0) {
+    const uci = reviewGame.moves[ply - 1].move_uci;
+    lastMove = [uci.slice(0, 2), uci.slice(2, 4)];
+  }
+
+  // Update board
+  if (reviewCg) {
+    reviewCg.set({
+      fen,
+      lastMove,
+      drawable: { autoShapes: [] },
+    });
+    updateBoardArrows(ply);
+  }
+
+  // Update eval bar
+  updateEvalBar(ply);
+
+  // Highlight active move in list
+  const moveCells = document.querySelectorAll('#review-moves .move-cell');
+  moveCells.forEach(cell => {
+    cell.classList.toggle('active-move', parseInt(cell.dataset.ply) === ply);
+  });
+
+  // Auto-scroll move list to active move
+  const activeCell = document.querySelector('#review-moves .move-cell.active-move');
+  if (activeCell) {
+    activeCell.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // Update PV line
+  updatePvLine(ply);
+
+  // Update score chart cursor
+  updateChartCursor();
+}
+
+/**
+ * Set up the review board (second Chessground instance).
+ */
+function setupReviewBoard() {
+  console.log('[setupReviewBoard] Creating review board');
+  const boardEl = document.getElementById('review-board');
+  if (reviewCg) reviewCg.destroy();
+
+  reviewCg = Chessground(boardEl, {
+    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    orientation: reviewOrientation,
+    viewOnly: true,
+    coordinates: true,
+    highlight: { lastMove: true },
+  });
+}
+
+/**
+ * Update the eval bar for a given ply.
+ * @param {number} ply - Current ply.
+ */
+function updateEvalBar(ply) {
+  const fill = document.getElementById('eval-bar-fill');
+  const label = document.getElementById('eval-bar-label');
+
+  if (ply === 0 || !reviewGame) {
+    fill.style.height = '50%';
+    label.textContent = '0.0';
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const evalData = move.eval_after;
+
+  if (!evalData || evalData.score_cp == null) {
+    // Book move or no eval
+    fill.style.height = '50%';
+    label.textContent = move.eval_source === 'opening_explorer' ? 'Book' : '—';
+    return;
+  }
+
+  if (evalData.is_mate && evalData.mate_in != null) {
+    const mateMoves = evalData.mate_in;
+    fill.style.height = mateMoves > 0 ? '95%' : '5%';
+    label.textContent = `M${Math.abs(mateMoves)}`;
+    return;
+  }
+
+  const cp = evalData.score_cp;
+  // Sigmoid mapping: 50 + 50 * (2/(1+exp(-cp/200)) - 1)
+  const pct = 50 + 50 * (2 / (1 + Math.exp(-cp / 200)) - 1);
+  const clamped = Math.max(3, Math.min(97, pct));
+  fill.style.height = clamped + '%';
+
+  const pawns = cp / 100;
+  label.textContent = (pawns >= 0 ? '+' : '') + pawns.toFixed(1);
+}
+
+/**
+ * Update board arrows showing best move and played move.
+ * @param {number} ply - Current ply.
+ */
+function updateBoardArrows(ply) {
+  if (!reviewCg || !reviewGame || ply === 0) {
+    if (reviewCg) reviewCg.set({ drawable: { autoShapes: [] } });
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const shapes = [];
+
+  // Best move arrow (green) — from eval_before of current move
+  const evalBefore = move.eval_before;
+  if (evalBefore && evalBefore.best_move_uci) {
+    const bestUci = evalBefore.best_move_uci;
+    shapes.push({
+      orig: bestUci.slice(0, 2),
+      dest: bestUci.slice(2, 4),
+      brush: 'green',
+    });
+  }
+
+  // Played move arrow (red) if it's a mistake/blunder/inaccuracy
+  const cls = classifiedMoves ? classifiedMoves[ply - 1] : null;
+  if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+    const playedUci = move.move_uci;
+    const bestUci = evalBefore ? evalBefore.best_move_uci : null;
+    if (bestUci && playedUci !== bestUci) {
+      shapes.push({
+        orig: playedUci.slice(0, 2),
+        dest: playedUci.slice(2, 4),
+        brush: 'red',
+      });
+    }
+  }
+
+  reviewCg.set({ drawable: { autoShapes: shapes } });
+}
+
+/**
+ * Update the PV line display.
+ * @param {number} ply - Current ply.
+ */
+function updatePvLine(ply) {
+  const el = document.getElementById('review-pv');
+  if (ply === 0 || !reviewGame) {
+    el.textContent = '';
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const evalBefore = move.eval_before;
+  if (evalBefore && evalBefore.pv_san && evalBefore.pv_san.length > 0) {
+    const depth = evalBefore.depth ? ` (depth ${evalBefore.depth})` : '';
+    el.textContent = `Best: ${evalBefore.pv_san.slice(0, 8).join(' ')}${depth}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+/**
+ * Render the score chart.
+ */
+function renderScoreChart() {
+  const canvas = document.getElementById('score-chart');
+  if (!canvas || !reviewGame) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const w = rect.width;
+  const h = rect.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const moves = reviewGame.moves;
+  if (moves.length === 0) return;
+
+  const maxCp = 1000; // clamp
+  const midY = h / 2;
+
+  /**
+   * Get eval value for a move, clamped.
+   * @param {Object} move
+   * @returns {number} cp value, clamped.
+   */
+  function getEval(move) {
+    const ea = move.eval_after;
+    if (!ea || ea.score_cp == null) return 0;
+    if (ea.is_mate && ea.mate_in != null) return ea.mate_in > 0 ? maxCp : -maxCp;
+    return Math.max(-maxCp, Math.min(maxCp, ea.score_cp));
+  }
+
+  function cpToY(cp) {
+    return midY - (cp / maxCp) * midY;
+  }
+
+  const stepX = w / (moves.length + 1);
+
+  // Draw center line
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, midY);
+  ctx.lineTo(w, midY);
+  ctx.stroke();
+
+  // Draw area fills
+  ctx.beginPath();
+  ctx.moveTo(stepX, midY);
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const cp = getEval(moves[i]);
+    const y = cpToY(cp);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(stepX * moves.length, midY);
+  ctx.closePath();
+
+  // Fill white area above, black area below
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Draw eval line
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const cp = getEval(moves[i]);
+    const y = cpToY(cp);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Draw colored dots for mistakes/blunders
+  if (classifiedMoves) {
+    for (let i = 0; i < moves.length; i++) {
+      const cls = classifiedMoves[i];
+      if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+        const x = stepX * (i + 1);
+        const cp = getEval(moves[i]);
+        const y = cpToY(cp);
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = cls.color;
+        ctx.fill();
+      }
+    }
+  }
+
+  // Draw current ply indicator
+  updateChartCursor();
+}
+
+/**
+ * Update the score chart cursor for current ply.
+ */
+function updateChartCursor() {
+  const canvas = document.getElementById('score-chart');
+  if (!canvas || !reviewGame) return;
+
+  // We redraw the chart and add cursor — for simplicity, store image and overlay
+  // Actually, let's just draw a vertical line on top
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+
+  // Redraw full chart (simple approach)
+  renderScoreChartBase(ctx, w, h);
+
+  if (currentPly > 0 && currentPly <= reviewGame.moves.length) {
+    const stepX = w / (reviewGame.moves.length + 1);
+    const x = stepX * currentPly;
+    ctx.strokeStyle = 'rgba(233,69,96,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Render the score chart base (without cursor). Used for cursor updates.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} w - Canvas logical width.
+ * @param {number} h - Canvas logical height.
+ */
+function renderScoreChartBase(ctx, w, h) {
+  if (!reviewGame) return;
+  const moves = reviewGame.moves;
+  if (moves.length === 0) return;
+
+  const maxCp = 1000;
+  const midY = h / 2;
+
+  function getEval(move) {
+    const ea = move.eval_after;
+    if (!ea || ea.score_cp == null) return 0;
+    if (ea.is_mate && ea.mate_in != null) return ea.mate_in > 0 ? maxCp : -maxCp;
+    return Math.max(-maxCp, Math.min(maxCp, ea.score_cp));
+  }
+
+  function cpToY(cp) {
+    return midY - (cp / maxCp) * midY;
+  }
+
+  const stepX = w / (moves.length + 1);
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Center line
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, midY);
+  ctx.lineTo(w, midY);
+  ctx.stroke();
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(stepX, midY);
+  for (let i = 0; i < moves.length; i++) {
+    ctx.lineTo(stepX * (i + 1), cpToY(getEval(moves[i])));
+  }
+  ctx.lineTo(stepX * moves.length, midY);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Eval line
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const y = cpToY(getEval(moves[i]));
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Colored dots
+  if (classifiedMoves) {
+    for (let i = 0; i < moves.length; i++) {
+      const cls = classifiedMoves[i];
+      if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+        const x = stepX * (i + 1);
+        const y = cpToY(getEval(moves[i]));
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = cls.color;
+        ctx.fill();
+      }
+    }
+  }
+}
+
 // --- Init ---
 
 /**
@@ -2107,6 +2962,71 @@ async function init() {
       : 'v' + appVersion;
     document.getElementById('nav-version').textContent = versionText;
   }
+
+  // Wire mode toggle
+  document.getElementById('mode-training').addEventListener('click', showTrainingMode);
+  document.getElementById('mode-analysis').addEventListener('click', showAnalysisMode);
+
+  // Wire review controls
+  document.getElementById('review-first').addEventListener('click', () => goToMove(0));
+  document.getElementById('review-prev').addEventListener('click', () => goToMove(currentPly - 1));
+  document.getElementById('review-next').addEventListener('click', () => goToMove(currentPly + 1));
+  document.getElementById('review-last').addEventListener('click', () => {
+    if (reviewGame) goToMove(reviewGame.moves.length);
+  });
+  document.getElementById('review-play').addEventListener('click', () => {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      document.getElementById('review-play').textContent = '\u25b6';
+    } else {
+      document.getElementById('review-play').textContent = '\u23f8';
+      autoPlayTimer = setInterval(() => {
+        if (!reviewGame || currentPly >= reviewGame.moves.length) {
+          clearInterval(autoPlayTimer);
+          autoPlayTimer = null;
+          document.getElementById('review-play').textContent = '\u25b6';
+          return;
+        }
+        goToMove(currentPly + 1);
+      }, 1000);
+    }
+  });
+  document.getElementById('review-flip').addEventListener('click', () => {
+    reviewOrientation = reviewOrientation === 'white' ? 'black' : 'white';
+    if (reviewCg) reviewCg.set({ orientation: reviewOrientation });
+  });
+  document.getElementById('review-back-btn').addEventListener('click', () => {
+    if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+    showGameSelector();
+  });
+
+  // Score chart click handler
+  document.getElementById('score-chart').addEventListener('click', (e) => {
+    if (!reviewGame) return;
+    const canvas = e.target;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const stepX = rect.width / (reviewGame.moves.length + 1);
+    const ply = Math.round(x / stepX);
+    goToMove(Math.max(0, Math.min(ply, reviewGame.moves.length)));
+  });
+
+  // Keyboard navigation for analysis mode
+  document.addEventListener('keydown', (e) => {
+    if (appView !== 'analysis' || !reviewGame) return;
+    // Don't capture if user is typing in an input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToMove(currentPly - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToMove(currentPly + 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goToMove(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToMove(reviewGame.moves.length); }
+  });
+
+  // Resize handler for score chart
+  window.addEventListener('resize', () => {
+    if (appView === 'analysis' && reviewGame) renderScoreChart();
+  });
 
   // Register service worker
   if ('serviceWorker' in navigator) {

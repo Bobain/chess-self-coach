@@ -49,6 +49,34 @@ header h1 {
   font-weight: 600;
 }
 
+/* Mode toggle (segmented control) */
+#mode-toggle {
+  display: flex;
+  background: var(--bg);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.mode-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-btn.active {
+  background: var(--primary);
+  color: var(--text);
+}
+
+.mode-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.05);
+}
+
 #session-info {
   display: flex;
   align-items: center;
@@ -174,7 +202,7 @@ header h1 {
   cursor: default;
 }
 
-main {
+#training-view {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -758,9 +786,297 @@ cg-container {
   border-radius: 4px;
 }
 
+/* --- Analysis view --- */
+
+#analysis-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* Game selector */
+#game-selector {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.game-card:hover {
+  background: var(--primary);
+}
+
+.game-card-result {
+  font-weight: 700;
+  font-size: 1.1rem;
+  width: 2rem;
+  text-align: center;
+}
+
+.game-card-result.win { color: var(--success); }
+.game-card-result.loss { color: var(--accent); }
+.game-card-result.draw { color: var(--text-dim); }
+
+.game-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-card-opponent {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.game-card-meta {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* Review layout */
+#review-game-info {
+  text-align: center;
+  font-size: 0.95rem;
+  padding: 0.25rem 0;
+}
+
+#review-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+#review-board-col {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  width: min(88vw, 480px);
+}
+
+/* Eval bar */
+#eval-bar {
+  width: 30px;
+  position: relative;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#eval-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: #fff;
+  transition: height 0.3s ease;
+}
+
+#eval-bar-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.65rem;
+  font-weight: 700;
+  z-index: 1;
+  color: #888;
+  white-space: nowrap;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+}
+
+#review-board-container {
+  flex: 1;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+#review-board {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Review panel (move list + info) */
+#review-panel {
+  width: min(88vw, 480px);
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+#review-summary {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 0.5rem;
+}
+
+.accuracy-block {
+  text-align: center;
+}
+
+.accuracy-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.accuracy-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.classification-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.class-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+#review-opening {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+}
+
+/* Move list grid */
+#review-moves {
+  display: grid;
+  grid-template-columns: 2rem 1fr 1fr;
+  font-size: 0.85rem;
+  gap: 0;
+}
+
+.move-number {
+  color: var(--text-dim);
+  text-align: right;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.75rem;
+}
+
+.move-cell {
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.move-cell:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.move-cell.active-move {
+  background: var(--primary);
+}
+
+.move-cell .class-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.move-cell .class-symbol {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.theory-marker {
+  border-left: 2px solid var(--warning);
+}
+
+/* PV line */
+#review-pv {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  min-height: 1.5rem;
+}
+
+/* Score chart */
+#score-chart {
+  width: min(88vw, 480px);
+  height: 80px;
+  cursor: pointer;
+}
+
+/* Navigation controls */
+#review-controls {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#review-controls button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#review-controls button:hover {
+  background: var(--primary);
+}
+
+#review-back-btn {
+  margin-left: 1rem;
+}
+
+/* Classification colors */
+.class-best { color: #96bc4b; }
+.class-excellent { color: #96bc4b; }
+.class-good { color: #95b776; }
+.class-book { color: #a88764; }
+.class-inaccuracy { color: #f7c631; }
+.class-mistake { color: #e6912a; }
+.class-blunder { color: #ca3431; }
+.class-missed-win { color: #ca3431; }
+
 /* Desktop: side-by-side layout */
 @media (min-width: 768px) {
-  main {
+  #training-view {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
@@ -771,5 +1087,24 @@ cg-container {
   #info-panel {
     text-align: left;
     max-width: 360px;
+  }
+
+  #review-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  #review-board-col {
+    width: min(50vw, 480px);
+  }
+
+  #review-panel {
+    width: 300px;
+    max-height: 500px;
+  }
+
+  #score-chart {
+    width: min(50vw, 480px);
+    margin-left: 30px;
   }
 }

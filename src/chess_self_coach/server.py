@@ -621,6 +621,15 @@ async def training_data():
     return FileResponse(path, media_type="application/json")
 
 
+@app.get("/analysis_data.json")
+async def analysis_data():
+    """Serve analysis data directly from project root (always fresh)."""
+    path = _project_root / "analysis_data.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="No analysis data. Run: chess-self-coach train --analyze")
+    return FileResponse(path, media_type="application/json")
+
+
 @app.get("/sw.js")
 async def service_worker():
     """Serve service worker with version injected on-the-fly."""

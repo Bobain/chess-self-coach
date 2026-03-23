@@ -75,6 +75,7 @@ jobs:
           cp pwa/index.html pwa/app.js pwa/style.css pwa/manifest.json pwa/sw.js site/train/
           cp -r pwa/stockfish site/train/stockfish
           if [ -f training_data.json ]; then cp training_data.json site/train/; fi
+          if [ -f analysis_data.json ]; then cp analysis_data.json site/train/; fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

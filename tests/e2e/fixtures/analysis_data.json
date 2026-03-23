@@ -1,0 +1,3646 @@
+{
+  "version": "1.0",
+  "player": {
+    "lichess": "testuser",
+    "chesscom": "testuser"
+  },
+  "games": {
+    "https://www.chess.com/game/live/166307792370": {
+      "headers": {
+        "white": "Opponent1",
+        "black": "TestPlayer",
+        "date": "2026.03.23",
+        "result": "1-0",
+        "opening": "King's Pawn Game",
+        "source": "chess.com",
+        "link": "https://www.chess.com/game/live/166307792370"
+      },
+      "player_color": "black",
+      "analyzed_at": "2026-03-23T05:56:17Z",
+      "settings": {
+        "threads": 7,
+        "hash_mb": 1024,
+        "limits": {
+          "kings_pawns_le7": {
+            "time": 6.0,
+            "depth": 60
+          },
+          "pieces_le7": {
+            "time": 5.0,
+            "depth": 50
+          },
+          "pieces_le12": {
+            "time": 4.0,
+            "depth": 40
+          },
+          "default": {
+            "depth": 18
+          }
+        }
+      },
+      "moves": [
+        {
+          "ply": 1,
+          "fen_before": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "fen_after": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+          "move_san": "e4",
+          "move_uci": "e2e4",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 3762405632,
+            "draws": 295668408,
+            "black": 3499918781,
+            "moves": [
+              {
+                "uci": "e2e4",
+                "san": "e4",
+                "averageRating": 1606,
+                "white": 2190599608,
+                "draws": 169756715,
+                "black": 2064927698,
+                "game": null,
+                "opening": {
+                  "eco": "B00",
+                  "name": "King's Pawn Game"
+                }
+              },
+              {
+                "uci": "d2d4",
+                "san": "d4",
+                "averageRating": 1680,
+                "white": 955743468,
+                "draws": 76916921,
+                "black": 861941834,
+                "game": null,
+                "opening": {
+                  "eco": "A40",
+                  "name": "Queen's Pawn Game"
+                }
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1784,
+                "white": 137077273,
+                "draws": 11684604,
+                "black": 119638081,
+                "game": null,
+                "opening": {
+                  "eco": "A04",
+                  "name": "Zukertort Opening"
+                }
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 20
+          },
+          "clock": {
+            "player": 908.5,
+            "opponent": 909.4,
+            "time_spent": null
+          }
+        },
+        {
+          "ply": 2,
+          "fen_before": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+          "fen_after": "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+          "move_san": "d5",
+          "move_uci": "d7d5",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 2182630732,
+            "draws": 169755696,
+            "black": 2064857376,
+            "moves": [
+              {
+                "uci": "e7e5",
+                "san": "e5",
+                "averageRating": 1494,
+                "white": 911459893,
+                "draws": 67850816,
+                "black": 808840485,
+                "game": null,
+                "opening": {
+                  "eco": "C20",
+                  "name": "King's Pawn Game"
+                }
+              },
+              {
+                "uci": "c7c5",
+                "san": "c5",
+                "averageRating": 1743,
+                "white": 371122168,
+                "draws": 30496321,
+                "black": 373323921,
+                "game": null,
+                "opening": {
+                  "eco": "B20",
+                  "name": "Sicilian Defense"
+                }
+              },
+              {
+                "uci": "d7d5",
+                "san": "d5",
+                "averageRating": 1596,
+                "white": 230165740,
+                "draws": 18102192,
+                "black": 224273518,
+                "game": null,
+                "opening": {
+                  "eco": "B01",
+                  "name": "Scandinavian Defense"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "B00",
+              "name": "King's Pawn Game"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 20
+          },
+          "clock": {
+            "player": 909.4,
+            "opponent": 917.1,
+            "time_spent": null
+          }
+        },
+        {
+          "ply": 3,
+          "fen_before": "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+          "fen_after": "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+          "move_san": "exd5",
+          "move_uci": "e4d5",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 230001995,
+            "draws": 18065063,
+            "black": 223772657,
+            "moves": [
+              {
+                "uci": "e4d5",
+                "san": "exd5",
+                "averageRating": 1643,
+                "white": 150173839,
+                "draws": 12127523,
+                "black": 141735902,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "e4e5",
+                "san": "e5",
+                "averageRating": 1492,
+                "white": 25276696,
+                "draws": 1743522,
+                "black": 23951330,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1555,
+                "white": 18210575,
+                "draws": 1226850,
+                "black": 19339042,
+                "game": null,
+                "opening": {
+                  "eco": "A06",
+                  "name": "Zukertort Opening: Tennison Gambit"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "B01",
+              "name": "Scandinavian Defense"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 31
+          },
+          "clock": {
+            "player": 917.1,
+            "opponent": 918.9,
+            "time_spent": -9.5
+          }
+        },
+        {
+          "ply": 4,
+          "fen_before": "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+          "fen_after": "rnbqkb1r/ppp1pppp/5n2/3P4/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 3",
+          "move_san": "Nf6",
+          "move_uci": "g8f6",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 149879840,
+            "draws": 12113343,
+            "black": 141719668,
+            "moves": [
+              {
+                "uci": "d8d5",
+                "san": "Qxd5",
+                "averageRating": 1604,
+                "white": 108699004,
+                "draws": 8764984,
+                "black": 100225617,
+                "game": null,
+                "opening": {
+                  "eco": "B01",
+                  "name": "Scandinavian Defense: Mieses-Kotroc Variation"
+                }
+              },
+              {
+                "uci": "g8f6",
+                "san": "Nf6",
+                "averageRating": 1753,
+                "white": 27797111,
+                "draws": 2456809,
+                "black": 28920654,
+                "game": null,
+                "opening": {
+                  "eco": "B01",
+                  "name": "Scandinavian Defense: Modern Variation"
+                }
+              },
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 1756,
+                "white": 6380731,
+                "draws": 456777,
+                "black": 6534830,
+                "game": null,
+                "opening": {
+                  "eco": "B01",
+                  "name": "Scandinavian Defense: Blackburne-Kloosterboer Gambit"
+                }
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 31,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 28
+          },
+          "clock": {
+            "player": 918.9,
+            "opponent": 924.5,
+            "time_spent": -9.5
+          }
+        },
+        {
+          "ply": 5,
+          "fen_before": "rnbqkb1r/ppp1pppp/5n2/3P4/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 3",
+          "fen_after": "rnbqkb1r/ppp1pppp/5n2/3P4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 2 3",
+          "move_san": "Nc3",
+          "move_uci": "b1c3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 27794285,
+            "draws": 2454826,
+            "black": 28895062,
+            "moves": [
+              {
+                "uci": "b1c3",
+                "san": "Nc3",
+                "averageRating": 1685,
+                "white": 11174772,
+                "draws": 1049676,
+                "black": 12016191,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c2c4",
+                "san": "c4",
+                "averageRating": 1744,
+                "white": 4825375,
+                "draws": 397747,
+                "black": 5455078,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "d2d4",
+                "san": "d4",
+                "averageRating": 1878,
+                "white": 5021283,
+                "draws": 441792,
+                "black": 4777699,
+                "game": null,
+                "opening": {
+                  "eco": "B01",
+                  "name": "Scandinavian Defense: Modern Variation"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "B01",
+              "name": "Scandinavian Defense: Modern Variation"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 31,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 30
+          },
+          "clock": {
+            "player": 924.5,
+            "opponent": 927.4,
+            "time_spent": -8.5
+          }
+        },
+        {
+          "ply": 6,
+          "fen_before": "rnbqkb1r/ppp1pppp/5n2/3P4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 2 3",
+          "fen_after": "rnbqkb1r/ppp1pppp/8/3n4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 4",
+          "move_san": "Nxd5",
+          "move_uci": "f6d5",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 13560977,
+            "draws": 1319744,
+            "black": 14515980,
+            "moves": [
+              {
+                "uci": "f6d5",
+                "san": "Nxd5",
+                "averageRating": 1731,
+                "white": 10223275,
+                "draws": 1066636,
+                "black": 11134783,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 1739,
+                "white": 1137210,
+                "draws": 89520,
+                "black": 1197227,
+                "game": null,
+                "opening": {
+                  "eco": "B02",
+                  "name": "Alekhine Defense: Scandinavian Variation, Geschev Gambit"
+                }
+              },
+              {
+                "uci": "e7e6",
+                "san": "e6",
+                "averageRating": 1595,
+                "white": 889630,
+                "draws": 64338,
+                "black": 869527,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 31,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 31
+          },
+          "clock": {
+            "player": 927.4,
+            "opponent": 930.6,
+            "time_spent": -8.5
+          }
+        },
+        {
+          "ply": 7,
+          "fen_before": "rnbqkb1r/ppp1pppp/8/3n4/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 4",
+          "fen_after": "rnbqkb1r/ppp1pppp/8/3n4/2B5/2N5/PPPP1PPP/R1BQK1NR b KQkq - 1 4",
+          "move_san": "Bc4",
+          "move_uci": "f1c4",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 10235770,
+            "draws": 1067242,
+            "black": 11136458,
+            "moves": [
+              {
+                "uci": "c3d5",
+                "san": "Nxd5",
+                "averageRating": 1635,
+                "white": 5412765,
+                "draws": 615282,
+                "black": 6511927,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f1c4",
+                "san": "Bc4",
+                "averageRating": 1883,
+                "white": 1553716,
+                "draws": 143666,
+                "black": 1427694,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1807,
+                "white": 1305756,
+                "draws": 128552,
+                "black": 1242419,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 32
+          },
+          "clock": {
+            "player": 930.6,
+            "opponent": 935.1,
+            "time_spent": -7.7
+          }
+        },
+        {
+          "ply": 8,
+          "fen_before": "rnbqkb1r/ppp1pppp/8/3n4/2B5/2N5/PPPP1PPP/R1BQK1NR b KQkq - 1 4",
+          "fen_after": "rnbqkb1r/ppp1pppp/8/8/2B5/2n5/PPPP1PPP/R1BQK1NR w KQkq - 0 5",
+          "move_san": "Nxc3",
+          "move_uci": "d5c3",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 1617157,
+            "draws": 149082,
+            "black": 1494380,
+            "moves": [
+              {
+                "uci": "d5c3",
+                "san": "Nxc3",
+                "averageRating": 1767,
+                "white": 745569,
+                "draws": 61235,
+                "black": 648560,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 1983,
+                "white": 304365,
+                "draws": 32463,
+                "black": 298855,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "d5b6",
+                "san": "Nb6",
+                "averageRating": 2047,
+                "white": 267588,
+                "draws": 25921,
+                "black": 252074,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 32
+          },
+          "clock": {
+            "player": 935.1,
+            "opponent": 937.4,
+            "time_spent": -7.7
+          }
+        },
+        {
+          "ply": 9,
+          "fen_before": "rnbqkb1r/ppp1pppp/8/8/2B5/2n5/PPPP1PPP/R1BQK1NR w KQkq - 0 5",
+          "fen_after": "rnbqkb1r/ppp1pppp/8/8/2B5/2P5/P1PP1PPP/R1BQK1NR b KQkq - 0 5",
+          "move_san": "bxc3",
+          "move_uci": "b2c3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 745588,
+            "draws": 61218,
+            "black": 648194,
+            "moves": [
+              {
+                "uci": "b2c3",
+                "san": "bxc3",
+                "averageRating": 1750,
+                "white": 476662,
+                "draws": 36503,
+                "black": 426234,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "d1f3",
+                "san": "Qf3",
+                "averageRating": 1958,
+                "white": 179487,
+                "draws": 13862,
+                "black": 130332,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "d2c3",
+                "san": "dxc3",
+                "averageRating": 1568,
+                "white": 74376,
+                "draws": 9909,
+                "black": 73585,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 29,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 32
+          },
+          "clock": {
+            "player": 937.4,
+            "opponent": 902.1,
+            "time_spent": 33.0
+          }
+        },
+        {
+          "ply": 10,
+          "fen_before": "rnbqkb1r/ppp1pppp/8/8/2B5/2P5/P1PP1PPP/R1BQK1NR b KQkq - 0 5",
+          "fen_after": "rnbqkb1r/p1p1pppp/1p6/8/2B5/2P5/P1PP1PPP/R1BQK1NR w KQkq - 0 6",
+          "move_san": "b6",
+          "move_uci": "b7b6",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 476305,
+            "draws": 36491,
+            "black": 426192,
+            "moves": [
+              {
+                "uci": "e7e6",
+                "san": "e6",
+                "averageRating": 1799,
+                "white": 147906,
+                "draws": 11791,
+                "black": 134231,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "b8c6",
+                "san": "Nc6",
+                "averageRating": 1678,
+                "white": 125987,
+                "draws": 8918,
+                "black": 113953,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c8f5",
+                "san": "Bf5",
+                "averageRating": 1733,
+                "white": 78046,
+                "draws": 5953,
+                "black": 70229,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 30
+          },
+          "clock": {
+            "player": 902.1,
+            "opponent": 945.2,
+            "time_spent": 33.0
+          }
+        },
+        {
+          "ply": 11,
+          "fen_before": "rnbqkb1r/p1p1pppp/1p6/8/2B5/2P5/P1PP1PPP/R1BQK1NR w KQkq - 0 6",
+          "fen_after": "rnbqkb1r/p1p1pppp/1p6/8/2B5/2P2Q2/P1PP1PPP/R1B1K1NR b KQkq - 1 6",
+          "move_san": "Qf3",
+          "move_uci": "d1f3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 6370,
+            "draws": 321,
+            "black": 4311,
+            "moves": [
+              {
+                "uci": "d1f3",
+                "san": "Qf3",
+                "averageRating": 1602,
+                "white": 2451,
+                "draws": 57,
+                "black": 693,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1651,
+                "white": 1425,
+                "draws": 80,
+                "black": 1231,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "d2d4",
+                "san": "d4",
+                "averageRating": 1735,
+                "white": 981,
+                "draws": 84,
+                "black": 878,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 31
+          },
+          "clock": {
+            "player": 945.2,
+            "opponent": null,
+            "time_spent": null
+          }
+        }
+      ]
+    },
+    "https://www.chess.com/game/live/166267448056": {
+      "headers": {
+        "white": "TestPlayer",
+        "black": "Opponent2",
+        "date": "2026.03.22",
+        "result": "1-0",
+        "opening": "Slav Defense",
+        "source": "chess.com",
+        "link": "https://www.chess.com/game/live/166267448056"
+      },
+      "player_color": "white",
+      "analyzed_at": "2026-03-22T10:00:00Z",
+      "settings": {
+        "threads": 7,
+        "hash_mb": 1024,
+        "limits": {
+          "kings_pawns_le7": {
+            "time": 6.0,
+            "depth": 60
+          },
+          "pieces_le7": {
+            "time": 5.0,
+            "depth": 50
+          },
+          "pieces_le12": {
+            "time": 4.0,
+            "depth": 40
+          },
+          "default": {
+            "depth": 18
+          }
+        }
+      },
+      "moves": [
+        {
+          "ply": 1,
+          "fen_before": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "fen_after": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+          "move_san": "d4",
+          "move_uci": "d2d4",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 3762405632,
+            "draws": 295668408,
+            "black": 3499918781,
+            "moves": [
+              {
+                "uci": "e2e4",
+                "san": "e4",
+                "averageRating": 1606,
+                "white": 2190599608,
+                "draws": 169756715,
+                "black": 2064927698,
+                "game": null,
+                "opening": {
+                  "eco": "B00",
+                  "name": "King's Pawn Game"
+                }
+              },
+              {
+                "uci": "d2d4",
+                "san": "d4",
+                "averageRating": 1680,
+                "white": 955743468,
+                "draws": 76916921,
+                "black": 861941834,
+                "game": null,
+                "opening": {
+                  "eco": "A40",
+                  "name": "Queen's Pawn Game"
+                }
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1784,
+                "white": 137077273,
+                "draws": 11684604,
+                "black": 119638081,
+                "game": null,
+                "opening": {
+                  "eco": "A04",
+                  "name": "Zukertort Opening"
+                }
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 20
+          },
+          "clock": {
+            "player": 908.6,
+            "opponent": 908.3,
+            "time_spent": null
+          }
+        },
+        {
+          "ply": 2,
+          "fen_before": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+          "fen_after": "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2",
+          "move_san": "d5",
+          "move_uci": "d7d5",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 952657607,
+            "draws": 76916498,
+            "black": 861919328,
+            "moves": [
+              {
+                "uci": "d7d5",
+                "san": "d5",
+                "averageRating": 1601,
+                "white": 404057481,
+                "draws": 32456233,
+                "black": 346592078,
+                "game": null,
+                "opening": {
+                  "eco": "D00",
+                  "name": "Queen's Pawn Game"
+                }
+              },
+              {
+                "uci": "g8f6",
+                "san": "Nf6",
+                "averageRating": 1826,
+                "white": 174102144,
+                "draws": 16239653,
+                "black": 167153960,
+                "game": null,
+                "opening": {
+                  "eco": "A45",
+                  "name": "Indian Defense"
+                }
+              },
+              {
+                "uci": "e7e6",
+                "san": "e6",
+                "averageRating": 1671,
+                "white": 96535612,
+                "draws": 7175286,
+                "black": 84825626,
+                "game": null,
+                "opening": {
+                  "eco": "A40",
+                  "name": "Horwitz Defense"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "A40",
+              "name": "Queen's Pawn Game"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 20
+          },
+          "clock": {
+            "player": 908.3,
+            "opponent": 917.6,
+            "time_spent": null
+          }
+        },
+        {
+          "ply": 3,
+          "fen_before": "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2",
+          "fen_after": "rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+          "move_san": "c4",
+          "move_uci": "c2c4",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 403926365,
+            "draws": 32386002,
+            "black": 345782191,
+            "moves": [
+              {
+                "uci": "c2c4",
+                "san": "c4",
+                "averageRating": 1671,
+                "white": 154998960,
+                "draws": 12113946,
+                "black": 127278870,
+                "game": null,
+                "opening": {
+                  "eco": "D06",
+                  "name": "Queen's Gambit"
+                }
+              },
+              {
+                "uci": "c1f4",
+                "san": "Bf4",
+                "averageRating": 1544,
+                "white": 73643843,
+                "draws": 5837894,
+                "black": 62638038,
+                "game": null,
+                "opening": {
+                  "eco": "D00",
+                  "name": "Queen's Pawn Game: Accelerated London System"
+                }
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1662,
+                "white": 70525390,
+                "draws": 6014846,
+                "black": 60026197,
+                "game": null,
+                "opening": {
+                  "eco": "D02",
+                  "name": "Queen's Pawn Game: Zukertort Variation"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "D00",
+              "name": "Queen's Pawn Game"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 27
+          },
+          "clock": {
+            "player": 917.6,
+            "opponent": 916.3,
+            "time_spent": -9.0
+          }
+        },
+        {
+          "ply": 4,
+          "fen_before": "rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+          "fen_after": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3",
+          "move_san": "e6",
+          "move_uci": "e7e6",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 155307253,
+            "draws": 12134562,
+            "black": 127711276,
+            "moves": [
+              {
+                "uci": "e7e6",
+                "san": "e6",
+                "averageRating": 1720,
+                "white": 40257699,
+                "draws": 3482139,
+                "black": 34320227,
+                "game": null,
+                "opening": {
+                  "eco": "D30",
+                  "name": "Queen's Gambit Declined"
+                }
+              },
+              {
+                "uci": "d5c4",
+                "san": "dxc4",
+                "averageRating": 1531,
+                "white": 36962296,
+                "draws": 2569602,
+                "black": 27698749,
+                "game": null,
+                "opening": {
+                  "eco": "D20",
+                  "name": "Queen's Gambit Accepted"
+                }
+              },
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 1770,
+                "white": 29255430,
+                "draws": 2645862,
+                "black": 25450313,
+                "game": null,
+                "opening": {
+                  "eco": "D10",
+                  "name": "Slav Defense"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "D06",
+              "name": "Queen's Gambit"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 28
+          },
+          "clock": {
+            "player": 916.3,
+            "opponent": 924.8,
+            "time_spent": -7.2
+          }
+        },
+        {
+          "ply": 5,
+          "fen_before": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3",
+          "fen_after": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR b KQkq - 1 3",
+          "move_san": "Nc3",
+          "move_uci": "b1c3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 56278585,
+            "draws": 4729964,
+            "black": 47937538,
+            "moves": [
+              {
+                "uci": "b1c3",
+                "san": "Nc3",
+                "averageRating": 1771,
+                "white": 32983808,
+                "draws": 2746184,
+                "black": 27822414,
+                "game": null,
+                "opening": {
+                  "eco": "D31",
+                  "name": "Queen's Gambit Declined: Queen's Knight Variation"
+                }
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1789,
+                "white": 9313176,
+                "draws": 836640,
+                "black": 7632724,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c4d5",
+                "san": "cxd5",
+                "averageRating": 1672,
+                "white": 5140576,
+                "draws": 425853,
+                "black": 4574321,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": {
+              "eco": "D30",
+              "name": "Queen's Gambit Declined"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 30
+          },
+          "clock": {
+            "player": 924.8,
+            "opponent": 918.8,
+            "time_spent": -7.2
+          }
+        },
+        {
+          "ply": 6,
+          "fen_before": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR b KQkq - 1 3",
+          "fen_after": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "move_san": "Nf6",
+          "move_uci": "g8f6",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 33623420,
+            "draws": 2815200,
+            "black": 28427378,
+            "moves": [
+              {
+                "uci": "g8f6",
+                "san": "Nf6",
+                "averageRating": 1797,
+                "white": 17746223,
+                "draws": 1579406,
+                "black": 15247861,
+                "game": null,
+                "opening": {
+                  "eco": "D35",
+                  "name": "Queen's Gambit Declined: Normal Defense"
+                }
+              },
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 1841,
+                "white": 4102934,
+                "draws": 340875,
+                "black": 3574137,
+                "game": null,
+                "opening": {
+                  "eco": "D31",
+                  "name": "Semi-Slav Defense: Accelerated Move Order"
+                }
+              },
+              {
+                "uci": "d5c4",
+                "san": "dxc4",
+                "averageRating": 1619,
+                "white": 3922043,
+                "draws": 242389,
+                "black": 2883890,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": {
+              "eco": "D31",
+              "name": "Queen's Gambit Declined: Queen's Knight Variation"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 34
+          },
+          "clock": {
+            "player": 918.8,
+            "opponent": 930.8,
+            "time_spent": -6.0
+          }
+        },
+        {
+          "ply": 7,
+          "fen_before": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+          "fen_after": "rnbqkb1r/ppp2ppp/4pn2/3P4/3P4/2N5/PP2PPPP/R1BQKBNR b KQkq - 0 4",
+          "move_san": "cxd5",
+          "move_uci": "c4d5",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 30091377,
+            "draws": 2615302,
+            "black": 26068432,
+            "moves": [
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1802,
+                "white": 9399725,
+                "draws": 784331,
+                "black": 8002674,
+                "game": null,
+                "opening": {
+                  "eco": "D37",
+                  "name": "Queen's Gambit Declined: Three Knights Variation"
+                }
+              },
+              {
+                "uci": "c1g5",
+                "san": "Bg5",
+                "averageRating": 1780,
+                "white": 8045445,
+                "draws": 757016,
+                "black": 7040645,
+                "game": null,
+                "opening": {
+                  "eco": "D50",
+                  "name": "Queen's Gambit Declined: Modern Variation"
+                }
+              },
+              {
+                "uci": "c4d5",
+                "san": "cxd5",
+                "averageRating": 1910,
+                "white": 5390665,
+                "draws": 498715,
+                "black": 4491232,
+                "game": null,
+                "opening": {
+                  "eco": "D35",
+                  "name": "Queen's Gambit Declined: Exchange Variation"
+                }
+              }
+            ],
+            "opening": {
+              "eco": "D35",
+              "name": "Queen's Gambit Declined: Normal Defense"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 32,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 33
+          },
+          "clock": {
+            "player": 930.8,
+            "opponent": 926.3,
+            "time_spent": -6.0
+          }
+        },
+        {
+          "ply": 8,
+          "fen_before": "rnbqkb1r/ppp2ppp/4pn2/3P4/3P4/2N5/PP2PPPP/R1BQKBNR b KQkq - 0 4",
+          "fen_after": "rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 5",
+          "move_san": "exd5",
+          "move_uci": "e6d5",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 5553887,
+            "draws": 510184,
+            "black": 4633877,
+            "moves": [
+              {
+                "uci": "e6d5",
+                "san": "exd5",
+                "averageRating": 1939,
+                "white": 3910325,
+                "draws": 375236,
+                "black": 3340267,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f6d5",
+                "san": "Nxd5",
+                "averageRating": 1779,
+                "white": 1347955,
+                "draws": 116966,
+                "black": 1077913,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f8b4",
+                "san": "Bb4",
+                "averageRating": 1755,
+                "white": 118288,
+                "draws": 6376,
+                "black": 86230,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": {
+              "eco": "D35",
+              "name": "Queen's Gambit Declined: Exchange Variation"
+            }
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 31,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 34
+          },
+          "clock": {
+            "player": 926.3,
+            "opponent": 930.8,
+            "time_spent": 0.0
+          }
+        },
+        {
+          "ply": 9,
+          "fen_before": "rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N5/PP2PPPP/R1BQKBNR w KQkq - 0 5",
+          "fen_after": "rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 1 5",
+          "move_san": "Nf3",
+          "move_uci": "g1f3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 6542181,
+            "draws": 615123,
+            "black": 5783490,
+            "moves": [
+              {
+                "uci": "c1g5",
+                "san": "Bg5",
+                "averageRating": 1950,
+                "white": 3356647,
+                "draws": 330188,
+                "black": 2786506,
+                "game": null,
+                "opening": {
+                  "eco": "D35",
+                  "name": "Queen's Gambit Declined: Exchange Variation, Positional Variation"
+                }
+              },
+              {
+                "uci": "g1f3",
+                "san": "Nf3",
+                "averageRating": 1815,
+                "white": 1595789,
+                "draws": 147169,
+                "black": 1462623,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "e2e3",
+                "san": "e3",
+                "averageRating": 1699,
+                "white": 430139,
+                "draws": 33908,
+                "black": 431190,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 31
+          },
+          "clock": {
+            "player": 930.8,
+            "opponent": 932.4,
+            "time_spent": 0.0
+          }
+        },
+        {
+          "ply": 10,
+          "fen_before": "rnbqkb1r/ppp2ppp/5n2/3p4/3P4/2N2N2/PP2PPPP/R1BQKB1R b KQkq - 1 5",
+          "fen_after": "rnbqk2r/ppp2ppp/5n2/3p4/1b1P4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 2 6",
+          "move_san": "Bb4",
+          "move_uci": "f8b4",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 2431834,
+            "draws": 232599,
+            "black": 2223573,
+            "moves": [
+              {
+                "uci": "c7c6",
+                "san": "c6",
+                "averageRating": 2005,
+                "white": 604783,
+                "draws": 68359,
+                "black": 579026,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f8b4",
+                "san": "Bb4",
+                "averageRating": 1719,
+                "white": 516477,
+                "draws": 43047,
+                "black": 450646,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f8e7",
+                "san": "Be7",
+                "averageRating": 1938,
+                "white": 410655,
+                "draws": 41825,
+                "black": 383163,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 34
+          },
+          "clock": {
+            "player": 932.4,
+            "opponent": 938.9,
+            "time_spent": -8.1
+          }
+        },
+        {
+          "ply": 11,
+          "fen_before": "rnbqk2r/ppp2ppp/5n2/3p4/1b1P4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 2 6",
+          "fen_after": "rnbqk2r/ppp2ppp/5n2/3p4/1b1P4/P1N2N2/1P2PPPP/R1BQKB1R b KQkq - 0 6",
+          "move_san": "a3",
+          "move_uci": "a2a3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 742924,
+            "draws": 65095,
+            "black": 639507,
+            "moves": [
+              {
+                "uci": "c1g5",
+                "san": "Bg5",
+                "averageRating": 1880,
+                "white": 324126,
+                "draws": 28950,
+                "black": 251244,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c1d2",
+                "san": "Bd2",
+                "averageRating": 1634,
+                "white": 102474,
+                "draws": 9662,
+                "black": 104626,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "e2e3",
+                "san": "e3",
+                "averageRating": 1713,
+                "white": 86064,
+                "draws": 6531,
+                "black": 79710,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 27
+          },
+          "clock": {
+            "player": 938.9,
+            "opponent": 940.1,
+            "time_spent": -8.1
+          }
+        },
+        {
+          "ply": 12,
+          "fen_before": "rnbqk2r/ppp2ppp/5n2/3p4/1b1P4/P1N2N2/1P2PPPP/R1BQKB1R b KQkq - 0 6",
+          "fen_after": "rnbqk2r/ppp2ppp/5n2/3p4/3P4/P1b2N2/1P2PPPP/R1BQKB1R w KQkq - 0 7",
+          "move_san": "Bxc3+",
+          "move_uci": "b4c3",
+          "side": "black",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 63043,
+            "draws": 5494,
+            "black": 60570,
+            "moves": [
+              {
+                "uci": "b4c3",
+                "san": "Bxc3+",
+                "averageRating": 1627,
+                "white": 34335,
+                "draws": 3228,
+                "black": 34448,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "b4a5",
+                "san": "Ba5",
+                "averageRating": 1580,
+                "white": 22172,
+                "draws": 1753,
+                "black": 20613,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "b4d6",
+                "san": "Bd6",
+                "averageRating": 1677,
+                "white": 3142,
+                "draws": 266,
+                "black": 2883,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 30,
+            "is_check": true,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 39
+          },
+          "clock": {
+            "player": 940.1,
+            "opponent": 947.6,
+            "time_spent": -8.7
+          }
+        },
+        {
+          "ply": 13,
+          "fen_before": "rnbqk2r/ppp2ppp/5n2/3p4/3P4/P1b2N2/1P2PPPP/R1BQKB1R w KQkq - 0 7",
+          "fen_after": "rnbqk2r/ppp2ppp/5n2/3p4/3P4/P1P2N2/4PPPP/R1BQKB1R b KQkq - 0 7",
+          "move_san": "bxc3",
+          "move_uci": "b2c3",
+          "side": "white",
+          "eval_source": "opening_explorer",
+          "eval_before": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after": {
+            "score_cp": null,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": null,
+            "seldepth": null,
+            "nodes": null,
+            "nps": null,
+            "time_ms": null,
+            "tbhits": null,
+            "hashfull": null,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": null,
+            "best_move_uci": null
+          },
+          "eval_after_best": null,
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 34335,
+            "draws": 3228,
+            "black": 34442,
+            "moves": [
+              {
+                "uci": "b2c3",
+                "san": "bxc3",
+                "averageRating": 1628,
+                "white": 34329,
+                "draws": 3228,
+                "black": 34415,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "c1d2",
+                "san": "Bd2",
+                "averageRating": 1306,
+                "white": 6,
+                "draws": 0,
+                "black": 27,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 29,
+            "is_check": false,
+            "is_capture": true,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 4
+          },
+          "clock": {
+            "player": 947.6,
+            "opponent": 947.7,
+            "time_spent": -8.7
+          }
+        },
+        {
+          "ply": 14,
+          "fen_before": "rnbqk2r/ppp2ppp/5n2/3p4/3P4/P1P2N2/4PPPP/R1BQKB1R b KQkq - 0 7",
+          "fen_after": "rnbq1rk1/ppp2ppp/5n2/3p4/3P4/P1P2N2/4PPPP/R1BQKB1R w KQ - 1 8",
+          "move_san": "O-O",
+          "move_uci": "e8g8",
+          "side": "black",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 22,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 35,
+            "nodes": 1703153,
+            "nps": 976578,
+            "time_ms": 1744,
+            "tbhits": 0,
+            "hashfull": 10,
+            "pv_san": [
+              "O-O",
+              "e3",
+              "c5",
+              "dxc5",
+              "Nbd7",
+              "Be2",
+              "Nxc5",
+              "O-O",
+              "Nfe4",
+              "Bb2",
+              "Be6",
+              "a4",
+              "Rc8",
+              "a5",
+              "Re8",
+              "Nd4",
+              "Nd6",
+              "Ba3",
+              "Qxa5",
+              "Bb4",
+              "Qb6"
+            ],
+            "pv_uci": [
+              "e8g8",
+              "e2e3",
+              "c7c5",
+              "d4c5",
+              "b8d7",
+              "f1e2",
+              "d7c5",
+              "e1g1",
+              "f6e4",
+              "c1b2",
+              "c8e6",
+              "a3a4",
+              "a8c8",
+              "a4a5",
+              "f8e8",
+              "f3d4",
+              "e4d6",
+              "b2a3",
+              "d8a5",
+              "a3b4",
+              "a5b6"
+            ],
+            "best_move_san": "O-O",
+            "best_move_uci": "e8g8"
+          },
+          "eval_after": {
+            "score_cp": 22,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 35,
+            "nodes": 3185018,
+            "nps": 1014014,
+            "time_ms": 3141,
+            "tbhits": 0,
+            "hashfull": 17,
+            "pv_san": [
+              "e3",
+              "c5",
+              "dxc5",
+              "Nbd7",
+              "Be2",
+              "Nxc5",
+              "O-O",
+              "Nfe4",
+              "Bb2",
+              "Qb6",
+              "Rb1",
+              "Rd8",
+              "c4",
+              "dxc4",
+              "Qc2",
+              "Qb3",
+              "Qxc4",
+              "Qxc4",
+              "Bxc4",
+              "Be6",
+              "Bxe6",
+              "Nxe6",
+              "Rfc1",
+              "Rdc8",
+              "Nd4"
+            ],
+            "pv_uci": [
+              "e2e3",
+              "c7c5",
+              "d4c5",
+              "b8d7",
+              "f1e2",
+              "d7c5",
+              "e1g1",
+              "f6e4",
+              "c1b2",
+              "d8b6",
+              "a1b1",
+              "f8d8",
+              "c3c4",
+              "d5c4",
+              "d1c2",
+              "b6b3",
+              "c2c4",
+              "b3c4",
+              "e2c4",
+              "c8e6",
+              "c4e6",
+              "c5e6",
+              "f1c1",
+              "d8c8",
+              "f3d4"
+            ],
+            "best_move_san": "e3",
+            "best_move_uci": "e2e3"
+          },
+          "eval_after_best": {
+            "score_cp": 22,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": {
+            "white": 49819,
+            "draws": 4686,
+            "black": 49780,
+            "moves": [
+              {
+                "uci": "e8h8",
+                "san": "O-O",
+                "averageRating": 1639,
+                "white": 28546,
+                "draws": 2732,
+                "black": 29106,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "b8c6",
+                "san": "Nc6",
+                "averageRating": 1500,
+                "white": 5732,
+                "draws": 510,
+                "black": 5187,
+                "game": null,
+                "opening": null
+              },
+              {
+                "uci": "f6e4",
+                "san": "Ne4",
+                "averageRating": 1626,
+                "white": 3873,
+                "draws": 315,
+                "black": 4135,
+                "game": null,
+                "opening": null
+              }
+            ],
+            "opening": null
+          },
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": true,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 32
+          },
+          "clock": {
+            "player": 947.7,
+            "opponent": 948.9,
+            "time_spent": -1.3
+          }
+        },
+        {
+          "ply": 15,
+          "fen_before": "rnbq1rk1/ppp2ppp/5n2/3p4/3P4/P1P2N2/4PPPP/R1BQKB1R w KQ - 1 8",
+          "fen_after": "rnbq1rk1/ppp2ppp/5n2/3p4/3P4/P1P1PN2/5PPP/R1BQKB1R b KQ - 0 8",
+          "move_san": "e3",
+          "move_uci": "e2e3",
+          "side": "white",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 22,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 35,
+            "nodes": 3185018,
+            "nps": 1014014,
+            "time_ms": 3141,
+            "tbhits": 0,
+            "hashfull": 17,
+            "pv_san": [
+              "e3",
+              "c5",
+              "dxc5",
+              "Nbd7",
+              "Be2",
+              "Nxc5",
+              "O-O",
+              "Nfe4",
+              "Bb2",
+              "Qb6",
+              "Rb1",
+              "Rd8",
+              "c4",
+              "dxc4",
+              "Qc2",
+              "Qb3",
+              "Qxc4",
+              "Qxc4",
+              "Bxc4",
+              "Be6",
+              "Bxe6",
+              "Nxe6",
+              "Rfc1",
+              "Rdc8",
+              "Nd4"
+            ],
+            "pv_uci": [
+              "e2e3",
+              "c7c5",
+              "d4c5",
+              "b8d7",
+              "f1e2",
+              "d7c5",
+              "e1g1",
+              "f6e4",
+              "c1b2",
+              "d8b6",
+              "a1b1",
+              "f8d8",
+              "c3c4",
+              "d5c4",
+              "d1c2",
+              "b6b3",
+              "c2c4",
+              "b3c4",
+              "e2c4",
+              "c8e6",
+              "c4e6",
+              "c5e6",
+              "f1c1",
+              "d8c8",
+              "f3d4"
+            ],
+            "best_move_san": "e3",
+            "best_move_uci": "e2e3"
+          },
+          "eval_after": {
+            "score_cp": 23,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 21,
+            "nodes": 1754236,
+            "nps": 1077540,
+            "time_ms": 1628,
+            "tbhits": 0,
+            "hashfull": 9,
+            "pv_san": [
+              "c5",
+              "c4",
+              "Be6",
+              "cxd5",
+              "Qxd5",
+              "dxc5",
+              "Qxd1+",
+              "Kxd1",
+              "Ne4",
+              "Ke1",
+              "Nc6",
+              "Nd4",
+              "Nxc5",
+              "Nxc6",
+              "bxc6",
+              "Bb2",
+              "Rfd8",
+              "Be2",
+              "Rd5",
+              "f3"
+            ],
+            "pv_uci": [
+              "c7c5",
+              "c3c4",
+              "c8e6",
+              "c4d5",
+              "d8d5",
+              "d4c5",
+              "d5d1",
+              "e1d1",
+              "f6e4",
+              "d1e1",
+              "b8c6",
+              "f3d4",
+              "e4c5",
+              "d4c6",
+              "b7c6",
+              "c1b2",
+              "f8d8",
+              "f1e2",
+              "d8d5",
+              "f2f3"
+            ],
+            "best_move_san": "c5",
+            "best_move_uci": "c7c5"
+          },
+          "eval_after_best": {
+            "score_cp": 23,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 28
+          },
+          "clock": {
+            "player": 948.9,
+            "opponent": 947.5,
+            "time_spent": -1.3
+          }
+        },
+        {
+          "ply": 16,
+          "fen_before": "rnbq1rk1/ppp2ppp/5n2/3p4/3P4/P1P1PN2/5PPP/R1BQKB1R b KQ - 0 8",
+          "fen_after": "rnbq1rk1/ppp2ppp/8/3p4/3Pn3/P1P1PN2/5PPP/R1BQKB1R w KQ - 1 9",
+          "move_san": "Ne4",
+          "move_uci": "f6e4",
+          "side": "black",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 23,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 21,
+            "nodes": 1754236,
+            "nps": 1077540,
+            "time_ms": 1628,
+            "tbhits": 0,
+            "hashfull": 9,
+            "pv_san": [
+              "c5",
+              "c4",
+              "Be6",
+              "cxd5",
+              "Qxd5",
+              "dxc5",
+              "Qxd1+",
+              "Kxd1",
+              "Ne4",
+              "Ke1",
+              "Nc6",
+              "Nd4",
+              "Nxc5",
+              "Nxc6",
+              "bxc6",
+              "Bb2",
+              "Rfd8",
+              "Be2",
+              "Rd5",
+              "f3"
+            ],
+            "pv_uci": [
+              "c7c5",
+              "c3c4",
+              "c8e6",
+              "c4d5",
+              "d8d5",
+              "d4c5",
+              "d5d1",
+              "e1d1",
+              "f6e4",
+              "d1e1",
+              "b8c6",
+              "f3d4",
+              "e4c5",
+              "d4c6",
+              "b7c6",
+              "c1b2",
+              "f8d8",
+              "f1e2",
+              "d8d5",
+              "f2f3"
+            ],
+            "best_move_san": "c5",
+            "best_move_uci": "c7c5"
+          },
+          "eval_after": {
+            "score_cp": 44,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 33,
+            "nodes": 3045817,
+            "nps": 1051732,
+            "time_ms": 2896,
+            "tbhits": 0,
+            "hashfull": 20,
+            "pv_san": [
+              "c4",
+              "c5",
+              "Bd3",
+              "b5",
+              "cxd5",
+              "Qxd5",
+              "Bxe4",
+              "Qxe4",
+              "dxc5",
+              "Nc6",
+              "O-O",
+              "Rd8",
+              "Qe2",
+              "Bg4",
+              "Bb2",
+              "Rd5",
+              "h3",
+              "Bxf3",
+              "Qxf3",
+              "Qxf3",
+              "gxf3",
+              "Rad8",
+              "Rac1",
+              "f6",
+              "Rc2",
+              "Kf7"
+            ],
+            "pv_uci": [
+              "c3c4",
+              "c7c5",
+              "f1d3",
+              "b7b5",
+              "c4d5",
+              "d8d5",
+              "d3e4",
+              "d5e4",
+              "d4c5",
+              "b8c6",
+              "e1g1",
+              "f8d8",
+              "d1e2",
+              "c8g4",
+              "c1b2",
+              "d8d5",
+              "h2h3",
+              "g4f3",
+              "e2f3",
+              "e4f3",
+              "g2f3",
+              "a8d8",
+              "a1c1",
+              "f7f6",
+              "c1c2",
+              "g8f7"
+            ],
+            "best_move_san": "c4",
+            "best_move_uci": "c3c4"
+          },
+          "eval_after_best": {
+            "score_cp": 17,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 21,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 29
+          },
+          "clock": {
+            "player": 947.5,
+            "opponent": 953.5,
+            "time_spent": -4.6
+          }
+        },
+        {
+          "ply": 17,
+          "fen_before": "rnbq1rk1/ppp2ppp/8/3p4/3Pn3/P1P1PN2/5PPP/R1BQKB1R w KQ - 1 9",
+          "fen_after": "rnbq1rk1/ppp2ppp/8/3p4/3Pn3/P1P1PN2/1B3PPP/R2QKB1R b KQ - 2 9",
+          "move_san": "Bb2",
+          "move_uci": "c1b2",
+          "side": "white",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 44,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 33,
+            "nodes": 3045817,
+            "nps": 1051732,
+            "time_ms": 2896,
+            "tbhits": 0,
+            "hashfull": 20,
+            "pv_san": [
+              "c4",
+              "c5",
+              "Bd3",
+              "b5",
+              "cxd5",
+              "Qxd5",
+              "Bxe4",
+              "Qxe4",
+              "dxc5",
+              "Nc6",
+              "O-O",
+              "Rd8",
+              "Qe2",
+              "Bg4",
+              "Bb2",
+              "Rd5",
+              "h3",
+              "Bxf3",
+              "Qxf3",
+              "Qxf3",
+              "gxf3",
+              "Rad8",
+              "Rac1",
+              "f6",
+              "Rc2",
+              "Kf7"
+            ],
+            "pv_uci": [
+              "c3c4",
+              "c7c5",
+              "f1d3",
+              "b7b5",
+              "c4d5",
+              "d8d5",
+              "d3e4",
+              "d5e4",
+              "d4c5",
+              "b8c6",
+              "e1g1",
+              "f8d8",
+              "d1e2",
+              "c8g4",
+              "c1b2",
+              "d8d5",
+              "h2h3",
+              "g4f3",
+              "e2f3",
+              "e4f3",
+              "g2f3",
+              "a8d8",
+              "a1c1",
+              "f7f6",
+              "c1c2",
+              "g8f7"
+            ],
+            "best_move_san": "c4",
+            "best_move_uci": "c3c4"
+          },
+          "eval_after": {
+            "score_cp": 20,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 37,
+            "nodes": 3037320,
+            "nps": 990969,
+            "time_ms": 3065,
+            "tbhits": 0,
+            "hashfull": 21,
+            "pv_san": [
+              "Re8",
+              "Be2",
+              "c6",
+              "O-O",
+              "Bg4",
+              "c4",
+              "Nd7",
+              "a4",
+              "Bxf3",
+              "Bxf3",
+              "Nb6",
+              "cxd5",
+              "cxd5",
+              "Be2",
+              "Rc8",
+              "Bd3",
+              "Nc4",
+              "Bc1",
+              "h6"
+            ],
+            "pv_uci": [
+              "f8e8",
+              "f1e2",
+              "c7c6",
+              "e1g1",
+              "c8g4",
+              "c3c4",
+              "b8d7",
+              "a3a4",
+              "g4f3",
+              "e2f3",
+              "d7b6",
+              "c4d5",
+              "c6d5",
+              "f3e2",
+              "a8c8",
+              "e2d3",
+              "b6c4",
+              "b2c1",
+              "h7h6"
+            ],
+            "best_move_san": "Re8",
+            "best_move_uci": "f8e8"
+          },
+          "eval_after_best": {
+            "score_cp": 46,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 24,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 28
+          },
+          "clock": {
+            "player": 953.5,
+            "opponent": 936.3,
+            "time_spent": -4.6
+          }
+        },
+        {
+          "ply": 18,
+          "fen_before": "rnbq1rk1/ppp2ppp/8/3p4/3Pn3/P1P1PN2/1B3PPP/R2QKB1R b KQ - 2 9",
+          "fen_after": "rn1q1rk1/ppp2ppp/8/3p1b2/3Pn3/P1P1PN2/1B3PPP/R2QKB1R w KQ - 3 10",
+          "move_san": "Bf5",
+          "move_uci": "c8f5",
+          "side": "black",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 20,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 37,
+            "nodes": 3037320,
+            "nps": 990969,
+            "time_ms": 3065,
+            "tbhits": 0,
+            "hashfull": 21,
+            "pv_san": [
+              "Re8",
+              "Be2",
+              "c6",
+              "O-O",
+              "Bg4",
+              "c4",
+              "Nd7",
+              "a4",
+              "Bxf3",
+              "Bxf3",
+              "Nb6",
+              "cxd5",
+              "cxd5",
+              "Be2",
+              "Rc8",
+              "Bd3",
+              "Nc4",
+              "Bc1",
+              "h6"
+            ],
+            "pv_uci": [
+              "f8e8",
+              "f1e2",
+              "c7c6",
+              "e1g1",
+              "c8g4",
+              "c3c4",
+              "b8d7",
+              "a3a4",
+              "g4f3",
+              "e2f3",
+              "d7b6",
+              "c4d5",
+              "c6d5",
+              "f3e2",
+              "a8c8",
+              "e2d3",
+              "b6c4",
+              "b2c1",
+              "h7h6"
+            ],
+            "best_move_san": "Re8",
+            "best_move_uci": "f8e8"
+          },
+          "eval_after": {
+            "score_cp": 33,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 31,
+            "nodes": 1891863,
+            "nps": 1046963,
+            "time_ms": 1807,
+            "tbhits": 0,
+            "hashfull": 10,
+            "pv_san": [
+              "Be2",
+              "Nd6",
+              "Nd2",
+              "Nd7",
+              "a4",
+              "Re8",
+              "O-O",
+              "Nb6",
+              "Ba3",
+              "Ne4",
+              "Nxe4",
+              "Bxe4",
+              "f3",
+              "Bg6"
+            ],
+            "pv_uci": [
+              "f1e2",
+              "e4d6",
+              "f3d2",
+              "b8d7",
+              "a3a4",
+              "f8e8",
+              "e1g1",
+              "d7b6",
+              "b2a3",
+              "d6e4",
+              "d2e4",
+              "f5e4",
+              "f2f3",
+              "e4g6"
+            ],
+            "best_move_san": "Be2",
+            "best_move_uci": "f1e2"
+          },
+          "eval_after_best": {
+            "score_cp": 23,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 13,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 37
+          },
+          "clock": {
+            "player": 936.3,
+            "opponent": 948.3,
+            "time_spent": 5.2
+          }
+        },
+        {
+          "ply": 19,
+          "fen_before": "rn1q1rk1/ppp2ppp/8/3p1b2/3Pn3/P1P1PN2/1B3PPP/R2QKB1R w KQ - 3 10",
+          "fen_after": "rn1q1rk1/ppp2ppp/8/3p1b2/3Pn3/P1P1PN2/1B2BPPP/R2QK2R b KQ - 4 10",
+          "move_san": "Be2",
+          "move_uci": "f1e2",
+          "side": "white",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 33,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 31,
+            "nodes": 1891863,
+            "nps": 1046963,
+            "time_ms": 1807,
+            "tbhits": 0,
+            "hashfull": 10,
+            "pv_san": [
+              "Be2",
+              "Nd6",
+              "Nd2",
+              "Nd7",
+              "a4",
+              "Re8",
+              "O-O",
+              "Nb6",
+              "Ba3",
+              "Ne4",
+              "Nxe4",
+              "Bxe4",
+              "f3",
+              "Bg6"
+            ],
+            "pv_uci": [
+              "f1e2",
+              "e4d6",
+              "f3d2",
+              "b8d7",
+              "a3a4",
+              "f8e8",
+              "e1g1",
+              "d7b6",
+              "b2a3",
+              "d6e4",
+              "d2e4",
+              "f5e4",
+              "f2f3",
+              "e4g6"
+            ],
+            "best_move_san": "Be2",
+            "best_move_uci": "f1e2"
+          },
+          "eval_after": {
+            "score_cp": 37,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 28,
+            "nodes": 2581538,
+            "nps": 1067633,
+            "time_ms": 2418,
+            "tbhits": 0,
+            "hashfull": 14,
+            "pv_san": [
+              "Nd7",
+              "c4",
+              "c6",
+              "O-O",
+              "Re8",
+              "cxd5",
+              "cxd5",
+              "Qb3",
+              "Ndf6",
+              "Rac1",
+              "Re6",
+              "a4",
+              "Bg4",
+              "Bc3",
+              "Rb6",
+              "Qa3",
+              "a5",
+              "Be1"
+            ],
+            "pv_uci": [
+              "b8d7",
+              "c3c4",
+              "c7c6",
+              "e1g1",
+              "f8e8",
+              "c4d5",
+              "c6d5",
+              "d1b3",
+              "d7f6",
+              "a1c1",
+              "e8e6",
+              "a3a4",
+              "f5g4",
+              "b2c3",
+              "e6b6",
+              "b3a3",
+              "a7a5",
+              "c3e1"
+            ],
+            "best_move_san": "Nd7",
+            "best_move_uci": "b8d7"
+          },
+          "eval_after_best": {
+            "score_cp": 37,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 0,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 30
+          },
+          "clock": {
+            "player": 948.3,
+            "opponent": 906.9,
+            "time_spent": 5.2
+          }
+        },
+        {
+          "ply": 20,
+          "fen_before": "rn1q1rk1/ppp2ppp/8/3p1b2/3Pn3/P1P1PN2/1B2BPPP/R2QK2R b KQ - 4 10",
+          "fen_after": "r2q1rk1/pppn1ppp/8/3p1b2/3Pn3/P1P1PN2/1B2BPPP/R2QK2R w KQ - 5 11",
+          "move_san": "Nd7",
+          "move_uci": "b8d7",
+          "side": "black",
+          "eval_source": "stockfish",
+          "eval_before": {
+            "score_cp": 37,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 28,
+            "nodes": 2581538,
+            "nps": 1067633,
+            "time_ms": 2418,
+            "tbhits": 0,
+            "hashfull": 14,
+            "pv_san": [
+              "Nd7",
+              "c4",
+              "c6",
+              "O-O",
+              "Re8",
+              "cxd5",
+              "cxd5",
+              "Qb3",
+              "Ndf6",
+              "Rac1",
+              "Re6",
+              "a4",
+              "Bg4",
+              "Bc3",
+              "Rb6",
+              "Qa3",
+              "a5",
+              "Be1"
+            ],
+            "pv_uci": [
+              "b8d7",
+              "c3c4",
+              "c7c6",
+              "e1g1",
+              "f8e8",
+              "c4d5",
+              "c6d5",
+              "d1b3",
+              "d7f6",
+              "a1c1",
+              "e8e6",
+              "a3a4",
+              "f5g4",
+              "b2c3",
+              "e6b6",
+              "b3a3",
+              "a7a5",
+              "c3e1"
+            ],
+            "best_move_san": "Nd7",
+            "best_move_uci": "b8d7"
+          },
+          "eval_after": {
+            "score_cp": 40,
+            "is_mate": false,
+            "mate_in": null,
+            "depth": 18,
+            "seldepth": 42,
+            "nodes": 3011603,
+            "nps": 1111292,
+            "time_ms": 2710,
+            "tbhits": 0,
+            "hashfull": 35,
+            "pv_san": [
+              "c4",
+              "c6",
+              "O-O",
+              "Re8",
+              "cxd5",
+              "cxd5",
+              "Qb3",
+              "Ndf6",
+              "Rac1",
+              "Re6",
+              "a4",
+              "Rb6",
+              "Qa2",
+              "Bd7",
+              "Ba1",
+              "Qe8",
+              "a5",
+              "Rb4",
+              "Bc3",
+              "Nxc3",
+              "Rxc3",
+              "Ne4",
+              "Rc2",
+              "Rc8",
+              "Rfc1"
+            ],
+            "pv_uci": [
+              "c3c4",
+              "c7c6",
+              "e1g1",
+              "f8e8",
+              "c4d5",
+              "c6d5",
+              "d1b3",
+              "d7f6",
+              "a1c1",
+              "e8e6",
+              "a3a4",
+              "e6b6",
+              "b3a2",
+              "f5d7",
+              "b2a1",
+              "d8e8",
+              "a4a5",
+              "b6b4",
+              "a1c3",
+              "e4c3",
+              "c1c3",
+              "f6e4",
+              "c3c2",
+              "a8c8",
+              "f1c1"
+            ],
+            "best_move_san": "c4",
+            "best_move_uci": "c3c4"
+          },
+          "eval_after_best": {
+            "score_cp": 40,
+            "is_mate": false,
+            "mate_in": null
+          },
+          "tablebase_before": null,
+          "tablebase_after": null,
+          "opening_explorer": null,
+          "cp_loss": 3,
+          "board": {
+            "piece_count": 28,
+            "is_check": false,
+            "is_capture": false,
+            "is_castling": false,
+            "is_en_passant": false,
+            "is_promotion": false,
+            "promoted_to": null,
+            "legal_moves_count": 38
+          },
+          "clock": {
+            "player": 906.9,
+            "opponent": 955.2,
+            "time_spent": -6.9
+          }
+        }
+      ]
+    }
+  }
+}

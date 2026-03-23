@@ -17,7 +17,10 @@
   </div>
   <header>
     <button id="menu-btn" title="Menu">&#9776;</button>
-    <h1>Find a Better Move</h1>
+    <div id="mode-toggle">
+      <button id="mode-training" class="mode-btn active">Training</button>
+      <button id="mode-analysis" class="mode-btn">Analysis</button>
+    </div>
     <div id="session-info">
       <span id="progress"></span>
     </div>
@@ -53,7 +56,7 @@
     </ul>
   </nav>
 
-  <main>
+  <main id="training-view">
     <div id="board-wrapper">
       <div class="board-info-row">
         <div id="material-top" class="material-balance"></div>
@@ -90,6 +93,40 @@
         <button id="next-btn" class="hidden">Next</button>
         <button id="retry-btn" class="hidden">Retry</button>
         <button id="dismiss-btn" class="hidden" title="This position will be permanently removed from your training. You will never see it again.">Give up on this lesson</button>
+      </div>
+    </div>
+  </main>
+
+  <main id="analysis-view" class="hidden">
+    <div id="game-selector"></div>
+    <div id="game-review" class="hidden">
+      <div id="review-game-info"></div>
+      <div id="review-layout">
+        <div id="review-board-col">
+          <div id="eval-bar">
+            <div id="eval-bar-fill"></div>
+            <span id="eval-bar-label">0.0</span>
+          </div>
+          <div id="review-board-container">
+            <div id="review-board"></div>
+          </div>
+        </div>
+        <div id="review-panel">
+          <div id="review-summary"></div>
+          <div id="review-opening"></div>
+          <div id="review-moves"></div>
+          <div id="review-pv"></div>
+        </div>
+      </div>
+      <canvas id="score-chart"></canvas>
+      <div id="review-controls">
+        <button id="review-first" title="First move">|&lt;</button>
+        <button id="review-prev" title="Previous move">&lt;</button>
+        <button id="review-play" title="Auto-play">&#9654;</button>
+        <button id="review-next" title="Next move">&gt;</button>
+        <button id="review-last" title="Last move">&gt;|</button>
+        <button id="review-flip" title="Flip board">&#8646;</button>
+        <button id="review-back-btn" title="Back to game list">Back</button>
       </div>
     </div>
   </main>
