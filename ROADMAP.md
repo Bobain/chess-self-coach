@@ -49,29 +49,36 @@ An item is [x] when ALL applicable criteria are met:
 - [x] cleanup (CLI: cleanup_study) ← fast
 - [x] POST /api/pgn/cleanup — trigger from menu
 
-### 3b. SSE job runner + "Analyse latest games"
+### 3b. SSE job runner + "Analyse latest games" — DONE
 - [x] ⚠️ UX DESIGN PHASE: "Analyse latest games" button runs `train --prepare` in background.
       Individual commands (import, analyze, push, pull) deferred to future design phase.
 - [x] Generic SSE job runner (POST starts job → 202, GET streams progress via SSE)
 - [x] train --prepare (CLI: prepare_training_data with --games, --depth, --engine, --fresh)
 - [x] POST /api/train/prepare + GET /api/jobs/{id}/events (SSE)
 - [x] PWA "Analyse latest games" menu item + progress modal
+- [x] Two-phase analysis pipeline: Phase 1 (collection: SF + Tablebase + Opening Explorer) → Phase 2 (derivation: filter + explain)
+- [x] analysis_data.json: full per-move data with maximum granularity (all SF info, full PV, tablebase, opening explorer)
+- [x] training_data.json derived from analysis_data.json (re-runnable without Stockfish via `--derive`)
+- [x] Single multi-threaded Stockfish (N-1 threads + configurable hash) instead of N × 1-thread workers
+- [x] Analysis settings modal in PWA: threads, hash, depth/time limits, games count
+- [x] CLI: `--derive`, `--threads`, `--hash`, `--reanalyze-all` flags; `--games` default changed to 10
+- [x] API: GET/POST /api/analysis/settings, POST /api/analysis/start, POST /api/train/derive
+- [x] Lichess Opening Explorer integration: theory departure detection (stops querying when move leaves known theory)
+- [x] analysis_duration_s per game for ETA estimation
+- [x] Incremental: analyze only unanalyzed games; reanalyze-all skips same-settings games
 
-**Current behavior** (v0.3.6):
-The button calls `POST /api/train/prepare` with hardcoded defaults:
-- Fetches up to 20 most recent rated games per source (Lichess + Chess.com)
-- Skips games already in `analyzed_game_ids` (incremental merge)
-- Runs Stockfish depth-18 analysis on new games only
-- Extracts blunders/mistakes/inaccuracies, creates training positions
-- Merges into existing `training_data.json`, preserving SRS progress
-- Atomic writes after each game (crash-safe)
+**Current behavior** (v0.4.x):
+The button opens an Analysis Settings modal where the user configures:
+- Stockfish threads (auto = N-1 CPUs) and hash (default 1GB)
+- Depth/time limits per piece-count bracket (4 configurable rows)
+- Number of games to analyze (default 10)
+Then POSTs to `POST /api/analysis/start` which:
+1. Fetches recent rated games (Lichess + Chess.com)
+2. Filters: skip already-analyzed (or same-settings if reanalyze-all)
+3. Phase 1: Stockfish + Lichess Tablebase + Opening Explorer per move, writes `analysis_data.json` after each game
+4. Phase 2: `annotate_and_derive()` filters mistakes, generates explanations, writes `training_data.json`
 
-**Next priority — design & test the workflow:**
-- [>] Test current behavior end-to-end with real games, identify UX issues
-- [ ] Evolve to truly incremental "add latest games" (not just latest 20)
-- [ ] Expose `--games N` as a PWA option (default 20)
-- [ ] Expose `--fresh` as "Force re-analysis" option
-- [ ] Expose `--engine /path` as config setting
+**Next priority:**
 - [ ] import/analyze/push/pull → individual PWA buttons (needs own design phase)
 
 ### 3c. Interrupt resilience & data recovery
@@ -127,8 +134,9 @@ Section 2 (Menu + Mode detection) ← DONE
      ├──► Section 3a (instant endpoints) ← DONE
      │         │
      │         ▼ (pattern established)
-     │    Section 3b (SSE job runner + long ops) ← DONE
+     │    Section 3b (SSE + full analysis pipeline) ← DONE
      │         │
+     │         ├──► Section 6 (Legacy cleanup) ← when stable
      │         ▼
      │    Section 3c (Interrupt resilience + data recovery)
      │
@@ -146,6 +154,39 @@ Section 2 (Menu + Mode detection) ← DONE
      │
      └──► Section 5b (Config API) ← low priority, parallel with 4a-4c
 ```
+
+## 6. Legacy cleanup — old parallel analysis pipeline
+
+The new two-phase analysis pipeline (`analysis.py`) replaces the old parallel pipeline in `trainer.py`.
+The old code is kept temporarily for backward compatibility (existing tests, legacy API endpoint).
+**Clean up when**: all tests are migrated and the old API endpoint is no longer needed.
+
+### Dead code to remove in trainer.py
+- [ ] `prepare_training_data()` — replaced by `analyze_games()` + `annotate_and_derive()`
+- [ ] `_analyze_game_worker()` — replaced by sequential `collect_game_data()`
+- [ ] `ProcessPoolExecutor` import + `worker_count()` usage — replaced by single multi-threaded SF
+- [ ] `extract_mistakes()` — replaced by `collect_game_data()` (Phase 1) + `annotate_and_derive()` (Phase 2)
+- [ ] `_determine_player_color()` — duplicated in `analysis.py`
+- [ ] `_load_existing_training_data()` — no longer needed (analysis_data.json is source of truth)
+- [ ] `_build_output()` — inlined in `annotate_and_derive()`
+- [ ] `TrainingInterrupted` exception — replaced by `AnalysisInterrupted`
+
+### Dead code to remove in server.py
+- [ ] `_run_job()` — replaced by `_run_analysis_job()`
+- [ ] `POST /api/train/prepare` — replaced by `POST /api/analysis/start`
+
+### Tests to migrate
+- [ ] `test_resume.py` — update to test `analyze_games()` resumption instead of `prepare_training_data()`
+- [ ] `test_server.py` — update train/prepare tests to use `/api/analysis/start`
+
+### Functions to KEEP in trainer.py (used by Phase 2 derivation)
+- `generate_explanation()`, `_generate_context()`, `_time_pressure_context()`
+- `compute_cp_loss()`, `_classify_mistake()`, `_format_score_cp()`, `_format_cp_loss_human()`
+- `_detect_game_phase()`, `_describe_advantage()`, `_make_position_id()`
+- `print_stats()`, `get_stats_data()`, `refresh_explanations()`
+- Threshold constants: `BLUNDER_THRESHOLD`, `MISTAKE_THRESHOLD`, `INACCURACY_THRESHOLD`
+
+---
 
 ## Dormant code (Coming soon features)
 
