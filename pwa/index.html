@@ -210,6 +210,31 @@
     </div>
   </div>
 
+  <!-- Analysis Settings Modal (App-only) -->
+  <div id="analysis-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Analysis Settings</h2>
+      <div class="modal-body">
+        <h3>Engine</h3>
+        <label>Threads: <input type="number" id="analysis-threads" min="1" max="64" value="7"></label>
+        <label>Hash (MB): <input type="number" id="analysis-hash" min="128" max="16384" step="128" value="1024"></label>
+        <h3>Depth / time limits</h3>
+        <label>K+P endgame: depth <input type="number" id="limit-kp-depth" min="1" max="99" value="60" class="narrow-input"> time (s) <input type="number" id="limit-kp-time" min="0" max="60" step="0.5" value="6" class="narrow-input"></label>
+        <label>Endgame: depth <input type="number" id="limit-eg-depth" min="1" max="99" value="50" class="narrow-input"> time (s) <input type="number" id="limit-eg-time" min="0" max="60" step="0.5" value="5" class="narrow-input"></label>
+        <label>Late middle: depth <input type="number" id="limit-mg-depth" min="1" max="99" value="40" class="narrow-input"> time (s) <input type="number" id="limit-mg-time" min="0" max="60" step="0.5" value="4" class="narrow-input"></label>
+        <label>Default: depth <input type="number" id="limit-default-depth" min="1" max="40" value="18" class="narrow-input"></label>
+        <h3>Games</h3>
+        <label>Games to analyze: <input type="number" id="analysis-max-games" min="1" max="100" value="10"></label>
+        <span id="analysis-status"></span>
+      </div>
+      <div class="modal-actions">
+        <button id="start-analysis" class="modal-close">Start analysis</button>
+        <button id="reanalyze-all" class="modal-secondary">Re-analyze all</button>
+        <button id="close-analysis">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Validate PGN Modal -->
   <div id="validate-modal" class="modal hidden">
     <div class="modal-content">

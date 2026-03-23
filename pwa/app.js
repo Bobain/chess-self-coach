@@ -1267,6 +1267,181 @@ async function showValidate() {
   }, { method: 'POST' });
 }
 
+// --- Analysis settings modal ---
+
+/**
+ * Show the analysis settings modal, populated from the API.
+ * @async
+ */
+async function showAnalysisSettings() {
+  console.log('[showAnalysisSettings] Loading settings...');
+  const modal = document.getElementById('analysis-modal');
+  const statusEl = document.getElementById('analysis-status');
+  if (!modal) {
+    console.error('[showAnalysisSettings] Modal not found');
+    return;
+  }
+
+  modal.classList.remove('hidden');
+  if (statusEl) statusEl.textContent = '';
+
+  try {
+    const resp = await fetch('/api/analysis/settings');
+    if (!resp.ok) {
+      if (statusEl) statusEl.textContent = 'Failed to load settings.';
+      return;
+    }
+    const data = await resp.json();
+    console.log('[showAnalysisSettings] Settings loaded:', data);
+
+    document.getElementById('analysis-threads').value = data.threads;
+    document.getElementById('analysis-hash').value = data.hash_mb;
+
+    const lim = data.limits || {};
+    if (lim.kings_pawns_le7) {
+      document.getElementById('limit-kp-depth').value = lim.kings_pawns_le7.depth || 60;
+      document.getElementById('limit-kp-time').value = lim.kings_pawns_le7.time || 6;
+    }
+    if (lim.pieces_le7) {
+      document.getElementById('limit-eg-depth').value = lim.pieces_le7.depth || 50;
+      document.getElementById('limit-eg-time').value = lim.pieces_le7.time || 5;
+    }
+    if (lim.pieces_le12) {
+      document.getElementById('limit-mg-depth').value = lim.pieces_le12.depth || 40;
+      document.getElementById('limit-mg-time').value = lim.pieces_le12.time || 4;
+    }
+    if (lim.default) {
+      document.getElementById('limit-default-depth').value = lim.default.depth || 18;
+    }
+  } catch (err) {
+    console.error('[showAnalysisSettings] Error:', err);
+    if (statusEl) statusEl.textContent = 'Connection failed.';
+  }
+}
+
+/**
+ * Read settings from the modal form, save them, then start analysis.
+ * @param {boolean} reanalyzeAll - If true, re-analyze all games.
+ * @async
+ */
+async function startAnalysis(reanalyzeAll = false) {
+  console.log('[startAnalysis] reanalyzeAll:', reanalyzeAll);
+  const statusEl = document.getElementById('analysis-status');
+
+  // Read form values
+  const settings = {
+    threads: parseInt(document.getElementById('analysis-threads').value, 10),
+    hash_mb: parseInt(document.getElementById('analysis-hash').value, 10),
+    limits: {
+      kings_pawns_le7: {
+        depth: parseInt(document.getElementById('limit-kp-depth').value, 10),
+        time: parseFloat(document.getElementById('limit-kp-time').value),
+      },
+      pieces_le7: {
+        depth: parseInt(document.getElementById('limit-eg-depth').value, 10),
+        time: parseFloat(document.getElementById('limit-eg-time').value),
+      },
+      pieces_le12: {
+        depth: parseInt(document.getElementById('limit-mg-depth').value, 10),
+        time: parseFloat(document.getElementById('limit-mg-time').value),
+      },
+      default: {
+        depth: parseInt(document.getElementById('limit-default-depth').value, 10),
+      },
+    },
+  };
+  const maxGames = parseInt(document.getElementById('analysis-max-games').value, 10);
+
+  // Save settings
+  try {
+    const saveResp = await fetch('/api/analysis/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+    if (!saveResp.ok) {
+      if (statusEl) statusEl.textContent = 'Failed to save settings.';
+      return;
+    }
+  } catch (err) {
+    console.error('[startAnalysis] Save settings failed:', err);
+    if (statusEl) statusEl.textContent = 'Connection failed.';
+    return;
+  }
+
+  // Hide analysis modal, start analysis job
+  document.getElementById('analysis-modal').classList.add('hidden');
+
+  // Start analysis via the existing refresh progress modal
+  try {
+    const resp = await fetch('/api/analysis/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ max_games: maxGames, reanalyze_all: reanalyzeAll }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.error('[startAnalysis] API error:', resp.status, err.detail);
+      return;
+    }
+    const { job_id: jobId } = await resp.json();
+    console.log('[startAnalysis] Job started:', jobId);
+
+    // Reuse the refresh modal for progress display
+    showAnalysisProgress(jobId);
+  } catch (err) {
+    console.error('[startAnalysis] Fetch failed:', err);
+  }
+}
+
+/**
+ * Display analysis job progress in the refresh modal.
+ * @param {string} jobId - The job ID to track.
+ */
+function showAnalysisProgress(jobId) {
+  const modal = document.getElementById('refresh-modal');
+  const stepsContainer = document.getElementById('refresh-steps');
+  const interruptBtn = document.getElementById('interrupt-refresh');
+  if (!modal || !stepsContainer) return;
+
+  modal.classList.remove('hidden');
+  stepsContainer.innerHTML = '<div class="refresh-step">Starting analysis...</div>';
+  if (interruptBtn) {
+    interruptBtn.classList.remove('hidden');
+    interruptBtn.onclick = async () => {
+      try {
+        await fetch(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
+      } catch (err) {
+        console.error('[showAnalysisProgress] Cancel failed:', err);
+      }
+    };
+  }
+
+  const evtSource = new EventSource(`/api/jobs/${jobId}/events`);
+  evtSource.onmessage = (e) => {
+    const event = JSON.parse(e.data);
+    console.log('[showAnalysisProgress] Event:', event.phase, event.percent);
+
+    const stepEl = document.createElement('div');
+    stepEl.className = 'refresh-step';
+    stepEl.textContent = event.message || event.phase;
+    if (event.percent != null) {
+      stepEl.textContent += ` (${event.percent}%)`;
+    }
+    stepsContainer.appendChild(stepEl);
+    stepsContainer.scrollTop = stepsContainer.scrollHeight;
+
+    if (event.phase === 'done' || event.phase === 'error' || event.phase === 'interrupted') {
+      evtSource.close();
+      if (interruptBtn) interruptBtn.classList.add('hidden');
+    }
+  };
+  evtSource.onerror = () => {
+    evtSource.close();
+    if (interruptBtn) interruptBtn.classList.add('hidden');
+  };
+}
+
 // --- Refresh training ---
 
 /**
@@ -1852,7 +2027,23 @@ async function init() {
   }
 
   wireNavItem('nav-stats', showRawDataSummary, 'stats-modal');
-  wireNavItem('nav-refresh', refreshTraining, 'refresh-modal');
+  wireNavItem('nav-refresh', showAnalysisSettings, 'analysis-modal');
+
+  // Wire analysis modal buttons
+  const startAnalysisBtn = document.getElementById('start-analysis');
+  if (startAnalysisBtn) {
+    startAnalysisBtn.addEventListener('click', () => startAnalysis(false));
+  }
+  const reanalyzeAllBtn = document.getElementById('reanalyze-all');
+  if (reanalyzeAllBtn) {
+    reanalyzeAllBtn.addEventListener('click', () => startAnalysis(true));
+  }
+  const closeAnalysisBtn = document.getElementById('close-analysis');
+  if (closeAnalysisBtn) {
+    closeAnalysisBtn.addEventListener('click', () => {
+      document.getElementById('analysis-modal').classList.add('hidden');
+    });
+  }
   wireNavItem('nav-config', showConfig, 'config-modal');
 
   // Wire "Coming soon" submenu toggle
