@@ -81,46 +81,54 @@ Then POSTs to `POST /api/analysis/start` which:
 **Next priority:**
 - [ ] import/analyze/push/pull → individual PWA buttons (needs own design phase)
 
-### 3c. Game Review & Analysis UI — HIGH PRIORITY
+### 3c. Game Review & Analysis UI — DONE
 
 Chess.com-quality game review experience in both [demo] and [app].
 Data source: `analysis_data.json` (full per-move analysis from Phase 1).
 All rendering is client-side JS — no backend needed → works in [demo] with sample data.
 
 #### 3c-i. Game review page — full-game navigation (foundation)
-- [ ] "Review games" menu item (visible in both [demo] and [app])
-- [ ] Game selector: list analyzed games with opponent, date, result, opening
-- [ ] Move list panel: algebraic notation, clickable to jump to position
-- [ ] Board updates to show position at selected move (reuse Chessground)
-- [ ] Keyboard navigation: ← → (prev/next move), Home/End (first/last)
-- [ ] Auto-play button with configurable speed
-- [ ] [Demo] loads sample `analysis_data.json`; [App] loads real data
-- [ ] E2E test: navigate game moves, verify board position changes
+- [x] Mode toggle `[Training | Analysis]` in header (replaces menu item)
+- [x] Game selector: list analyzed games with opponent, date, result (W/D/L badge), opening
+- [x] Move list panel: two-column grid, clickable to jump to position
+- [x] Second Chessground instance (`reviewCg`) — read-only, no conflicts with training board
+- [x] Keyboard navigation: ← → (prev/next move), Home/End (first/last)
+- [x] Auto-play button (1 move/second, play/pause toggle)
+- [x] Flip board button
+- [x] Back button returns to game selector
+- [x] [Demo] loads sample `analysis_data.json`; [App] serves fresh via `GET /analysis_data.json`
+- [x] `deploy.yml` copies `analysis_data.json` to `site/train/`
+- [x] E2E tests: mode toggle, game list, move navigation, keyboard, auto-play, flip, back (18 tests)
 
 #### 3c-ii. Eval bar + score chart
-- [ ] Vertical eval bar next to board (white fill = White advantage, black = Black)
-- [ ] Numeric display: centipawn value or "M3" for mate
-- [ ] Smooth CSS transition on move changes
-- [ ] Score chart below board: eval curve over all moves (Canvas, no external lib)
-- [ ] Click on chart point → jump to that move
-- [ ] E2E test: eval bar reflects position, chart clickable
+- [x] Vertical eval bar next to board (sigmoid mapping, white fill = White advantage)
+- [x] Numeric display: "+0.32" for cp, "M3" for mate, "Book" for opening moves
+- [x] Smooth CSS transition (`height 0.3s ease`)
+- [x] Score chart below board: Canvas eval curve, area fill (white/black gradient)
+- [x] Click on chart → jump to that move
+- [x] Colored dots at mistakes/blunders on chart
+- [x] Current ply vertical cursor line
+- [x] Responsive resize handling
+- [x] E2E tests: eval bar updates, chart renders, chart click navigates
 
 #### 3c-iii. Move classifications + accuracy + board arrows
-- [ ] Color-coded moves in move list:
-      Brilliant (!!) / Great (!) / Best / Excellent / Good / Book /
-      Inaccuracy (?!) / Mistake (?) / Blunder (??) / Missed Win
-- [ ] Classification algorithm: cp_loss thresholds (extend existing `_classify_mistake()`)
-- [ ] Accuracy score per player: CAPS-like formula from per-move cp_loss
-- [ ] Game summary panel: accuracy %, classification counts per player, opening name
-- [ ] Chessground arrows: green = best move, red/orange = played mistake
-- [ ] E2E test: move colors match classifications, accuracy displayed
+- [x] Win probability model: `winProb(cp) = 1/(1+10^(-cp/400))`
+- [x] Color-coded classification dots in move list:
+      Best (★) / Excellent (!) / Good / Book (♗) /
+      Inaccuracy (?!) / Mistake (?) / Blunder (??) / Missed Win (×)
+- [x] Both players' moves classified (needed for opponent accuracy)
+- [x] CAPS-like accuracy per player: `avg(min(wpAfter/wpBefore, 1)) × 100`
+- [x] Game summary panel: accuracy %, classification count badges per player
+- [x] Chessground arrows: green = best move, red = played mistake
+- [x] E2E tests: classification dots present, accuracy percentages shown
 
 #### 3c-iv. Engine lines + opening info
-- [ ] Top PV line displayed for selected move (from `pv_san` in analysis_data.json)
-- [ ] Opening name + ECO code at top of move list
-- [ ] Theory departure indicator (move where player left known openings)
-- [ ] Depth indicator (from `depth` field)
-- [ ] E2E test: PV line shown, opening name correct
+- [x] PV line displayed for selected move (from `pv_san`, truncated to 8 moves + depth)
+- [x] Opening name + ECO code at top of move list (from `opening_explorer` data)
+- [x] Theory departure indicator (left border marker on first non-book move)
+- [x] E2E test: PV line shown for analyzed moves
+
+**Skipped for now**: Brilliant/Great classifications (require multi-move sacrifice detection).
 
 ### 3d. Legacy cleanup — old parallel analysis pipeline — DONE
 The old parallel pipeline was removed. `trainer.py` now contains only explanation/context
@@ -199,7 +207,7 @@ Section 2 (Menu + Mode detection) ← DONE
      │         ▼ (pattern established)
      │    Section 3b (SSE + full analysis pipeline) ← DONE
      │         │
-     │         ├──► Section 3c (Game Review & Analysis UI) ← HIGH PRIORITY, NEXT
+     │         ├──► Section 3c (Game Review & Analysis UI) ← DONE
      │         │
      │         ▼
      │    Section 3d (Legacy cleanup) ← DONE
