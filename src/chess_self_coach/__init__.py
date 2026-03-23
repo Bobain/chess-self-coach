@@ -8,7 +8,12 @@ from __future__ import annotations
 
 import os
 
-__version__ = "0.3.3"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("chess-self-coach")
+except PackageNotFoundError:
+    __version__ = "0.0.0-dev"
 
 
 def worker_count() -> int:
