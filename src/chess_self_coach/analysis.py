@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import json
 import os
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -570,3 +572,257 @@ def collect_game_data(
         "settings": settings.to_dict(),
         "moves": moves_data,
     }
+
+
+# ---------------------------------------------------------------------------
+# Phase 1 orchestrator
+# ---------------------------------------------------------------------------
+
+
+class AnalysisInterrupted(Exception):
+    """Raised when analysis is cancelled via the interrupt signal."""
+
+
+def _determine_player_color(
+    game: chess.pgn.Game, lichess_user: str, chesscom_user: str | None
+) -> chess.Color | None:
+    """Determine which color the player was playing.
+
+    Args:
+        game: Parsed PGN game.
+        lichess_user: Lichess username.
+        chesscom_user: Optional chess.com username.
+
+    Returns:
+        chess.WHITE, chess.BLACK, or None if player not found.
+    """
+    white = game.headers.get("White", "").lower()
+    black = game.headers.get("Black", "").lower()
+
+    for username in [lichess_user.lower(), (chesscom_user or "").lower()]:
+        if not username:
+            continue
+        if username == white:
+            return chess.WHITE
+        if username == black:
+            return chess.BLACK
+    return None
+
+
+def analyze_games(
+    *,
+    max_games: int = 10,
+    reanalyze_all: bool = False,
+    settings: AnalysisSettings | None = None,
+    engine_path: str | None = None,
+    on_progress: Callable[[dict], None] | None = None,
+    cancel: threading.Event | None = None,
+) -> None:
+    """Fetch games, analyze with Stockfish + APIs, write analysis_data.json.
+
+    Phase 1 orchestrator: sequential analysis with one multi-threaded Stockfish.
+    After collection, calls annotate_and_derive() (Phase 2) to produce training_data.json.
+
+    Args:
+        max_games: Maximum games to fetch per source (default: 10).
+        reanalyze_all: If True, re-analyze games (skip only same-settings).
+        settings: Override analysis settings. None = load from config.
+        engine_path: Override path to Stockfish binary.
+        on_progress: Optional callback for structured progress events.
+        cancel: Threading event for cancellation.
+    """
+    import time as _time
+
+    from chess_self_coach.config import (
+        _find_project_root,
+        check_stockfish_version,
+        find_stockfish,
+        load_config,
+        load_lichess_token,
+    )
+    from chess_self_coach.importer import fetch_chesscom_games, fetch_lichess_games
+
+    def _emit(event: dict) -> None:
+        if on_progress:
+            on_progress(event)
+
+    config = load_config()
+    players = config.get("players", {})
+    lichess_user = players.get("lichess", "")
+    chesscom_user = players.get("chesscom")
+
+    if not lichess_user and not chesscom_user:
+        raise RuntimeError(
+            "No player configured. Run 'chess-self-coach setup' to set your Lichess and/or chess.com username."
+        )
+
+    # Load settings
+    if settings is None:
+        settings = AnalysisSettings.from_config(config)
+    settings_dict = settings.to_dict()
+
+    # Find Stockfish
+    if engine_path:
+        sf_path = Path(engine_path)
+        if not sf_path.exists():
+            raise FileNotFoundError(f"Engine not found: {sf_path}")
+    else:
+        sf_path = find_stockfish(config)
+        expected = config.get("stockfish", {}).get("expected_version")
+        version = check_stockfish_version(sf_path, expected)
+        print(f"  Using {version} at {sf_path}")
+        _emit({"phase": "init", "message": f"Using {version}"})
+
+    # Load Lichess token for Opening Explorer
+    lichess_token = load_lichess_token(required=False)
+
+    root = _find_project_root()
+    analysis_path = root / "analysis_data.json"
+
+    # Load existing analysis data
+    existing_data = load_analysis_data(analysis_path)
+    existing_games = existing_data.get("games", {})
+
+    # Fetch games
+    print("\n  Fetching games...")
+    _emit({"phase": "fetch", "message": "Fetching games...", "percent": 5})
+    all_games: list[chess.pgn.Game] = []
+
+    if lichess_user:
+        all_games.extend(fetch_lichess_games(lichess_user, max_games))
+    if chesscom_user:
+        all_games.extend(fetch_chesscom_games(chesscom_user, max_games))
+
+    if not all_games:
+        print("  No games found.")
+        _emit({"phase": "done", "message": "No games found.", "percent": 100})
+        return
+
+    # Filter games
+    new_games: list[tuple[chess.pgn.Game, str, chess.Color]] = []
+    skipped = 0
+    for game in all_games:
+        game_id = game.headers.get("Link", game.headers.get("Site", ""))
+        if game_id == "?":
+            game_id = ""
+
+        # Skip malformed games
+        white = game.headers.get("White", "?")
+        black = game.headers.get("Black", "?")
+        if white == "?" and black == "?":
+            continue
+
+        # Determine player color
+        player_color = _determine_player_color(game, lichess_user, chesscom_user)
+        if player_color is None:
+            continue
+
+        # Check if already analyzed
+        if game_id and game_id in existing_games:
+            if not reanalyze_all:
+                skipped += 1
+                continue
+            # Re-analyze mode: skip only if settings match
+            stored_settings = existing_games[game_id].get("settings", {})
+            if settings_match(stored_settings, settings_dict):
+                skipped += 1
+                continue
+
+        new_games.append((game, game_id, player_color))
+
+    if skipped:
+        print(f"  Skipped {skipped} already-analyzed game(s)")
+
+    # Sort by date (most recent first) and take max_games
+    new_games.sort(
+        key=lambda t: t[0].headers.get("Date", "0000.00.00"),
+        reverse=True,
+    )
+    new_games = new_games[:max_games]
+
+    _emit({
+        "phase": "fetch",
+        "message": f"Found {len(all_games)} game(s) ({len(new_games)} to analyze)",
+        "percent": 10,
+    })
+
+    if not new_games:
+        print("  No new games to analyze.")
+        _emit({"phase": "done", "message": "No new games.", "percent": 100})
+        return
+
+    # Open Stockfish (one instance, multi-threaded)
+    threads = settings.resolved_threads
+    hash_mb = settings.hash_mb
+    print(f"\n  Analyzing {len(new_games)} game(s) with Stockfish ({threads} threads, {hash_mb}MB hash)...")
+    print("  This may take several minutes...\n")
+
+    engine = chess.engine.SimpleEngine.popen_uci(str(sf_path))
+    engine.configure({"Threads": threads, "Hash": hash_mb})
+
+    try:
+        wall_start = _time.time()
+        done_count = 0
+        total_tasks = len(new_games)
+
+        for game, game_id, player_color in new_games:
+            done_count += 1
+            white = game.headers.get("White", "?")
+            black = game.headers.get("Black", "?")
+            label = f"{white} vs {black}"
+
+            start = _time.time()
+            try:
+                game_data = collect_game_data(
+                    game, engine, player_color, settings, lichess_token,
+                )
+            except Exception as exc:
+                print(f"  [{done_count}/{total_tasks}] Error analyzing {label}: {exc}")
+                continue
+
+            elapsed = _time.time() - start
+
+            # Store analysis duration for ETA estimation
+            game_data["analysis_duration_s"] = round(elapsed, 1)
+
+            # Store in analysis data
+            store_id = game_id or f"unknown_{done_count}"
+            existing_data.setdefault("games", {})[store_id] = game_data
+            existing_data["player"] = {"lichess": lichess_user, "chesscom": chesscom_user or ""}
+
+            # Atomic write after each game (crash-safe)
+            save_analysis_data(existing_data, analysis_path)
+
+            # Progress
+            move_count = len(game_data["moves"])
+            wall_elapsed = _time.time() - wall_start
+            avg_per_game = wall_elapsed / done_count
+            remaining = avg_per_game * (total_tasks - done_count)
+            eta_min, eta_sec = divmod(int(remaining), 60)
+            eta_str = f"{eta_min}m{eta_sec:02d}s" if eta_min else f"{eta_sec}s"
+
+            print(
+                f"  [{done_count}/{total_tasks}] {label}... "
+                f"{move_count} moves ({elapsed:.1f}s) — ETA {eta_str}"
+            )
+            pct = 15 + int(75 * done_count / total_tasks)
+            _emit({
+                "phase": "analyze",
+                "message": f"Analyzing {done_count}/{total_tasks}: {label}",
+                "percent": pct,
+                "current": done_count,
+                "total": total_tasks,
+            })
+
+            # Check cancel
+            if cancel and cancel.is_set():
+                raise AnalysisInterrupted(
+                    f"Interrupted. Saved {done_count}/{total_tasks} games."
+                )
+    finally:
+        engine.quit()
+
+    total_games = len(existing_data.get("games", {}))
+    print(f"\n  Analysis data saved: {analysis_path}")
+    print(f"  Total games analyzed: {total_games}")
+    _emit({"phase": "done", "message": f"Analysis complete. {total_games} games.", "percent": 100})
