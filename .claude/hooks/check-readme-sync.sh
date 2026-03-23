@@ -9,6 +9,7 @@ INPUT=$(cat)
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 README_MARKER="$REPO_ROOT/.claude/.pending-readme-check"
 FLOWS_MARKER="$REPO_ROOT/.claude/.pending-flows-check"
+DOCS_MARKER="$REPO_ROOT/.claude/.pending-docs-check"
 
 # Extract the file path from the tool input
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
@@ -28,6 +29,15 @@ if [ ! -f "$FLOWS_MARKER" ]; then
   case "$FILE_PATH" in
     */src/chess_self_coach/trainer.py|*/src/chess_self_coach/server.py|*/src/chess_self_coach/lichess.py|*/src/chess_self_coach/config.py|*/src/chess_self_coach/cli.py|*/pwa/app.js|*/pwa/sw.js)
       touch "$FLOWS_MARKER"
+      ;;
+  esac
+fi
+
+# Docs marker: source files whose changes may require docs/*.md updates
+if [ ! -f "$DOCS_MARKER" ]; then
+  case "$FILE_PATH" in
+    */src/chess_self_coach/trainer.py|*/src/chess_self_coach/cli.py|*/pwa/app.js)
+      touch "$DOCS_MARKER"
       ;;
   esac
 fi

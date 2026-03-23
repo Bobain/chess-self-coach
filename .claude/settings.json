@@ -21,6 +21,10 @@
           {
             "type": "command",
             "command": "bash \"$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/check-flows-on-stop.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/check-docs-on-stop.sh\""
           }
         ]
       }
