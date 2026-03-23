@@ -25,22 +25,19 @@ import chess.pgn
 from chess_self_coach import worker_count
 from chess_self_coach.config import _find_project_root
 from chess_self_coach.cloud_eval import query_cloud_eval
+from chess_self_coach.constants import (
+    ANALYSIS_LIMITS,
+    DOMINATED_POSITION_CP,
+    ENDGAME_PIECES_MAX,
+    INACCURACY_THRESHOLD,
+    MATE_CP,
+    MAX_PV_MOVES,
+    MIDDLEGAME_PIECES_MAX,
+)
 from chess_self_coach.opening_explorer import query_opening
 from chess_self_coach.tablebase import MAX_PIECES, probe_position_full
 
-# Sentinel for mate scores (centipawns)
-_MATE_CP = 10000
-
 _log = logging.getLogger(__name__)
-
-
-# Default analysis limits matching trainer._analysis_limit() hardcoded values
-_DEFAULT_LIMITS: dict[str, dict[str, float | int]] = {
-    "kings_pawns_le7": {"time": 10.0, "depth": 60},
-    "pieces_le7": {"time": 10.0, "depth": 50},
-    "pieces_le12": {"time": 10.0, "depth": 40},
-    "default": {"depth": 18, "time": 10.0},
-}
 
 
 @dataclass
@@ -55,7 +52,7 @@ class AnalysisSettings:
 
     threads: int = 0
     hash_mb: int = 1024
-    limits: dict[str, dict[str, float | int]] = field(default_factory=lambda: dict(_DEFAULT_LIMITS))
+    limits: dict[str, dict[str, float | int]] = field(default_factory=lambda: dict(ANALYSIS_LIMITS))
 
     @classmethod
     def from_config(cls, config: dict) -> AnalysisSettings:
@@ -76,7 +73,7 @@ class AnalysisSettings:
         return cls(
             threads=threads,
             hash_mb=int(section.get("hash_mb", 1024)),
-            limits=section.get("limits", dict(_DEFAULT_LIMITS)),
+            limits=section.get("limits", dict(ANALYSIS_LIMITS)),
         )
 
     @property
@@ -195,11 +192,11 @@ def _analysis_limit_from_settings(
     kings_and_pawns = all(
         p.piece_type in (chess.KING, chess.PAWN) for p in board.piece_map().values()
     )
-    if kings_and_pawns and piece_count <= 7:
+    if kings_and_pawns and piece_count <= ENDGAME_PIECES_MAX:
         lim = limits.get("kings_pawns_le7", {})
-    elif piece_count <= 7:
+    elif piece_count <= ENDGAME_PIECES_MAX:
         lim = limits.get("pieces_le7", {})
-    elif piece_count <= 12:
+    elif piece_count <= MIDDLEGAME_PIECES_MAX:
         lim = limits.get("pieces_le12", {})
     else:
         lim = limits.get("default", {})
@@ -225,7 +222,7 @@ def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | 
     white = score.white()
     if white.is_mate():
         mate = white.mate()
-        cp = _MATE_CP if mate > 0 else -_MATE_CP
+        cp = MATE_CP if mate > 0 else -MATE_CP
         return cp, True, mate
     return white.score(), False, None
 
@@ -320,7 +317,7 @@ def _tb_to_eval(tb_data: dict, board_turn: chess.Color) -> dict:
         with null engine-specific fields.
     """
     tier = tb_data.get("tier", "DRAW")
-    cp = _MATE_CP if tier == "WIN" else (-_MATE_CP if tier == "LOSS" else 0)
+    cp = MATE_CP if tier == "WIN" else (-MATE_CP if tier == "LOSS" else 0)
     if board_turn == chess.BLACK:
         cp = -cp
 
@@ -357,7 +354,7 @@ def _cloud_eval_to_eval(cloud_data: dict, board: chess.Board) -> dict:
     if "mate" in pv_entry:
         mate_in = pv_entry["mate"]
         is_mate = True
-        score_cp = _MATE_CP if mate_in > 0 else -_MATE_CP
+        score_cp = MATE_CP if mate_in > 0 else -MATE_CP
 
     # PV: space-separated UCI moves
     pv_uci_str = pv_entry.get("moves", "")
@@ -600,12 +597,12 @@ def collect_game_data(
                 else:
                     cp_loss = max(0, after_cp - before_cp)
 
-            # --- Eval after best move (only if cp_loss >= 50 and best differs) ---
+            # --- Eval after best move (only if cp_loss >= INACCURACY_THRESHOLD and best differs) ---
             t0 = _time.time()
             eval_after_best: dict | None = None
             _eab_src: str | None = None
             best_uci = eval_before.get("best_move_uci")
-            if cp_loss < 50:
+            if cp_loss < INACCURACY_THRESHOLD:
                 _eab_src = None  # skip: not needed for training data
             elif best_uci and best_uci != actual_move.uci():
                 best_move_obj = chess.Move.from_uci(best_uci)
@@ -1051,9 +1048,6 @@ def annotate_and_derive(
 
     from chess_self_coach.config import _find_project_root, load_config
     from chess_self_coach.trainer import (
-        BLUNDER_THRESHOLD,
-        INACCURACY_THRESHOLD,
-        MISTAKE_THRESHOLD,
         _classify_mistake,
         _detect_game_phase,
         _format_score_cp,
@@ -1136,9 +1130,9 @@ def annotate_and_derive(
                 player_cp = score_before_cp if player_color == "white" else -score_before_cp
                 player_cp_after = score_after_cp if player_color == "white" else -score_after_cp
                 is_mate = eval_before.get("is_mate", False)
-                if player_cp < -500 and player_cp_after < -500 and not is_mate:
+                if player_cp < -DOMINATED_POSITION_CP and player_cp_after < -DOMINATED_POSITION_CP and not is_mate:
                     continue  # Already lost
-                if player_cp > 500 and player_cp_after > 500:
+                if player_cp > DOMINATED_POSITION_CP and player_cp_after > DOMINATED_POSITION_CP:
                     continue  # Already won
 
             was_mate = eval_before.get("is_mate", False)
@@ -1187,7 +1181,7 @@ def annotate_and_derive(
                 "category": category,
                 "explanation": explanation,
                 "acceptable_moves": [best_san] if best_san else [],
-                "pv": pv[:10] if not was_mate else pv,
+                "pv": pv[:MAX_PV_MOVES] if not was_mate else pv,
                 "game": game_info,
                 "clock": {
                     "player": clock.get("player"),

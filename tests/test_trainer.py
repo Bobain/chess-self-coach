@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import chess
 
-from chess_self_coach.trainer import (
+from chess_self_coach.constants import (
     BLUNDER_THRESHOLD,
     INACCURACY_THRESHOLD,
     MISTAKE_THRESHOLD,
+)
+from chess_self_coach.trainer import (
     _analysis_limit,
     _classify_mistake,
     _format_score_cp,

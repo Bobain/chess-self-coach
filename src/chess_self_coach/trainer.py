@@ -14,16 +14,18 @@ from pathlib import Path
 import chess
 import chess.engine
 
-from chess_self_coach.analysis import _atomic_write_json
+from chess_self_coach.analysis import _analysis_limit_from_settings, _atomic_write_json
 from chess_self_coach.config import _find_project_root
-
-# Centipawn loss thresholds
-BLUNDER_THRESHOLD = 200
-MISTAKE_THRESHOLD = 100
-INACCURACY_THRESHOLD = 50
-
-# Sentinel for mate scores (centipawns)
-_MATE_CP = 10000
+from chess_self_coach.constants import (
+    ANALYSIS_LIMITS,
+    ANALYSIS_TIME_LIMIT,
+    BLUNDER_THRESHOLD,
+    DOMINATED_POSITION_CP,
+    INACCURACY_THRESHOLD,
+    MATE_CP,
+    MAX_PV_MOVES,
+    MISTAKE_THRESHOLD,
+)
 
 
 def _analysis_limit(board: chess.Board, default_depth: int) -> chess.engine.Limit:
@@ -33,18 +35,13 @@ def _analysis_limit(board: chess.Board, default_depth: int) -> chess.engine.Limi
     and Stockfish NNUE is weakest here (opposition, zugzwang, key squares).
     For positions <= 7 pieces, this is mainly a fallback when the Lichess
     tablebase API is unavailable.
+
+    Delegates to _analysis_limit_from_settings with ANALYSIS_LIMITS,
+    overriding the default bracket depth with the caller's value.
     """
-    piece_count = len(board.piece_map())
-    kings_and_pawns_only = all(
-        p.piece_type in (chess.KING, chess.PAWN) for p in board.piece_map().values()
-    )
-    if kings_and_pawns_only and piece_count <= 7:
-        return chess.engine.Limit(time=10.0, depth=60)
-    if piece_count <= 7:
-        return chess.engine.Limit(time=10.0, depth=50)
-    if piece_count <= 12:
-        return chess.engine.Limit(time=10.0, depth=40)
-    return chess.engine.Limit(time=10.0, depth=default_depth)
+    limits = dict(ANALYSIS_LIMITS)
+    limits["default"] = {"depth": default_depth, "time": ANALYSIS_TIME_LIMIT}
+    return _analysis_limit_from_settings(board, limits)
 
 
 def _format_score_cp(cp: int | None) -> str:
@@ -98,7 +95,7 @@ def _format_cp_loss_human(cp_loss: int, was_mate: bool = False) -> str:
 
     Returns human-readable loss string.
     """
-    if cp_loss >= _MATE_CP or was_mate:
+    if cp_loss >= MATE_CP or was_mate:
         return "a forced mate"
     pawns = cp_loss / 100.0
     if pawns >= 5:
@@ -134,7 +131,7 @@ def generate_explanation(
     Returns:
         Explanation string.
     """
-    score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= _MATE_CP
+    score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= MATE_CP
 
     # Build opening sentence with appropriate phrasing
     if was_mate and score_after_cp is not None and abs(score_after_cp) < 50:
@@ -279,7 +276,7 @@ def _generate_context(
 
     Includes game phase, advantage context, and what went wrong.
     """
-    score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= _MATE_CP
+    score_after_is_mate = score_after_cp is not None and abs(score_after_cp) >= MATE_CP
 
     phase = _detect_game_phase(fen) if fen else ""
     color_label = f"playing as {player_color.capitalize()}"
@@ -297,7 +294,7 @@ def _generate_context(
         return f"{prefix} Your move threw away a forced mate."
     if score_after_is_mate:
         return f"{prefix} Your move allowed your opponent to force checkmate."
-    if cp_loss >= _MATE_CP:
+    if cp_loss >= MATE_CP:
         return f"{prefix} Your move allowed your opponent to force checkmate."
 
     pawns = cp_loss / 100.0
@@ -354,9 +351,9 @@ def refresh_explanations() -> None:
         mul = 1 if p.get("player_color") == "white" else -1
         player_before = sb * mul
         player_after = sa * mul
-        if player_before > 500 and player_after > 500:
+        if player_before > DOMINATED_POSITION_CP and player_after > DOMINATED_POSITION_CP:
             continue
-        if player_before < -500 and player_after < -500:
+        if player_before < -DOMINATED_POSITION_CP and player_after < -DOMINATED_POSITION_CP:
             continue
         filtered.append(p)
     positions = filtered
@@ -402,7 +399,7 @@ def refresh_explanations() -> None:
         except (ValueError, TypeError):
             score_after_cp = None
 
-        was_mate = score_before_cp is not None and abs(score_before_cp) >= _MATE_CP
+        was_mate = score_before_cp is not None and abs(score_before_cp) >= MATE_CP
 
         new_explanation = generate_explanation(
             board, pos["player_move"], pos["best_move"],

@@ -7,11 +7,11 @@ from pathlib import Path
 
 from chess_self_coach.analysis import (
     AnalysisSettings,
-    _DEFAULT_LIMITS,
     load_analysis_data,
     save_analysis_data,
     settings_match,
 )
+from chess_self_coach.constants import ANALYSIS_LIMITS
 
 
 # --- AnalysisSettings.from_config ---
@@ -22,7 +22,7 @@ def test_from_config_empty():
     s = AnalysisSettings.from_config({})
     assert s.threads == 0  # auto
     assert s.hash_mb == 1024
-    assert s.limits == _DEFAULT_LIMITS
+    assert s.limits == ANALYSIS_LIMITS
 
 
 def test_from_config_explicit():

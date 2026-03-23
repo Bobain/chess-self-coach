@@ -15,6 +15,8 @@ from dataclasses import dataclass
 import chess
 import requests
 
+from chess_self_coach.constants import ENDGAME_PIECES_MAX
+
 # API endpoint (public, no auth required)
 _API_URL = "https://tablebase.lichess.ovh/standard"
 
@@ -22,7 +24,7 @@ _API_URL = "https://tablebase.lichess.ovh/standard"
 _TIMEOUT = 5.0
 
 # Maximum pieces for tablebase lookup
-MAX_PIECES = 7
+MAX_PIECES = ENDGAME_PIECES_MAX
 
 # Map API categories to WDL tiers
 _CATEGORY_TIERS: dict[str, str] = {
