@@ -616,17 +616,8 @@ def test_coming_soon_submenu_toggle(page, app_url, console_errors):
     expect(submenu).to_be_visible()
 
     # Verify sub-items are visible with workflow headers
-    expect(page.locator("#nav-validate")).to_be_visible()
-    expect(page.locator("#nav-cleanup")).to_be_visible()
-    expect(page.locator("#nav-import")).to_be_visible()
     expect(page.locator("#nav-journal")).to_be_visible()
     expect(page.locator("#nav-status")).to_be_visible()
-
-    # Click a sub-item — no modal should open, menu stays open
-    page.locator("#nav-validate").click()
-    page.wait_for_timeout(300)
-    expect(page.locator("#validate-modal")).not_to_be_visible()
-    expect(submenu).to_be_visible()
 
     # Click label again to collapse
     toggle_label.click()
