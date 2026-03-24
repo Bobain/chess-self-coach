@@ -2859,6 +2859,19 @@ async function init() {
     else if (e.key === 'End') { e.preventDefault(); goToMove(reviewGame.moves.length); }
   });
 
+  // Close modals on Escape key or backdrop click
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const open = document.querySelector('.modal:not(.hidden)');
+      if (open) open.classList.add('hidden');
+    }
+  });
+  document.querySelectorAll('.modal').forEach((modal) => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+  });
+
   // Resize handler for score chart
   window.addEventListener('resize', () => {
     if (appView === 'review' && reviewGame) renderScoreChart();

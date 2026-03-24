@@ -497,6 +497,8 @@ cg-container {
   padding: 1.5rem;
   border-radius: 12px;
   width: min(90vw, 400px);
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .modal-content h2 {
