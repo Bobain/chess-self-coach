@@ -92,29 +92,26 @@ app = FastAPI(
 def _gh_create_issue(title: str, body: str) -> None:
     """Create a GitHub issue for an unhandled server error.
 
-    Only runs when `gh` CLI is available and the repo owner is Bobain.
+    Only runs when `gh` CLI is available and authenticated with write access.
     Deduplicates by checking if an open issue with the same title exists.
+    No explicit permission check — if the user lacks write access, `gh` fails
+    silently (caught by the except).
     """
     if not shutil.which("gh"):
         return
 
     try:
-        owner = subprocess.run(
-            ["gh", "repo", "view", "--json", "owner", "-q", ".owner.login"],
-            capture_output=True, text=True, timeout=5,
-        )
-        if owner.returncode != 0 or owner.stdout.strip().lower() != "bobain":
-            return
-
         existing = subprocess.run(
-            ["gh", "issue", "list", "--state", "open", "--search", title, "--json", "title", "-q", ".[].title"],
+            ["gh", "issue", "list", "--state", "open", "--search", title,
+             "--json", "title", "-q", ".[].title"],
             capture_output=True, text=True, timeout=5,
         )
         if existing.returncode == 0 and title in existing.stdout:
             return
 
         subprocess.run(
-            ["gh", "issue", "create", "--title", title, "--body", body, "--label", "bug"],
+            ["gh", "issue", "create", "--title", title, "--body", body,
+             "--label", "bug"],
             capture_output=True, timeout=10,
         )
     except Exception:
