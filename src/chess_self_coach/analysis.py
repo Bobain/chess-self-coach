@@ -24,8 +24,8 @@ import chess.engine
 import chess.pgn
 
 from chess_self_coach import worker_count
-from chess_self_coach.config import _find_project_root
 from chess_self_coach.cloud_eval import query_cloud_eval
+from chess_self_coach.config import _find_project_root
 from chess_self_coach.constants import (
     ANALYSIS_LIMITS,
     ANALYSIS_TIME_LIMIT,
@@ -54,7 +54,9 @@ class AnalysisSettings:
 
     threads: int = 0
     hash_mb: int = 1024
-    limits: dict[str, dict[str, float | int]] = field(default_factory=lambda: dict(ANALYSIS_LIMITS))
+    limits: dict[str, dict[str, float | int]] = field(
+        default_factory=lambda: dict(ANALYSIS_LIMITS)
+    )
 
     @classmethod
     def from_config(cls, config: dict) -> AnalysisSettings:
@@ -207,7 +209,11 @@ def _analysis_limit_from_settings(
     depth = int(lim["depth"]) if "depth" in lim else None
     # Always enforce a time cap — use config value or fall back to ANALYSIS_TIME_LIMIT
     time = float(lim.get("time", ANALYSIS_TIME_LIMIT))
-    return chess.engine.Limit(depth=depth, time=time) if lim else chess.engine.Limit(depth=18)
+    return (
+        chess.engine.Limit(depth=depth, time=time)
+        if lim
+        else chess.engine.Limit(depth=18)
+    )
 
 
 def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | None]:
@@ -243,11 +249,20 @@ def _extract_eval(info: dict, board: chess.Board) -> dict:
     score = info.get("score")
     if score is None:
         return {
-            "score_cp": None, "is_mate": False, "mate_in": None,
-            "depth": None, "seldepth": None, "nodes": None, "nps": None,
-            "time_ms": None, "tbhits": None, "hashfull": None,
-            "pv_san": [], "pv_uci": [],
-            "best_move_san": None, "best_move_uci": None,
+            "score_cp": None,
+            "is_mate": False,
+            "mate_in": None,
+            "depth": None,
+            "seldepth": None,
+            "nodes": None,
+            "nps": None,
+            "time_ms": None,
+            "tbhits": None,
+            "hashfull": None,
+            "pv_san": [],
+            "pv_uci": [],
+            "best_move_san": None,
+            "best_move_uci": None,
         }
 
     score_cp, is_mate, mate_in = _score_to_cp(score)
@@ -291,7 +306,6 @@ def _extract_eval(info: dict, board: chess.Board) -> dict:
     }
 
 
-
 def _tb_to_eval(tb_data: dict, board_turn: chess.Color) -> dict:
     """Convert tablebase data to a pseudo eval_before/eval_after dict.
 
@@ -313,8 +327,13 @@ def _tb_to_eval(tb_data: dict, board_turn: chess.Color) -> dict:
         "score_cp": cp,
         "is_mate": tier != "DRAW" and tb_data.get("dtm") is not None,
         "mate_in": tb_data.get("dtm"),
-        "depth": None, "seldepth": None, "nodes": None, "nps": None,
-        "time_ms": None, "tbhits": None, "hashfull": None,
+        "depth": None,
+        "seldepth": None,
+        "nodes": None,
+        "nps": None,
+        "time_ms": None,
+        "tbhits": None,
+        "hashfull": None,
         "pv_san": [best_move_data.get("san")] if best_move_data.get("san") else [],
         "pv_uci": [best_move_data.get("uci")] if best_move_data.get("uci") else [],
         "best_move_san": best_move_data.get("san"),
@@ -366,8 +385,12 @@ def _cloud_eval_to_eval(cloud_data: dict, board: chess.Board) -> dict:
         "is_mate": is_mate,
         "mate_in": mate_in,
         "depth": cloud_data.get("depth"),
-        "seldepth": None, "nodes": None, "nps": None,
-        "time_ms": None, "tbhits": None, "hashfull": None,
+        "seldepth": None,
+        "nodes": None,
+        "nps": None,
+        "time_ms": None,
+        "tbhits": None,
+        "hashfull": None,
         "pv_san": pv_san,
         "pv_uci": pv_uci,
         "best_move_san": best_san,
@@ -491,7 +514,11 @@ def collect_game_data(
                     eval_before = _cloud_eval_to_eval(cloud, board)
                     _eb_src = "cloud_eval"
                 else:
-                    info = engine.analyse(board, _analysis_limit_from_settings(board, limits), game=game_id)
+                    info = engine.analyse(
+                        board,
+                        _analysis_limit_from_settings(board, limits),
+                        game=game_id,
+                    )
                     eval_before = _extract_eval(info, board)
                     _eb_src = "sf_fallback"
             eval_before_ms = (_time.time() - t0) * 1000
@@ -504,7 +531,9 @@ def collect_game_data(
                 _ea_src = "cloud_eval"
             else:
                 info_after = engine.analyse(
-                    board_after, _analysis_limit_from_settings(board_after, limits), game=game_id,
+                    board_after,
+                    _analysis_limit_from_settings(board_after, limits),
+                    game=game_id,
                 )
                 eval_after = _extract_eval(info_after, board_after)
                 _ea_src = "sf_fallback"
@@ -512,9 +541,14 @@ def collect_game_data(
 
             _log.info(
                 "  ply %d %s: opening — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s)",
-                ply + 1, board.san(actual_move),
-                _eb_src, eval_before_ms, eval_before.get("score_cp"),
-                _ea_src, eval_after_ms, eval_after.get("score_cp"),
+                ply + 1,
+                board.san(actual_move),
+                _eb_src,
+                eval_before_ms,
+                eval_before.get("score_cp"),
+                _ea_src,
+                eval_after_ms,
+                eval_after.get("score_cp"),
             )
 
             cached_eval = eval_after
@@ -536,13 +570,19 @@ def collect_game_data(
                 _eb_src = "cache"
                 if cached_tb is not None:
                     tb_before = cached_tb
-                    eval_source = "tablebase" if cached_eval.get("depth") is None else "stockfish+tablebase"
+                    eval_source = (
+                        "tablebase"
+                        if cached_eval.get("depth") is None
+                        else "stockfish+tablebase"
+                    )
             elif tb_before:
                 eval_before = _tb_to_eval(tb_before, board.turn)
                 eval_source = "tablebase"
                 _eb_src = "tablebase"
             else:
-                info = engine.analyse(board, _analysis_limit_from_settings(board, limits), game=game_id)
+                info = engine.analyse(
+                    board, _analysis_limit_from_settings(board, limits), game=game_id
+                )
                 eval_before = _extract_eval(info, board)
                 _eb_src = "stockfish"
                 if tb_before:
@@ -564,7 +604,9 @@ def collect_game_data(
                 _ea_src = "tablebase"
             else:
                 info_after = engine.analyse(
-                    board_after, _analysis_limit_from_settings(board_after, limits), game=game_id,
+                    board_after,
+                    _analysis_limit_from_settings(board_after, limits),
+                    game=game_id,
                 )
                 eval_after = _extract_eval(info_after, board_after)
                 cached_eval = eval_after
@@ -588,9 +630,15 @@ def collect_game_data(
 
             _log.info(
                 "  ply %d %s: %s — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s) cp_loss=%d",
-                ply + 1, board.san(actual_move), eval_source,
-                _eb_src, eval_before_ms, eval_before.get("score_cp"),
-                _ea_src, eval_after_ms, eval_after.get("score_cp"),
+                ply + 1,
+                board.san(actual_move),
+                eval_source,
+                _eb_src,
+                eval_before_ms,
+                eval_before.get("score_cp"),
+                _ea_src,
+                eval_after_ms,
+                eval_after.get("score_cp"),
                 cp_loss,
             )
 
@@ -647,8 +695,10 @@ def collect_game_data(
     # --- Build game-level dict ---
     p_color = "white" if player_color == chess.WHITE else "black"
     game_id = game.headers.get("Link", game.headers.get("Site", ""))
-    source = "lichess" if "lichess.org" in game_id else (
-        "chess.com" if "chess.com" in game_id else "unknown"
+    source = (
+        "lichess"
+        if "lichess.org" in game_id
+        else ("chess.com" if "chess.com" in game_id else "unknown")
     )
 
     return {
@@ -845,11 +895,13 @@ def analyze_games(
     cap = max(0, max_games - len(existing_games)) + reanalyzed
     new_games = new_games[:cap]
 
-    _emit({
-        "phase": "fetch",
-        "message": f"Found {len(all_games)} game(s) ({len(new_games)} to analyze)",
-        "percent": 10,
-    })
+    _emit(
+        {
+            "phase": "fetch",
+            "message": f"Found {len(all_games)} game(s) ({len(new_games)} to analyze)",
+            "percent": 10,
+        }
+    )
 
     if not new_games:
         print("  No new games to analyze.")
@@ -859,7 +911,9 @@ def analyze_games(
     # Open Stockfish (one instance, multi-threaded)
     threads = settings.resolved_threads
     hash_mb = settings.hash_mb
-    print(f"\n  Analyzing {len(new_games)} game(s) with Stockfish ({threads} threads, {hash_mb}MB hash)...")
+    print(
+        f"\n  Analyzing {len(new_games)} game(s) with Stockfish ({threads} threads, {hash_mb}MB hash)..."
+    )
     print("  This may take several minutes...\n")
 
     engine = chess.engine.SimpleEngine.popen_uci(str(sf_path))
@@ -892,7 +946,11 @@ def analyze_games(
             start = _time.time()
             try:
                 game_data = collect_game_data(
-                    game, engine, player_color, settings, lichess_token,
+                    game,
+                    engine,
+                    player_color,
+                    settings,
+                    lichess_token,
                     game_id=game_id,
                 )
             except Exception as exc:
@@ -910,7 +968,11 @@ def analyze_games(
             _other = [m for m in _moves if m["eval_source"] != "opening_explorer"]
             _log.info(
                 "Game %d/%d: %s — %d moves in %.1fs",
-                done_count, total_tasks, label, len(_moves), elapsed,
+                done_count,
+                total_tasks,
+                label,
+                len(_moves),
+                elapsed,
             )
             if _opening:
                 _op_ms = sum(
@@ -920,8 +982,7 @@ def analyze_games(
                 _log.info("  Opening: %d moves in %.1fs", len(_opening), _op_ms / 1000)
             if _other:
                 _ot_ms = sum(
-                    m["timing_ms"]["eval_before"]
-                    + m["timing_ms"]["eval_after"]
+                    m["timing_ms"]["eval_before"] + m["timing_ms"]["eval_after"]
                     for m in _other
                 )
                 _src_counts: dict[str, int] = {}
@@ -931,13 +992,18 @@ def analyze_games(
                 _src_str = ", ".join(f"{k}: {v}" for k, v in _src_counts.items())
                 _log.info(
                     "  Non-opening: %d moves (%s) in %.1fs",
-                    len(_other), _src_str, _ot_ms / 1000,
+                    len(_other),
+                    _src_str,
+                    _ot_ms / 1000,
                 )
 
             # Store in analysis data
             store_id = game_id or f"unknown_{done_count}"
             existing_data.setdefault("games", {})[store_id] = game_data
-            existing_data["player"] = {"lichess": lichess_user, "chesscom": chesscom_user or ""}
+            existing_data["player"] = {
+                "lichess": lichess_user,
+                "chesscom": chesscom_user or "",
+            }
 
             # Atomic write after each game (crash-safe)
             save_analysis_data(existing_data, analysis_path)
@@ -955,13 +1021,15 @@ def analyze_games(
                 f"{move_count} moves ({elapsed:.1f}s) — ETA {eta_str}"
             )
             pct = 15 + int(75 * done_count / total_tasks)
-            _emit({
-                "phase": "analyze",
-                "message": f"Analyzing {done_count}/{total_tasks}: {label}",
-                "percent": pct,
-                "current": done_count,
-                "total": total_tasks,
-            })
+            _emit(
+                {
+                    "phase": "analyze",
+                    "message": f"Analyzing {done_count}/{total_tasks}: {label}",
+                    "percent": pct,
+                    "current": done_count,
+                    "total": total_tasks,
+                }
+            )
 
             # Check cancel
             if cancel and cancel.is_set():
@@ -974,7 +1042,13 @@ def analyze_games(
     total_games = len(existing_data.get("games", {}))
     print(f"\n  Analysis data saved: {analysis_path}")
     print(f"  Total games analyzed: {total_games}")
-    _emit({"phase": "done", "message": f"Analysis complete. {total_games} games.", "percent": 100})
+    _emit(
+        {
+            "phase": "done",
+            "message": f"Analysis complete. {total_games} games.",
+            "percent": 100,
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1049,7 +1123,8 @@ def annotate_and_derive(
             "id": game_id,
             "source": headers.get("source", "unknown"),
             "opponent": (
-                headers.get("black", "?") if player_color == "white"
+                headers.get("black", "?")
+                if player_color == "white"
                 else headers.get("white", "?")
             ),
             "date": headers.get("date", "?"),
@@ -1079,12 +1154,23 @@ def annotate_and_derive(
 
             # Pedagogical filter: skip already-lost or already-won
             if score_before_cp is not None and score_after_cp is not None:
-                player_cp = score_before_cp if player_color == "white" else -score_before_cp
-                player_cp_after = score_after_cp if player_color == "white" else -score_after_cp
+                player_cp = (
+                    score_before_cp if player_color == "white" else -score_before_cp
+                )
+                player_cp_after = (
+                    score_after_cp if player_color == "white" else -score_after_cp
+                )
                 is_mate = eval_before.get("is_mate", False)
-                if player_cp < -DOMINATED_POSITION_CP and player_cp_after < -DOMINATED_POSITION_CP and not is_mate:
+                if (
+                    player_cp < -DOMINATED_POSITION_CP
+                    and player_cp_after < -DOMINATED_POSITION_CP
+                    and not is_mate
+                ):
                     continue  # Already lost
-                if player_cp > DOMINATED_POSITION_CP and player_cp_after > DOMINATED_POSITION_CP:
+                if (
+                    player_cp > DOMINATED_POSITION_CP
+                    and player_cp_after > DOMINATED_POSITION_CP
+                ):
                     continue  # Already won
 
             was_mate = eval_before.get("is_mate", False)
@@ -1099,19 +1185,31 @@ def annotate_and_derive(
             # Generate explanation
             board = chess.Board(fen) if fen else chess.Board()
             explanation = generate_explanation(
-                board, actual_san, best_san or actual_san, cp_loss, category,
-                was_mate=was_mate, score_after_cp=score_after_cp,
+                board,
+                actual_san,
+                best_san or actual_san,
+                cp_loss,
+                category,
+                was_mate=was_mate,
+                score_after_cp=score_after_cp,
             )
 
             # Generate context
             context = _generate_context(
-                category, cp_loss, was_mate, score_after_cp,
-                fen=fen, score_before_cp=score_before_cp, player_color=player_color,
+                category,
+                cp_loss,
+                was_mate,
+                score_after_cp,
+                fen=fen,
+                score_before_cp=score_before_cp,
+                player_color=player_color,
             )
 
             # Time pressure context
             clock = move_data.get("clock", {})
-            time_ctx = _time_pressure_context(clock.get("player"), clock.get("opponent"))
+            time_ctx = _time_pressure_context(
+                clock.get("player"), clock.get("opponent")
+            )
             if time_ctx:
                 context = f"{context} {time_ctx}"
 
@@ -1170,12 +1268,21 @@ def annotate_and_derive(
 
             # Preserve SRS state from existing training data
             if pos_id in existing_positions:
-                pos["srs"] = existing_positions[pos_id].get("srs", {
-                    "interval": 0, "ease": 2.5, "next_review": today, "history": [],
-                })
+                pos["srs"] = existing_positions[pos_id].get(
+                    "srs",
+                    {
+                        "interval": 0,
+                        "ease": 2.5,
+                        "next_review": today,
+                        "history": [],
+                    },
+                )
             else:
                 pos["srs"] = {
-                    "interval": 0, "ease": 2.5, "next_review": today, "history": [],
+                    "interval": 0,
+                    "ease": 2.5,
+                    "next_review": today,
+                    "history": [],
                 }
 
             positions[pos_id] = pos
