@@ -217,8 +217,34 @@ Section 6 (UX Improvements) ← independent, parallel with all sections
 ## Cleanup TODO
 
 - [ ] Remove "Coming soon" submenu from PWA nav — only "Project status" remains, not worth a submenu. Either promote it to a regular nav item or remove it entirely.
-- [ ] Show fetched-but-unanalyzed games in game list — backend `GET /api/games` already returns a unified list (cached + analyzed), but PWA only reads `analysisData.games`. Wire PWA to use the unified endpoint so users see all their fetched games, with a visual indicator for unanalyzed ones (greyed out, "Not analyzed" badge).
-- [ ] Simplify settings/config UX — current split between "Settings" (analysis engine params) and "Edit config" (players + analysis) is confusing. Needs UX audit: merge into one view, clearer labels, hide advanced params behind a toggle.
+- [x] Show fetched-but-unanalyzed games in game list — PWA now fetches `/api/games` in [app] mode and appends unanalyzed games (greyed out, "Not analyzed" badge, selectable for batch analysis).
+- [ ] Simplify settings/config UX — **audit findings (2026-03-24)**:
+
+  **Problem: 3 separate modals, overlapping concerns, jargon labels**
+
+  The app has three config/settings surfaces that confuse every persona:
+
+  1. **"Settings" modal** (both modes, nav-settings): `Positions per session`, `Analysis depth`, `Difficulty` — stored in localStorage.
+  2. **"Edit config" modal** (app-only, nav-config): `Lichess username`, `Chess.com username`, `Default analysis depth`, `Blunder threshold (cp)` — stored in config.json via `POST /api/config`.
+  3. **"Analysis Settings" modal** (app-only, nav-refresh): `Threads`, `Hash (MB)`, 4 depth/time limit rows (K+P endgame / Endgame / Late middle / Default), `Games to analyze` — stored in config.json via `POST /api/analysis/settings`.
+
+  **Specific issues:**
+
+  - **"Analysis depth" appears in 2 places** with different meanings: Settings modal controls WASM Stockfish depth for live training (browser), while Edit config's "Default analysis depth" controls batch analysis depth (backend). A user changing one expects the other to change too.
+  - **"Blunder threshold (cp)"** in Edit config is opaque — a ~1000 Elo player does not know what centipawns are or what "1.0" means. No tooltip, no explanation, no slider with human-readable labels.
+  - **Analysis Settings modal is overwhelming**: 4 rows of depth/time limits by piece-count bracket (kings\_pawns\_le7, pieces\_le7, pieces\_le12, default) with raw numeric inputs. Labels like "K+P endgame" and "Late middle" are engine jargon. A beginner (Leo) would close this modal immediately. Even a grinder (Samir) just wants "fast/balanced/deep" presets.
+  - **"Threads" and "Hash (MB)"** are system-level engine settings that 99% of users should never touch. No explanation of what they do or what the defaults mean.
+  - **Menu naming is inconsistent**: "Settings" for training preferences, "Edit config" for account/analysis config, "Refresh games" opens "Analysis Settings". The mental model is unclear.
+  - **No save confirmation in Settings modal**: closing the modal saves silently. Edit config has a "Save" button. Analysis Settings modal's "Start analysis" both saves AND starts a job — surprising.
+  - **"Reset Progress" is a destructive button** with the same visual weight as "Close" in the Settings modal. It's red, but it's in the same row with no undo.
+
+  **Proposed fix (3 tiers):**
+
+  **Quick win**: Add descriptions/tooltips to all fields. Add "Accuracy" label to percentage. Add `title` attributes to "Blunder threshold", "Threads", "Hash". Replace "K+P endgame" with "King + Pawns only (7 or fewer pieces)".
+
+  **Medium**: Merge "Settings" and "Edit config" into one "Settings" modal with sections: "Account" (usernames), "Training" (session size, difficulty), "Analysis" (depth, threshold with human labels). Move "Reset Progress" to a separate danger zone with confirmation.
+
+  **Major**: Replace Analysis Settings 4-row depth/time grid with 3 presets: "Quick (shallow, ~30s/game)", "Balanced (default, ~2min/game)", "Deep (thorough, ~5min/game)" with an "Advanced" toggle that reveals the raw numbers. Hide threads/hash behind "Advanced" too.
 
 ## Existing but undocumented features
 These are implemented and working but not tracked as roadmap items:
