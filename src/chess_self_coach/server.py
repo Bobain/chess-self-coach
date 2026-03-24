@@ -115,68 +115,6 @@ class StatsResponse(BaseModel):
     by_source: dict[str, int]
 
 
-class ChapterResult(BaseModel):
-    """Validation result for one PGN chapter."""
-
-    name: str
-    errors: list[str]
-    warnings: list[str]
-    infos: list[str]
-
-
-class FileValidation(BaseModel):
-    """Validation result for one PGN file."""
-
-    file: str
-    chapters: list[ChapterResult]
-
-
-class ValidateResponse(BaseModel):
-    """Response body for /api/pgn/validate."""
-
-    files: list[FileValidation]
-
-
-class PgnFileStatus(BaseModel):
-    """Status of one PGN file."""
-
-    file: str
-    modified: str
-    chapters: int
-    study_configured: bool
-
-
-class StockfishInfo(BaseModel):
-    """Stockfish availability info."""
-
-    available: bool
-    version: str
-
-
-class ProjectStatusResponse(BaseModel):
-    """Response body for /api/pgn/status."""
-
-    config_ok: bool
-    stockfish: StockfishInfo
-    has_token: bool
-    files: list[PgnFileStatus]
-    suggestions: list[str]
-
-
-class StudyCleanup(BaseModel):
-    """Cleanup result for one study."""
-
-    study: str
-    deleted: int
-
-
-class CleanupResponse(BaseModel):
-    """Response body for /api/pgn/cleanup."""
-
-    results: list[StudyCleanup]
-    total_deleted: int
-
-
 # --- API routes ---
 
 
@@ -232,70 +170,6 @@ async def train_stats() -> StatsResponse:
             detail="No training data. Run: chess-self-coach train --prepare",
         )
     return StatsResponse(**stats)
-
-
-@app.post("/api/pgn/validate")
-async def pgn_validate() -> ValidateResponse:
-    """Validate all PGN files in the project root."""
-    from chess_self_coach.validate import validate_pgn
-
-    pgn_files = sorted(_project_root.glob("*.pgn"))
-    if not pgn_files:
-        raise HTTPException(status_code=404, detail="No PGN files found")
-
-    results = []
-    for pgn_path in pgn_files:
-        chapters = validate_pgn(pgn_path)
-        results.append(FileValidation(
-            file=pgn_path.name,
-            chapters=[ChapterResult(**ch) for ch in chapters],
-        ))
-    return ValidateResponse(files=results)
-
-
-@app.get("/api/pgn/status")
-async def pgn_status() -> ProjectStatusResponse:
-    """Return project status: config, files, suggestions."""
-    from chess_self_coach.status import get_status_data
-
-    data = get_status_data(_project_root)
-    return ProjectStatusResponse(**data)
-
-
-@app.post("/api/pgn/cleanup")
-async def pgn_cleanup() -> CleanupResponse:
-    """Clean up empty default chapters from all configured Lichess studies."""
-    import json
-
-    from chess_self_coach.config import load_lichess_token
-    from chess_self_coach.lichess import cleanup_study
-
-    # Check token
-    token = load_lichess_token(required=False)
-    if not token:
-        raise HTTPException(status_code=401, detail="Lichess token not configured")
-
-    # Load config
-    config_path = _project_root / "config.json"
-    if not config_path.exists():
-        raise HTTPException(status_code=404, detail="config.json not found")
-
-    with open(config_path) as f:
-        config = json.load(f)
-
-    studies = config.get("studies", {})
-    results = []
-    total = 0
-
-    for pgn_file, info in studies.items():
-        study_id = info.get("study_id", "")
-        if study_id.startswith("STUDY_ID"):
-            continue
-        deleted = cleanup_study(study_id, info.get("study_name", pgn_file))
-        results.append(StudyCleanup(study=pgn_file, deleted=deleted))
-        total += deleted
-
-    return CleanupResponse(results=results, total_deleted=total)
 
 
 # --- Config API ---
