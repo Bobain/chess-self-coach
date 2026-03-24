@@ -1,7 +1,7 @@
-"""Chess Opening Prep — CLI to manage a chess opening repertoire.
+"""Chess Self-Coach — learn from your chess mistakes.
 
-Automates Stockfish analysis of PGN files and synchronization
-with Lichess Studies for spaced-repetition drilling via Chessdriller.
+Fetches your games, analyzes them with Stockfish, and trains you
+on the correct moves with spaced repetition.
 """
 
 from __future__ import annotations

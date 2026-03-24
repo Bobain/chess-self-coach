@@ -2,13 +2,9 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import pytest
 
 from chess_self_coach.config import (
-    get_study_mapping,
     load_config,
     load_lichess_token,
 )
@@ -19,7 +15,6 @@ def test_load_config_valid(tmp_project, monkeypatch):
     monkeypatch.setattr("chess_self_coach.config._find_project_root", lambda: tmp_project)
     config = load_config()
     assert "stockfish" in config
-    assert "studies" in config
 
 
 def test_load_config_missing(tmp_path, monkeypatch):
@@ -61,24 +56,3 @@ def test_load_lichess_token_bad_prefix(tmp_project, monkeypatch):
     (tmp_project / ".env").write_text("LICHESS_API_TOKEN=bad_prefix_token\n")
     with pytest.raises(SystemExit):
         load_lichess_token()
-
-
-def test_get_study_mapping_found(tmp_project, monkeypatch):
-    """Configured study mapping is returned correctly."""
-    monkeypatch.setattr("chess_self_coach.config._find_project_root", lambda: tmp_project)
-    config = load_config()
-    mapping = get_study_mapping(config, "repertoire_blancs_gambit_dame_annote.pgn")
-    assert mapping["study_id"] == "abc123"
-    assert mapping["study_name"] == "Whites - Queen's Gambit"
-
-
-def test_get_study_mapping_not_configured(tmp_project, monkeypatch):
-    """Study with STUDY_ID_HERE triggers SystemExit."""
-    monkeypatch.setattr("chess_self_coach.config._find_project_root", lambda: tmp_project)
-    config = load_config()
-    config["studies"]["test.pgn"] = {
-        "study_id": "STUDY_ID_HERE",
-        "study_name": "Test",
-    }
-    with pytest.raises(SystemExit):
-        get_study_mapping(config, "test.pgn")
