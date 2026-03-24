@@ -84,13 +84,6 @@ The PWA provides a game-list-centric workflow:
 - Chess.com: [Tonigor1982](https://www.chess.com/member/Tonigor1982)
 - Target depth: essentials (5-6 moves + common deviations)
 
-### Coaching Journal (MANDATORY)
-
-After EVERY chess theory discussion (Q&A about openings, style, move choices, repertoire decisions):
-1. Create or update a topic file in `coaching/topics/YYYY-MM-DD-slug.md`
-2. Update `coaching/INDEX.md` with the new entry (categorized by opening)
-3. This is **AUTOMATIC** — do NOT wait for the user to ask
-
 ### UI Documentation
 - Step-by-step UI guides are in `guides/`
 - These guides are **evolutionary**: marked `[TO CONFIRM]` until validated by user

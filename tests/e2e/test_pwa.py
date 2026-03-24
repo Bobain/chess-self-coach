@@ -615,8 +615,7 @@ def test_coming_soon_submenu_toggle(page, app_url, console_errors):
     page.wait_for_timeout(300)
     expect(submenu).to_be_visible()
 
-    # Verify sub-items are visible with workflow headers
-    expect(page.locator("#nav-journal")).to_be_visible()
+    # Verify sub-items are visible
     expect(page.locator("#nav-status")).to_be_visible()
 
     # Click label again to collapse
@@ -703,27 +702,6 @@ def test_app_mode_config_modal(page, app_url, console_errors):
     log_text = "\n".join(console_errors["messages"])
     assert "[showConfig]" in log_text
     assert "[saveConfig]" in log_text
-
-
-def test_coming_soon_journal_not_clickable(page, app_url, console_errors):
-    """[App] mode: Journal is in Coming soon submenu and not clickable."""
-    page.goto(app_url)
-    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
-
-    # Open menu and expand Coming soon
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-    page.locator("#nav-coming-soon .nav-submenu-label").click()
-    page.wait_for_timeout(300)
-
-    # Journal should be visible in submenu
-    journal_item = page.locator("#nav-journal")
-    expect(journal_item).to_be_visible()
-
-    # Click journal — no modal should open
-    journal_item.click()
-    page.wait_for_timeout(300)
-    expect(page.locator("#journal-modal")).not_to_be_visible()
 
 
 def test_about_modal_opens_and_closes(page, pwa_url):

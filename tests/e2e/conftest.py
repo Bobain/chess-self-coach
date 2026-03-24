@@ -121,18 +121,12 @@ def app_url(tmp_path_factory):
         shutil.copy2(pgn, tmp_dir / pgn.name)
     (tmp_dir / "pwa").symlink_to(PWA_DIR)
 
-    # Copy coaching journal fixtures
-    coaching_src = PROJECT_ROOT / "coaching"
-    if coaching_src.exists():
-        shutil.copytree(coaching_src, tmp_dir / "coaching")
-
     # Create a test config.json for config API tests
     import json
     test_config = {
         "stockfish": {"path": "/usr/games/stockfish"},
         "players": {"lichess": "testuser", "chesscom": "testcom"},
         "analysis": {"default_depth": 18, "blunder_threshold": 1.0},
-        "studies": {},
     }
     (tmp_dir / "config.json").write_text(json.dumps(test_config, indent=2))
 

@@ -153,12 +153,6 @@ player-not-found, error recovery). `test_server.py` now tests `/api/analysis/sta
 - [x] Click handler for `#nav-about`
 - [x] Works in [demo] (static info) and [app] (version from /api/status)
 
-### 4b. Coaching journal viewer — DONE
-- [x] GET /api/coaching/topics — list topic files from coaching/topics/
-- [x] GET /api/coaching/topics/{slug} — read one topic (return markdown)
-- [x] PWA: journal browser modal (list → detail view, plain text rendering)
-- [x] Menu item: "Coaching journal" (nav-app-only)
-
 ### 4c. PGN viewer
 - [ ] ⚠️ UX DESIGN PHASE: interactive board + move tree, or read-only text view?
 - [ ] GET /api/pgn/files/{name} — read one PGN file
@@ -202,29 +196,11 @@ Section 2 (Menu + Mode detection) ← DONE
      │
      ├──► Section 4a (About modal) ← independent, no API needed for [demo]
      │
-     ├──► Section 4b (Coaching journal) ← needs 2 new API endpoints
-     │         │
-     │         ▼ (API pattern reused)
-     │    Section 4c (PGN viewer) ← needs API + UX design
+     ├──► Section 4c (PGN viewer) ← needs API + UX design
      │
-     └──► Section 5b (Config API) ← low priority, parallel with 4a-4c
+     └──► Section 5b (Config API) ← low priority, parallel with 4c
 ```
 
-
-## Dormant code (Coming soon features)
-
-When features moved to the "Coming soon" submenu (v0.3.4), their frontend wiring was removed
-but the code was kept for future reactivation. **Decision needed** for each: re-activate UI or delete code.
-
-### Dead frontend code (JS + HTML + CSS)
-- **JS functions** (`pwa/app.js`): `showJournal()`, `showJournalTopic()`, `showModalWithData()` helper
-- **HTML modals** (`pwa/index.html`): `#journal-modal`, `#journal-back` button
-- **CSS classes** (`pwa/style.css`): `.journal-*`
-
-### Backend endpoints with no UI
-These are functional and tested but unreachable from the PWA:
-- `GET /api/coaching/topics` + `GET /api/coaching/topics/{slug}` — coaching journal reader
-- `GET /api/train/stats` — training stats (replaced client-side by Raw data summary)
 
 ## Existing but undocumented features
 These are implemented and working but not tracked as roadmap items:
