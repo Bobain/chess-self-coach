@@ -21,6 +21,7 @@ chess-self-coach = "chess_self_coach.cli:main"
 
 [dependency-groups]
 test = ["pytest", "pytest-mock", "pytest-playwright", "pytest-xdist", "httpx"]
+dev = ["basedpyright"]
 docs = ["mkdocs-material", "mkdocstrings[python]"]
 
 [tool.pytest.ini_options]
