@@ -79,7 +79,7 @@ Phase 2 can be re-run cheaply without re-running Stockfish (`chess-self-coach tr
       headers, player_color, analyzed_at, analysis_duration_s, settings,
       moves: [
         { ply, fen_before, fen_after, move_san, move_uci, side,
-          eval_source, eval_before: {score_cp, is_mate, depth, seldepth, nodes, nps, time_ms, pv_san, ...},
+          eval_source, in_opening, eval_before: {score_cp, is_mate, depth, seldepth, nodes, nps, time_ms, pv_san, ...},
           eval_after: {...}, eval_after_best: {score_cp, is_mate, mate_in},
           tablebase_before, tablebase_after,
           opening_explorer: {opening: {eco, name}, moves: [{san, white, draws, black}]},
