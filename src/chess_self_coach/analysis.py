@@ -498,7 +498,7 @@ def collect_game_data(
         # --- Eval source + eval_before / eval_after ---
         if in_opening:
             # Opening book move: use Lichess Cloud Eval (fast), fall back to Stockfish
-            eval_source = "opening_explorer"
+            # eval_source is set below based on actual evaluation provider
 
             # eval_before
             t0 = _time.time()
@@ -535,6 +535,8 @@ def collect_game_data(
                 eval_after = _extract_eval(info_after, board_after)
                 _ea_src = "sf_fallback"
             eval_after_ms = (_time.time() - t0) * 1000
+
+            eval_source = "cloud_eval" if _ea_src == "cloud_eval" else "stockfish"
 
             _log.info(
                 "  ply %d %s: opening — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s)",
@@ -652,6 +654,7 @@ def collect_game_data(
             "move_uci": actual_move.uci(),
             "side": side,
             "eval_source": eval_source,
+            "in_opening": in_opening,
             "eval_before": eval_before,
             "eval_after": eval_after,
             "tablebase_before": tb_before_stored,

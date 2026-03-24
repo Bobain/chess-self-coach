@@ -1679,9 +1679,15 @@ function winProb(cp) {
  * @returns {{category: string, symbol: string, color: string, cssClass: string}}
  */
 function classifyMove(move, playerColor) {
-  // Book moves
-  if (move.eval_source === 'opening_explorer') {
-    return { category: 'book', symbol: '\u2657', color: '#a88764', cssClass: 'class-book' };
+  // Book moves: only classify as book if no eval data is available
+  const isBook = move.in_opening !== undefined ? move.in_opening : (move.eval_source === 'opening_explorer');
+  if (isBook) {
+    const eb = move.eval_before;
+    const ea = move.eval_after;
+    if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) {
+      return { category: 'book', symbol: '\u2657', color: '#a88764', cssClass: 'class-book' };
+    }
+    // Has eval data — fall through to normal classification
   }
 
   const evalBefore = move.eval_before;
@@ -1755,7 +1761,6 @@ function computeAccuracy(moves, classifications, color) {
   for (let i = 0; i < moves.length; i++) {
     const move = moves[i];
     if (move.side !== color) continue;
-    if (move.eval_source === 'opening_explorer') continue;
     const eb = move.eval_before;
     const ea = move.eval_after;
     if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) continue;
