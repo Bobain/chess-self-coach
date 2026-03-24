@@ -28,6 +28,7 @@ Infrastructure and runtime internals.
 - **PWA mode detection** — Demo vs application mode
 - **Service worker & caching** — Offline access and updates
 - **Stockfish lifecycle** — Detection, crash recovery, WASM fallback
+- **Bug reporting and autocorrection** — Crash reporter → GitHub issues → `/fix-issues` command
 
 ### [Meta flows](meta-flows.md)
 

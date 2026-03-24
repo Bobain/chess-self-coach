@@ -177,3 +177,41 @@ flowchart TD
 - **Engine lock**: `asyncio.Lock` prevents concurrent access to the single engine process.
 - **WASM variant**: uses `stockfish-18-lite-single.js` (single-threaded, suitable for browser). Depth limited to 12 (vs 18 for native).
 - **Lazy init**: WASM worker is only created on first call to `getBestMove()`.
+
+## Bug reporting and autocorrection
+
+Automated crash detection → issue creation → developer-driven fix cycle.
+
+![Bug reporting and autocorrection flow](images/bug-reporting.svg)
+
+```mermaid
+flowchart TD
+    subgraph "Automatic (server runtime)"
+        CRASH[Unhandled exception<br/>in FastAPI endpoint] --> HANDLER[Exception handler<br/>formats traceback]
+        HANDLER --> DEDUP{Duplicate<br/>issue exists?}
+        DEDUP -->|Yes| SKIP[Skip silently]
+        DEDUP -->|No| CREATE["gh issue create<br/>--label bug"]
+    end
+
+    subgraph "Developer-driven (/fix-issues)"
+        COLLECT["gh issue list<br/>--label bug --state open"] --> ANALYZE[Analyze tracebacks<br/>group by root cause]
+        ANALYZE --> TABLE[Show summary table<br/>ask user to confirm]
+        TABLE --> LOOP["For each root cause:"]
+        LOOP --> TEST_RED[Create E2E test<br/>assert no 500]
+        TEST_RED --> VERIFY_RED[Run test → RED]
+        VERIFY_RED --> FIX[Fix the code]
+        FIX --> PYRIGHT[basedpyright → fix types]
+        PYRIGHT --> TEST_GREEN[Run all tests → GREEN]
+        TEST_GREEN --> COMMIT["Commit: Fix #N"]
+        COMMIT --> CLOSE["Close duplicates<br/>gh issue close"]
+    end
+
+    CREATE -.->|"issues accumulate<br/>until /fix-issues"| COLLECT
+```
+
+### Key details
+
+- **Crash reporter** (`server.py`): exception handler on all unhandled errors. Runs `gh issue create` in a daemon thread (non-blocking). Requires `gh` CLI with write access — no explicit permission check, `gh` fails silently if unauthorized.
+- **Deduplication**: searches open issues by title before creating. Title format: `[crash] ErrorType: message`.
+- **`/fix-issues` command**: Claude Code slash command that drives the full fix cycle. Follows red-green-refactor: write failing test first, then fix, then verify.
+- **Issue body format**: endpoint, version, full traceback — provides enough context to reproduce.
