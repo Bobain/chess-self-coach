@@ -235,7 +235,7 @@ def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | 
     return white.score(), False, None
 
 
-def _extract_eval(info: dict, board: chess.Board) -> dict:
+def _extract_eval(info: chess.engine.InfoDict, board: chess.Board) -> dict:
     """Extract full evaluation data from a Stockfish info dict.
 
     Args:
