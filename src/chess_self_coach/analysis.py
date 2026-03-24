@@ -2,7 +2,6 @@
 
 Phase 1 collects all per-move evaluation data and stores it in analysis_data.json.
 Phase 2 annotates moves and derives training_data.json from the raw data.
-Phase 3 is coming soon with cloud analysis support.
 
 This decoupling allows re-running Phase 2 (cheap) without re-running Phase 1 (expensive).
 """
