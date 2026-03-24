@@ -15,9 +15,12 @@ from __future__ import annotations
 
 import asyncio
 import json
+import shutil
 import socket
+import subprocess
 import threading
 import time
+import traceback
 import uuid
 import webbrowser
 from contextlib import asynccontextmanager
@@ -26,8 +29,8 @@ from typing import TypedDict, cast
 
 import chess
 import chess.engine
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
@@ -81,6 +84,61 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
+
+
+# --- Crash reporter ---
+
+
+def _gh_create_issue(title: str, body: str) -> None:
+    """Create a GitHub issue for an unhandled server error.
+
+    Only runs when `gh` CLI is available and the repo owner is Bobain.
+    Deduplicates by checking if an open issue with the same title exists.
+    """
+    if not shutil.which("gh"):
+        return
+
+    try:
+        owner = subprocess.run(
+            ["gh", "repo", "view", "--json", "owner", "-q", ".owner.login"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if owner.returncode != 0 or owner.stdout.strip().lower() != "bobain":
+            return
+
+        existing = subprocess.run(
+            ["gh", "issue", "list", "--state", "open", "--search", title, "--json", "title", "-q", ".[].title"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if existing.returncode == 0 and title in existing.stdout:
+            return
+
+        subprocess.run(
+            ["gh", "issue", "create", "--title", title, "--body", body, "--label", "bug"],
+            capture_output=True, timeout=10,
+        )
+    except Exception:
+        pass
+
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch unhandled exceptions, log them, and create a GitHub issue."""
+    tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
+    tb_text = "".join(tb)
+
+    error_type = type(exc).__name__
+    title = f"[crash] {error_type}: {str(exc)[:80]}"
+    body = (
+        f"## Server crash\n\n"
+        f"**Endpoint:** `{request.method} {request.url.path}`\n"
+        f"**Version:** {__version__}\n\n"
+        f"```\n{tb_text}\n```"
+    )
+
+    threading.Thread(target=_gh_create_issue, args=(title, body), daemon=True).start()
+
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 
 # --- Pydantic models ---
