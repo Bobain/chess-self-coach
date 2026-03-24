@@ -1704,6 +1704,10 @@ function classifyMove(move, playerColor) {
     if (mateForPlayer) {
       // Player had mate, check if they played best
       if (evalAfter.is_mate && evalAfter.mate_in != null) {
+        // mate_in === 0 means checkmate delivered — best possible move
+        if (evalAfter.mate_in === 0) {
+          return { category: 'best', symbol: '\u2605', color: '#96bc4b', cssClass: 'class-best' };
+        }
         const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
         if (!stillMate) {
           return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431', cssClass: 'class-missed-win' };
@@ -1734,6 +1738,9 @@ function classifyMove(move, playerColor) {
     return { category: 'blunder', symbol: '??', color: '#ca3431', cssClass: 'class-blunder' };
   }
 }
+
+// Expose for E2E testing (module-scoped functions are not accessible from page.evaluate)
+window._classifyMove = classifyMove;
 
 /**
  * Classify all moves in a game for both players.

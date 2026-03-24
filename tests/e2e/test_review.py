@@ -342,3 +342,31 @@ def test_training_via_menu(page, pwa_url):
 
     # Board should render
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+
+
+# --- Classification edge cases ---
+
+
+def test_checkmate_move_classified_as_best(page, pwa_url):
+    """A move that delivers checkmate must be classified as 'best', not 'missed_win'.
+
+    Regression test: Rf1# in Xpolash game was classified as missed_win
+    because mate_in=0 (checkmate delivered) failed the stillMate < 0 check.
+    """
+    page.goto(pwa_url)
+    page.wait_for_selector(".game-card", timeout=10000)
+
+    result = page.evaluate("""() => {
+        return window._classifyMove(
+            {
+                eval_before: { score_cp: -10000, is_mate: true, mate_in: -1 },
+                eval_after:  { score_cp: -10000, is_mate: true, mate_in: 0 },
+            },
+            'black'
+        );
+    }""")
+
+    assert result is not None, "classifyMove returned null for checkmate move"
+    assert result["category"] == "best", (
+        f"Checkmate move classified as '{result['category']}' instead of 'best'"
+    )
