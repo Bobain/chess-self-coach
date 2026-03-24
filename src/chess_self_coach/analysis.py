@@ -129,7 +129,7 @@ def load_analysis_data(path: Path | None = None) -> dict:
         with open(path) as f:
             return json.load(f)
     except (json.JSONDecodeError, KeyError):
-        logger.warning("Corrupted analysis_data.json, returning empty structure")
+        _log.warning("Corrupted analysis_data.json, returning empty structure")
         return {"version": "1.0", "player": {}, "games": {}}
 
 
@@ -578,7 +578,11 @@ def collect_game_data(
             before_cp = eval_before.get("score_cp")
             after_cp = eval_after.get("score_cp")
             if before_cp is not None and after_cp is not None:
-                if board.turn == chess.WHITE:
+                # If the player delivered checkmate, cp_loss is 0 by definition
+                best_uci = eval_before.get("best_move_uci", "")
+                if best_uci and actual_move == chess.Move.from_uci(best_uci):
+                    cp_loss = 0
+                elif board.turn == chess.WHITE:
                     cp_loss = max(0, before_cp - after_cp)
                 else:
                     cp_loss = max(0, after_cp - before_cp)
@@ -795,6 +799,7 @@ def analyze_games(
 
     # Filter games
     new_games: list[tuple[chess.pgn.Game, str, chess.Color]] = []
+    reanalyzed = 0  # existing games queued for re-analysis (won't increase total)
     skipped = 0
     for game in all_games:
         game_id = game.headers.get("Link", game.headers.get("Site", ""))
@@ -813,6 +818,7 @@ def analyze_games(
             continue
 
         # Check if already analyzed
+        is_reanalysis = False
         if game_id and game_id in existing_games:
             if not reanalyze_all:
                 skipped += 1
@@ -822,18 +828,22 @@ def analyze_games(
             if settings_match(stored_settings, settings_dict):
                 skipped += 1
                 continue
+            is_reanalysis = True
 
         new_games.append((game, game_id, player_color))
+        if is_reanalysis:
+            reanalyzed += 1
 
     if skipped:
         print(f"  Skipped {skipped} already-analyzed game(s)")
 
-    # Sort by date (most recent first) and cap so total doesn't exceed max_games
+    # Sort by date (most recent first) and cap so total doesn't exceed max_games.
+    # Re-analyses replace existing entries so they don't increase the total.
     new_games.sort(
         key=lambda t: t[0].headers.get("Date", "0000.00.00"),
         reverse=True,
     )
-    cap = max(0, max_games - len(existing_games))
+    cap = max(0, max_games - len(existing_games)) + reanalyzed
     new_games = new_games[:cap]
 
     _emit({
@@ -1082,6 +1092,10 @@ def annotate_and_derive(
             fen = move_data.get("fen_before", "")
             actual_san = move_data.get("move_san", "")
             best_san = eval_before.get("best_move_san", "")
+
+            # Skip if the player already played the best move
+            if best_san and actual_san == best_san:
+                continue
 
             # Generate explanation
             board = chess.Board(fen) if fen else chess.Board()

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-03-24T03:17:51Z",
+  "generated": "2026-03-24T04:30:40Z",
   "player": {
     "lichess": "bobainbobain",
     "chesscom": "Tonigor1982"
@@ -45,44 +45,6 @@
       "clock": {
         "player": 462.0,
         "opponent": 836.4
-      },
-      "srs": {
-        "interval": 0,
-        "ease": 2.5,
-        "next_review": "2026-03-24",
-        "history": []
-      }
-    },
-    {
-      "id": "920338bbde8a",
-      "fen": "r3rk2/2R3R1/1p2p2p/p5p1/4P3/1P2KP1P/P5P1/8 w - - 2 33",
-      "player_color": "white",
-      "player_move": "Rcf7#",
-      "best_move": "Rcf7#",
-      "context": "Middlegame, playing as White, you had a strong advantage. Your move threw away a forced mate.",
-      "score_before": "+100.00",
-      "score_after": "-100.00",
-      "score_after_best": "+100.00",
-      "cp_loss": 20000,
-      "category": "blunder",
-      "explanation": "You played Rcf7# (blunder). You had a forced mate but lost it. Rcf7# was checkmate!",
-      "acceptable_moves": [
-        "Rcf7#"
-      ],
-      "pv": [
-        "Rcf7#"
-      ],
-      "game": {
-        "id": "https://www.chess.com/game/live/166211856334",
-        "source": "chess.com",
-        "opponent": "iamvitalya",
-        "date": "2026.03.20",
-        "result": "1-0",
-        "opening": "Live Chess"
-      },
-      "clock": {
-        "player": 414.2,
-        "opponent": null
       },
       "srs": {
         "interval": 0,
