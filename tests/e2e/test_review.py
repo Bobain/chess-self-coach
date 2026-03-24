@@ -366,7 +366,23 @@ def test_checkmate_move_classified_as_best(page, pwa_url):
         );
     }""")
 
-    assert result is not None, "classifyMove returned null for checkmate move"
+    assert result is not None, "classifyMove returned null for checkmate move (black)"
     assert result["category"] == "best", (
-        f"Checkmate move classified as '{result['category']}' instead of 'best'"
+        f"Checkmate by black classified as '{result['category']}' instead of 'best'"
+    )
+
+    # Same test for white delivering checkmate
+    result_white = page.evaluate("""() => {
+        return window._classifyMove(
+            {
+                eval_before: { score_cp: 10000, is_mate: true, mate_in: 1 },
+                eval_after:  { score_cp: 10000, is_mate: true, mate_in: 0 },
+            },
+            'white'
+        );
+    }""")
+
+    assert result_white is not None, "classifyMove returned null for checkmate move (white)"
+    assert result_white["category"] == "best", (
+        f"Checkmate by white classified as '{result_white['category']}' instead of 'best'"
     )
