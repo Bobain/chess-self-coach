@@ -204,12 +204,10 @@ def _analysis_limit_from_settings(
     else:
         lim = limits.get("default", {})
 
-    kwargs: dict[str, float | int] = {}
-    if "depth" in lim:
-        kwargs["depth"] = int(lim["depth"])
+    depth = int(lim["depth"]) if "depth" in lim else None
     # Always enforce a time cap — use config value or fall back to ANALYSIS_TIME_LIMIT
-    kwargs["time"] = float(lim.get("time", ANALYSIS_TIME_LIMIT))
-    return chess.engine.Limit(**kwargs) if kwargs else chess.engine.Limit(depth=18)
+    time = float(lim.get("time", ANALYSIS_TIME_LIMIT))
+    return chess.engine.Limit(depth=depth, time=time) if lim else chess.engine.Limit(depth=18)
 
 
 def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | None]:
@@ -225,6 +223,7 @@ def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | 
     white = score.white()
     if white.is_mate():
         mate = white.mate()
+        assert mate is not None  # guaranteed by is_mate()
         cp = MATE_CP if mate > 0 else -MATE_CP
         return cp, True, mate
     return white.score(), False, None
@@ -446,7 +445,7 @@ def collect_game_data(
         is_en_passant = board.is_en_passant(actual_move)
         is_promotion = actual_move.promotion is not None
         promoted_to = None
-        if is_promotion:
+        if is_promotion and actual_move.promotion is not None:
             promoted_to = chess.piece_symbol(actual_move.promotion)
 
         # --- Clock data ---
