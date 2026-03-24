@@ -429,6 +429,51 @@ async def coaching_topic_detail(slug: str) -> TopicDetailResponse:
     return TopicDetailResponse(slug=slug, content=path.read_text())
 
 
+# --- Game list endpoints ---
+
+
+@app.post("/api/games/fetch")
+async def games_fetch() -> GameListResponse:
+    """Fetch games from Lichess/chess.com and cache locally."""
+    from chess_self_coach.config import load_config
+    from chess_self_coach.game_cache import fetch_and_cache_games, load_game_cache
+
+    config = load_config()
+    players = config.get("players", {})
+    lichess_user = players.get("lichess", "")
+    chesscom_user = players.get("chesscom")
+
+    if not lichess_user and not chesscom_user:
+        raise HTTPException(
+            status_code=400,
+            detail="No player configured. Run 'chess-self-coach setup'.",
+        )
+
+    summaries = await asyncio.to_thread(
+        fetch_and_cache_games, lichess_user, chesscom_user
+    )
+    cache = load_game_cache()
+
+    return GameListResponse(
+        games=[GameSummaryResponse(**s.to_dict()) for s in summaries],
+        fetched_at=cache.get("fetched_at"),
+    )
+
+
+@app.get("/api/games")
+async def games_list(limit: int = 20) -> GameListResponse:
+    """Return unified game list (cached + analyzed), sorted by date."""
+    from chess_self_coach.game_cache import get_unified_game_list, load_game_cache
+
+    summaries = get_unified_game_list(limit=limit)
+    cache = load_game_cache()
+
+    return GameListResponse(
+        games=[GameSummaryResponse(**s.to_dict()) for s in summaries],
+        fetched_at=cache.get("fetched_at"),
+    )
+
+
 # --- Analysis settings endpoints ---
 
 
@@ -443,8 +488,31 @@ class AnalysisSettingsResponse(BaseModel):
 class AnalysisStartRequest(BaseModel):
     """Request body for POST /api/analysis/start."""
 
+    game_ids: list[str] = Field(default_factory=list)
     max_games: int = 10
     reanalyze_all: bool = False
+
+
+class GameSummaryResponse(BaseModel):
+    """One game in the game list."""
+
+    game_id: str
+    white: str
+    black: str
+    player_color: str
+    result: str
+    date: str
+    opening: str
+    move_count: int
+    source: str
+    analyzed: bool
+
+
+class GameListResponse(BaseModel):
+    """Response body for GET /api/games."""
+
+    games: list[GameSummaryResponse]
+    fetched_at: str | None = None
 
 
 class JobStartResponse(BaseModel):
@@ -507,7 +575,11 @@ async def analysis_start(req: AnalysisStartRequest) -> JobStartResponse:
             "status": "running",
             "queue": asyncio.Queue(),
             "cancel": threading.Event(),
-            "params": {"max_games": req.max_games, "reanalyze_all": req.reanalyze_all},
+            "params": {
+                "game_ids": req.game_ids,
+                "max_games": req.max_games,
+                "reanalyze_all": req.reanalyze_all,
+            },
         }
 
     loop = asyncio.get_event_loop()
@@ -563,7 +635,9 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
         _push(event)
 
     try:
+        game_ids = params.get("game_ids") or None
         analyze_games(
+            game_ids=game_ids,
             max_games=params.get("max_games", 10),
             reanalyze_all=params.get("reanalyze_all", False),
             on_progress=on_progress,
