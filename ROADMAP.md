@@ -214,6 +214,10 @@ Section 6 (UX Improvements) ← independent, parallel with all sections
 ```
 
 
+## Cleanup TODO
+
+- [ ] Remove "Coming soon" submenu from PWA nav — only "Project status" remains, not worth a submenu. Either promote it to a regular nav item or remove it entirely.
+
 ## Existing but undocumented features
 These are implemented and working but not tracked as roadmap items:
 - Tablebase integration (≤7 pieces, Lichess API)
