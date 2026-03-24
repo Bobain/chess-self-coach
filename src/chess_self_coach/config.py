@@ -1,6 +1,6 @@
 """Configuration loading for chess-self-coach.
 
-Loads config.json (study mappings, Stockfish path) and .env (Lichess token).
+Loads config.json (Stockfish path, player usernames) and .env (Lichess token).
 Every error produces a clear message with the exact command to fix it.
 """
 
@@ -130,8 +130,6 @@ def load_lichess_token(required: bool = True) -> str | None:
             "Lichess API token not found.",
             hint=(
                 "1. Create a token at: https://lichess.org/account/oauth/token/create\n"
-                '     - Check "Read private studies and broadcasts" (study:read)\n'
-                '     - Check "Create, update, delete studies and broadcasts" (study:write)\n'
                 "  2. Save it:\n"
                 f'     echo "LICHESS_API_TOKEN=lip_your_token_here" > {env_path}'
             ),
@@ -232,28 +230,3 @@ def check_stockfish_version(sf_path: Path, expected: str | None = None) -> str:
         print(f"  ⚠ Warning: Could not check Stockfish version: {e}", file=sys.stderr)
 
     return "unknown"
-
-
-def get_study_mapping(config: dict[str, Any], pgn_file: str) -> dict[str, str]:
-    """Get the Lichess study mapping for a PGN file.
-
-    Args:
-        config: Loaded config dictionary.
-        pgn_file: PGN filename (e.g. "repertoire_blancs_gambit_dame_annote.pgn").
-
-    Returns:
-        Dict with 'study_id' and 'study_name' keys.
-
-    Raises:
-        SystemExit: If the file has no study mapping configured.
-    """
-    studies = config.get("studies", {})
-    mapping = studies.get(pgn_file)
-
-    if not mapping or mapping.get("study_id", "").startswith("STUDY_ID"):
-        error_exit(
-            f"No Lichess study configured for '{pgn_file}'.",
-            hint="Run 'chess-self-coach setup' to configure study mappings.",
-        )
-
-    return mapping
