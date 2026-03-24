@@ -96,6 +96,8 @@ let appView = 'games';
 let selectedGameIds = new Set();
 /** @type {number} How many games to show in the list */
 let gameListLimit = 20;
+/** @type {Set<string>} Active result filters ('win', 'loss', 'draw') */
+let resultFilters = new Set(['win', 'loss', 'draw']);
 /** @type {?string} When training on a specific game, its ID; null = all positions */
 let trainingGameFilter = null;
 /** @type {?Object} Parsed analysis_data.json */
@@ -1838,8 +1840,19 @@ function showGameSelector() {
     return db.localeCompare(da);
   });
 
+  // Filter by result
+  const filteredEntries = gameEntries.filter(([, game]) => {
+    const result = game.headers.result;
+    const pc = game.player_color;
+    const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
+    const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
+    if (isWin) return resultFilters.has('win');
+    if (isLoss) return resultFilters.has('loss');
+    return resultFilters.has('draw');
+  });
+
   // Limit to gameListLimit
-  const limitedEntries = gameEntries.slice(0, gameListLimit);
+  const limitedEntries = filteredEntries.slice(0, gameListLimit);
 
   for (const [gameId, game] of limitedEntries) {
     const card = document.createElement('div');
@@ -2814,6 +2827,18 @@ async function init() {
       showGameSelector();
     });
   }
+
+  // Wire result filter toggles
+  document.querySelectorAll('.result-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const result = btn.dataset.result;
+      if (resultFilters.has(result)) resultFilters.delete(result);
+      else resultFilters.add(result);
+      btn.classList.toggle('active');
+      console.log('[init] Result filter toggled:', result, resultFilters);
+      showGameSelector();
+    });
+  });
 
   const analyzeSelBtn = document.getElementById('analyze-selected-btn');
   if (analyzeSelBtn) {

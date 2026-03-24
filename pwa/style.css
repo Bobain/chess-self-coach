@@ -65,6 +65,33 @@ header h1 {
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
+#result-filters {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.result-filter {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text-dim);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.result-filter.active {
+  opacity: 1;
+}
+
+.result-filter[data-result="win"].active { color: var(--success); border-color: var(--success); }
+.result-filter[data-result="loss"].active { color: var(--accent); border-color: var(--accent); }
+.result-filter[data-result="draw"].active { color: var(--text-dim); border-color: var(--text-dim);
+}
+
 #select-all-label {
   display: flex;
   align-items: center;
