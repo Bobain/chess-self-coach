@@ -1625,9 +1625,9 @@ async function showGameSelector() {
     card.className = entry.analyzed ? 'game-card' : 'game-card game-card-unanalyzed';
     card.dataset.gameId = gameId;
 
-    // Checkbox (app mode only, not for analyzed or queued games)
+    // Checkbox (app mode only, not for queued games — includes analyzed for re-analysis)
     const isQueued = analyzingGameIds.has(gameId) || pendingGameIds.has(gameId);
-    if (appMode === 'app' && !game && !isQueued) {
+    if (appMode === 'app' && !isQueued) {
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.className = 'game-card-checkbox';
@@ -1637,7 +1637,7 @@ async function showGameSelector() {
         else selectedGameIds.delete(gameId);
         updateAnalyzeButton();
         const selectAll = document.getElementById('select-all-checkbox');
-        const selectableCount = limitedEntries.filter(e => !e.richData && !analyzingGameIds.has(e.gameId) && !pendingGameIds.has(e.gameId)).length;
+        const selectableCount = limitedEntries.filter(e => !analyzingGameIds.has(e.gameId) && !pendingGameIds.has(e.gameId)).length;
         if (selectAll) selectAll.checked = selectedGameIds.size > 0 && selectedGameIds.size === selectableCount;
       });
       card.appendChild(cb);
@@ -2716,12 +2716,13 @@ async function analyzeSelectedGames() {
     return;
   }
 
-  // Start a new job
+  // Start a new job (reanalyze_all if any selected game is already analyzed)
+  const hasAnalyzed = ids.some(id => analysisData?.games?.[id]);
   try {
     const resp = await fetch('/api/analysis/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_ids: ids }),
+      body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
     });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
@@ -2749,11 +2750,12 @@ async function analyzeSelectedGames() {
  */
 async function startAnalysisJob(ids) {
   console.log('[startAnalysisJob] Starting batch of', ids.length, 'game(s)');
+  const hasAnalyzed = ids.some(id => analysisData?.games?.[id]);
   try {
     const resp = await fetch('/api/analysis/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ game_ids: ids }),
+      body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
     });
     if (!resp.ok) {
       console.error('[startAnalysisJob] API error:', resp.status);
