@@ -1650,18 +1650,17 @@ async function loadAnalysisData() {
   try {
     const resp = await fetch('analysis_data.json');
     if (!resp.ok) {
-      selector.textContent = appMode === 'app'
-        ? 'No analysis data. Use menu → Analyse latest games.'
-        : 'No analysis data available.';
       console.log('[loadAnalysisData] Not found:', resp.status);
-      return;
+      analysisData = { games: {} };
+    } else {
+      analysisData = await resp.json();
     }
-    analysisData = await resp.json();
     console.log(`[loadAnalysisData] Loaded ${Object.keys(analysisData.games || {}).length} game(s)`);
-    showGameSelector();
+    await showGameSelector();
   } catch (err) {
     console.error('[loadAnalysisData] Failed:', err);
-    selector.textContent = 'Failed to load analysis data.';
+    analysisData = { games: {} };
+    await showGameSelector();
   }
 }
 
@@ -3008,11 +3007,11 @@ async function autoFetchGames() {
   if (selector) selector.textContent = 'Fetching your games...';
   try {
     await fetch('/api/games/fetch', { method: 'POST' });
-    // Reload analysis data to get the unified view
-    await loadAnalysisData();
+    // Refresh game list to show newly fetched games
+    await showGameSelector();
   } catch (err) {
     console.error('[autoFetchGames] Failed:', err);
-    // Fallback: analysis data was already loaded by showGameList
+    // Fallback: game list was already shown by showGameList
   }
 }
 
