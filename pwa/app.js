@@ -1282,6 +1282,20 @@ function showAnalysisProgress(jobId) {
   const analysisModal = document.getElementById('analysis-modal');
   if (analysisModal) analysisModal.classList.add('hidden');
 
+  // Click on progress bar to cancel
+  if (headerProgress) {
+    headerProgress.style.cursor = 'pointer';
+    headerProgress.title = 'Click to cancel analysis';
+    headerProgress.onclick = async () => {
+      try {
+        await fetch(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
+        console.log('[showAnalysisProgress] Cancel requested');
+      } catch (err) {
+        console.error('[showAnalysisProgress] Cancel failed:', err);
+      }
+    };
+  }
+
   const evtSource = new EventSource(`/api/jobs/${jobId}/events`);
   evtSource.onmessage = (e) => {
     const event = JSON.parse(e.data);
