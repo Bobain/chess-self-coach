@@ -449,7 +449,11 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
     """
     global _current_job
 
-    from chess_self_coach.analysis import AnalysisInterrupted, analyze_games
+    from chess_self_coach.analysis import (
+        AnalysisInterrupted,
+        analyze_games,
+        annotate_and_derive,
+    )
 
     assert _current_job is not None
     job = _current_job
@@ -476,6 +480,8 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
             on_progress=on_progress,
             cancel=cancel,
         )
+        _push({"phase": "derive", "message": "Generating training data...", "percent": 92})
+        annotate_and_derive()
         job["status"] = "done"
     except AnalysisInterrupted as exc:
         _push({"phase": "interrupted", "message": str(exc), "percent": 100})

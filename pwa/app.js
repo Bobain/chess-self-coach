@@ -1259,6 +1259,7 @@ function showAnalysisProgress(jobId) {
       setTimeout(() => el.classList.add('hidden'), 2000);
       if (event.phase === 'done') {
         loadAnalysisData();
+        loadTrainingData();
       }
     }
   };
@@ -1305,12 +1306,34 @@ function showTrainingView(gameId = null) {
 /**
  * Load analysis_data.json from server or static file.
  */
+/**
+ * Load training_data.json from server or static file.
+ */
+async function loadTrainingData() {
+  console.log('[loadTrainingData] Fetching training data...');
+  try {
+    const resp = await fetch('training_data.json?t=' + Date.now());
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    trainingData = await resp.json();
+    console.log(`[loadTrainingData] Loaded ${trainingData.positions.length} position(s)`);
+  } catch (err) {
+    const hint = appMode === 'app'
+      ? 'No training data yet. Use menu ☰ → Analyse latest games to generate it.'
+      : 'Could not load training data.';
+    document.getElementById('prompt').textContent = hint;
+    console.error('[loadTrainingData] Failed:', err);
+  }
+}
+
+/**
+ * Load analysis_data.json from server or static file.
+ */
 async function loadAnalysisData() {
   console.log('[loadAnalysisData] Fetching analysis data...');
   const selector = document.getElementById('game-selector');
   selector.textContent = 'Loading analysis data...';
   try {
-    const resp = await fetch('analysis_data.json');
+    const resp = await fetch('analysis_data.json?t=' + Date.now());
     if (!resp.ok) {
       console.log('[loadAnalysisData] Not found:', resp.status);
       analysisData = { games: {} };
@@ -1482,7 +1505,7 @@ async function showGameSelector() {
         const data = await resp.json();
         for (const g of data.games) {
           const richData = analysisData?.games?.[g.game_id];
-          unifiedList.push({ gameId: g.game_id, analyzed: !!richData, apiData: g, richData });
+          unifiedList.push({ gameId: g.game_id, analyzed: !!richData || g.analyzed, apiData: g, richData });
         }
         console.log(`[showGameSelector] Unified list: ${unifiedList.length} games (${unifiedList.filter(g => !g.analyzed).length} unanalyzed)`);
       }
@@ -1502,8 +1525,8 @@ async function showGameSelector() {
 
   // Filter by result
   const filteredList = unifiedList.filter((entry) => {
-    const result = entry.analyzed ? entry.richData.headers.result : entry.apiData.result;
-    const pc = entry.analyzed ? entry.richData.player_color : entry.apiData.player_color;
+    const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
+    const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
     const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
     const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
     if (isWin) return resultFilters.has('win');
@@ -1620,10 +1643,10 @@ async function showGameSelector() {
     card.appendChild(infoEl);
 
     // Accuracy + classification badges (analyzed) or "Not analyzed" badge
-    if (!entry.analyzed) {
+    if (!game) {
       const badge = document.createElement('div');
       badge.className = 'game-card-accuracy unanalyzed-badge';
-      badge.textContent = 'Not analyzed';
+      badge.textContent = entry.analyzed ? 'Analyzed' : 'Not analyzed';
       card.appendChild(badge);
       selector.appendChild(card);
       continue;
@@ -2308,18 +2331,7 @@ async function init() {
   }
 
   // Load training data
-  try {
-    const resp = await fetch('training_data.json');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    trainingData = await resp.json();
-    console.log(`[init] Loaded ${trainingData.positions.length} position(s)`);
-  } catch (err) {
-    const hint = appMode === 'app'
-      ? 'No training data yet. Use menu ☰ → Analyse latest games to generate it.'
-      : 'Could not load training data.';
-    document.getElementById('prompt').textContent = hint;
-    console.error('[init] Training data load failed:', err);
-  }
+  await loadTrainingData();
 
   // Load SRS state
   srsState = loadSRSState();
