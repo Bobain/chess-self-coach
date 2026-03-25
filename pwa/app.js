@@ -1392,21 +1392,31 @@ const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
 /**
  * Detect whether a move is a material sacrifice.
- * A sacrifice occurs when the moved piece can be recaptured by the opponent
- * and the net material exchange is negative for the moving side.
- * @param {Object} move - Move data with fen_before and move_san.
+ * Uses the engine's principal variation (PV) to check if the opponent
+ * actually recaptures on the destination square in the best line.
+ * @param {Object} move - Move data with fen_before, move_san, move_uci, eval_before.
  * @returns {boolean} True if the move is a sacrifice.
  */
 function isSacrifice(move) {
-  if (!move.fen_before || !move.move_san) return false;
+  if (!move.fen_before || !move.move_san || !move.move_uci) return false;
+
+  const eb = move.eval_before;
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 2 || !eb.best_move_uci) return false;
+
+  // Must be the engine's best move (PV is only valid for that move)
+  if (move.move_uci !== eb.best_move_uci) return false;
+
+  // Opponent must recapture on the same square in the PV
+  const ourDest = move.move_uci.slice(2, 4);
+  const oppDest = eb.pv_uci[1].slice(2, 4);
+  if (oppDest !== ourDest) return false;
+
+  // Confirm net material is negative (sacrifice)
   const chess = new Chess(move.fen_before);
   const result = chess.move(move.move_san);
   if (!result) return false;
   const capturedValue = result.captured ? PIECE_VALUES[result.captured] : 0;
   const ourPieceValue = PIECE_VALUES[result.piece];
-  const opponentMoves = chess.moves({ verbose: true });
-  const recaptures = opponentMoves.filter(m => m.to === result.to);
-  if (recaptures.length === 0) return false;
   return (capturedValue - ourPieceValue) < -0.5;
 }
 

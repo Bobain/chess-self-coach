@@ -395,7 +395,7 @@ def test_brilliant_sacrifice_classified_correctly(page, pwa_url):
     """A sacrifice that is the best move in a non-dominating position is 'brilliant'.
 
     Real data: Rxe3 in DDDestryer game (ply 65, move 33).
-    Rook (5) captures knight (3) on e3, opponent Re6 can recapture.
+    Rook (5) captures knight (3) on e3, PV shows opponent recaptures Rxe3.
     Eval +457cp → wpBefore=0.933 < 0.95, eplLost=-0.016 ≤ 0.02.
     """
     page.goto(pwa_url)
@@ -407,8 +407,12 @@ def test_brilliant_sacrifice_classified_correctly(page, pwa_url):
                 fen_before: '4q2k/4r1p1/1p2r2p/p4p2/P4P2/2Q1n1PP/1B2R3/4R1K1 w - - 0 33',
                 move_san: 'Rxe3',
                 move_uci: 'e2e3',
-                eval_before: { score_cp: 457, is_mate: false, mate_in: null },
-                eval_after:  { score_cp: 509, is_mate: false, mate_in: null },
+                eval_before: {
+                    score_cp: 457, is_mate: false, mate_in: null,
+                    best_move_uci: 'e2e3',
+                    pv_uci: ['e2e3', 'e6e3', 'e1e3', 'h8h7'],
+                },
+                eval_after: { score_cp: 509, is_mate: false, mate_in: null },
             },
             'white'
         );
@@ -423,7 +427,10 @@ def test_brilliant_sacrifice_classified_correctly(page, pwa_url):
 
 
 def test_non_sacrifice_best_move_not_brilliant(page, pwa_url):
-    """A best move without sacrifice should remain 'best', not 'brilliant'."""
+    """A best move without sacrifice should remain 'best', not 'brilliant'.
+
+    PV shows opponent responds on a different square (no recapture).
+    """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
@@ -433,8 +440,12 @@ def test_non_sacrifice_best_move_not_brilliant(page, pwa_url):
                 fen_before: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
                 move_san: 'e5',
                 move_uci: 'e7e5',
-                eval_before: { score_cp: -20, is_mate: false, mate_in: null },
-                eval_after:  { score_cp: -20, is_mate: false, mate_in: null },
+                eval_before: {
+                    score_cp: -20, is_mate: false, mate_in: null,
+                    best_move_uci: 'e7e5',
+                    pv_uci: ['e7e5', 'g1f3', 'b8c6'],
+                },
+                eval_after: { score_cp: -20, is_mate: false, mate_in: null },
             },
             'black'
         );
@@ -458,8 +469,12 @@ def test_sacrifice_in_dominating_position_not_brilliant(page, pwa_url):
                 fen_before: '4q2k/4r1p1/1p2r2p/p4p2/P4P2/2Q1n1PP/1B2R3/4R1K1 w - - 0 33',
                 move_san: 'Rxe3',
                 move_uci: 'e2e3',
-                eval_before: { score_cp: 700, is_mate: false, mate_in: null },
-                eval_after:  { score_cp: 750, is_mate: false, mate_in: null },
+                eval_before: {
+                    score_cp: 700, is_mate: false, mate_in: null,
+                    best_move_uci: 'e2e3',
+                    pv_uci: ['e2e3', 'e6e3', 'e1e3', 'h8h7'],
+                },
+                eval_after: { score_cp: 750, is_mate: false, mate_in: null },
             },
             'white'
         );
