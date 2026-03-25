@@ -132,37 +132,6 @@ def test_training_data_missing(tmp_path):
     assert resp.status_code == 404
 
 
-# --- /api/train/stats ---
-
-
-def test_train_stats_returns_data(tmp_path):
-    """GET /api/train/stats returns stats when training data exists."""
-    data = {
-        "generated": "2026-03-16T00:00:00Z",
-        "positions": [
-            {"category": "blunder", "game": {"source": "lichess"}},
-            {"category": "mistake", "game": {"source": "chess.com"}},
-            {"category": "blunder", "game": {"source": "lichess"}},
-        ],
-    }
-    (tmp_path / "training_data.json").write_text(json.dumps(data))
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/train/stats")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["total"] == 3
-    assert body["by_category"] == {"blunder": 2, "mistake": 1}
-    assert body["by_source"] == {"lichess": 2, "chess.com": 1}
-    assert body["generated"] == "2026-03-16T00:00:00Z"
-
-
-def test_train_stats_missing_data(tmp_path):
-    """GET /api/train/stats returns 404 when no training data."""
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/train/stats")
-    assert resp.status_code == 404
-
-
 # --- Port scanner ---
 
 

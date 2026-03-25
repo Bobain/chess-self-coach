@@ -588,11 +588,6 @@ cg-container {
   color: white;
 }
 
-.modal-interrupt {
-  background: var(--accent);
-  color: white;
-}
-
 .modal-body {
   margin-bottom: 1rem;
   font-size: 0.9rem;
@@ -608,87 +603,6 @@ cg-container {
   margin-bottom: 1rem;
   font-size: 1.1rem;
   line-height: 1.6;
-}
-
-#stats-content {
-  font-size: 0.95rem;
-}
-
-#stats-content .stats-label {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-
-.raw-data-header {
-  font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.raw-data-warning {
-  color: #e8a838;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.raw-data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-}
-
-.raw-data-table th {
-  text-align: left;
-  color: var(--text-dim);
-  font-weight: normal;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.raw-data-table td {
-  padding: 0.35rem 0.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.raw-data-table td:nth-child(n+2) {
-  text-align: center;
-}
-
-.raw-data-table th:nth-child(n+2) {
-  text-align: center;
-}
-
-.raw-data-table a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.raw-data-table a:hover {
-  text-decoration: underline;
-}
-
-#stats-content .stats-value {
-  font-weight: 600;
-}
-
-.status-section {
-  margin-bottom: 0.75rem;
-}
-
-.status-section-title {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.status-ok { color: var(--success); }
-.status-warn { color: #f0ad4e; }
-
-.status-file {
-  padding-left: 1rem;
 }
 
 #about-content {
@@ -923,14 +837,6 @@ cg-container {
   color: var(--text-dim);
 }
 
-.classification-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  justify-content: center;
-  margin-top: 0.25rem;
-}
-
 .class-badge {
   font-size: 0.7rem;
   padding: 0.1rem 0.4rem;
@@ -1048,16 +954,6 @@ cg-container {
 #review-back-btn:hover {
   color: var(--primary);
 }
-
-/* Classification colors */
-.class-best { color: #96bc4b; }
-.class-excellent { color: #96bc4b; }
-.class-good { color: #95b776; }
-.class-book { color: #a88764; }
-.class-inaccuracy { color: #f7c631; }
-.class-mistake { color: #e6912a; }
-.class-blunder { color: #ca3431; }
-.class-missed-win { color: #ca3431; }
 
 /* Desktop: side-by-side layout */
 @media (min-width: 768px) {

@@ -34,7 +34,13 @@ from chess_self_coach.constants import (
     MAX_PV_MOVES,
     MIDDLEGAME_PIECES_MAX,
 )
-from chess_self_coach.tablebase import MAX_PIECES, probe_position_full
+from chess_self_coach.tablebase import (
+    MAX_PIECES,
+    TablebaseResult,
+    probe_position_full,
+    tablebase_context,
+    tablebase_explanation,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -1239,6 +1245,31 @@ def annotate_and_derive(
                 score_before_cp=score_before_cp,
                 player_color=player_color,
             )
+
+            # Override with tablebase-specific text for endgame positions
+            tb_before_raw = move_data.get("tablebase_before")
+            tb_after_raw = move_data.get("tablebase_after")
+            if tb_before_raw:
+                tb_res_before = TablebaseResult(
+                    category=tb_before_raw["category"],
+                    dtz=tb_before_raw.get("dtz"),
+                    dtm=tb_before_raw.get("dtm"),
+                    best_move=None,
+                )
+                piece_count = move_data.get("board", {}).get("piece_count", 0)
+                context = tablebase_context(
+                    tb_res_before, piece_count, player_color
+                )
+                if tb_after_raw:
+                    tb_res_after = TablebaseResult(
+                        category=tb_after_raw["category"],
+                        dtz=tb_after_raw.get("dtz"),
+                        dtm=tb_after_raw.get("dtm"),
+                        best_move=None,
+                    )
+                    explanation = tablebase_explanation(
+                        tb_res_before, tb_res_after, actual_san, best_san
+                    )
 
             # Time pressure context
             clock = move_data.get("clock", {})

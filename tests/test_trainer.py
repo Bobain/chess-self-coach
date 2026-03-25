@@ -10,41 +10,11 @@ from chess_self_coach.constants import (
     MISTAKE_THRESHOLD,
 )
 from chess_self_coach.trainer import (
-    _analysis_limit,
     _classify_mistake,
     _format_score_cp,
     _time_pressure_context,
-    compute_cp_loss,
     generate_explanation,
 )
-
-
-# --- compute_cp_loss ---
-
-
-def test_cp_loss_white_loses_advantage():
-    """White had +100, now +20: lost 80cp."""
-    assert compute_cp_loss(100, 20, chess.WHITE) == 80
-
-
-def test_cp_loss_white_gains():
-    """White had +100, now +150: gained (negative loss)."""
-    assert compute_cp_loss(100, 150, chess.WHITE) == -50
-
-
-def test_cp_loss_black_loses_advantage():
-    """Eval was -100 (good for black), now -20: black lost 80cp."""
-    assert compute_cp_loss(-100, -20, chess.BLACK) == 80
-
-
-def test_cp_loss_black_gains():
-    """Eval was -100, now -150: black gained (negative loss)."""
-    assert compute_cp_loss(-100, -150, chess.BLACK) == -50
-
-
-def test_cp_loss_zero():
-    """No change in position means zero loss."""
-    assert compute_cp_loss(50, 50, chess.WHITE) == 0
 
 
 # --- _classify_mistake ---
@@ -126,44 +96,6 @@ def test_explanation_invalid_best_san():
     board = chess.Board()
     result = generate_explanation(board, "e4", "INVALID", 100, "mistake")
     assert "A better move was INVALID" in result
-
-
-# --- _analysis_limit ---
-
-
-def test_analysis_limit_kings_and_pawns():
-    """King+pawns endgame (<=7 pieces) gets maximum time."""
-    board = chess.Board("8/4k3/8/8/8/3K4/4P3/8 w - - 0 1")  # K+P vs K
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 5.0
-    assert limit.depth == 60
-
-
-def test_analysis_limit_pure_endgame():
-    """Endgame with pieces (<=7) gets high time."""
-    board = chess.Board("8/4k3/8/8/8/3K4/4R3/8 w - - 0 1")  # K+R vs K
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 5.0
-    assert limit.depth == 50
-
-
-def test_analysis_limit_late_middlegame():
-    """8-12 pieces gets moderate time."""
-    # 10 pieces: 2K + 2R + 2B + 4P
-    board = chess.Board("r1b1k3/8/8/8/8/8/4PP2/R1B1K3 w - - 0 1")
-    assert len(board.piece_map()) <= 12
-    assert len(board.piece_map()) > 7
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 5.0
-    assert limit.depth == 40
-
-
-def test_analysis_limit_opening():
-    """Many pieces (>12) uses default depth with time cap."""
-    board = chess.Board()  # Starting position, 32 pieces
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 5.0
-    assert limit.depth == 18
 
 
 # --- _time_pressure_context ---

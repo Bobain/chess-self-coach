@@ -537,62 +537,6 @@ def test_app_mode_smoke(page, app_url):
     assert "SF" in version_text, f"Expected SF version in nav header, got: {version_text}"
 
 
-def test_raw_data_summary_modal(page, app_url, console_errors):
-    """[App] mode: Raw data summary shows game list with position counts."""
-    page.goto(app_url)
-    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
-
-    # Open menu
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    # Stats item should be visible (both modes, no disabled check needed)
-    stats_item = page.locator("#nav-stats")
-    expect(stats_item).to_be_visible()
-
-    # Click stats
-    stats_item.click()
-    page.wait_for_timeout(500)
-
-    # Modal should appear with game list from fixture data (4 positions)
-    expect(page.locator("#stats-modal")).to_be_visible()
-    expect(page.locator("#stats-content")).to_contain_text("4 positions")
-    expect(page.locator("#stats-content")).to_contain_text("game")
-
-    # Table with opponent names should be present (4 games in fixture)
-    expect(page.locator(".raw-data-table")).to_be_visible()
-    expect(page.locator(".raw-data-table tbody tr")).to_have_count(4)
-
-    # Close modal
-    page.locator("#close-stats").click()
-    expect(page.locator("#stats-modal")).not_to_be_visible()
-
-    # Verify console logs
-    log_text = "\n".join(console_errors["messages"])
-    assert "[showRawDataSummary]" in log_text
-
-
-def test_raw_data_summary_in_demo_mode(page, pwa_url):
-    """[Demo] mode: Raw data summary works without backend."""
-    _wait_for_board(page, pwa_url)
-
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    stats_item = page.locator("#nav-stats")
-    expect(stats_item).to_be_visible()
-
-    stats_item.click()
-    page.wait_for_timeout(500)
-
-    expect(page.locator("#stats-modal")).to_be_visible()
-    expect(page.locator("#stats-content")).to_contain_text("positions")
-    expect(page.locator(".raw-data-table")).to_be_visible()
-
-    page.locator("#close-stats").click()
-    expect(page.locator("#stats-modal")).not_to_be_visible()
-
-
 def test_app_mode_refresh_games(page, app_url, console_errors):
     """[App] mode: Refresh menu item triggers game fetch."""
     page.goto(app_url)
@@ -718,7 +662,6 @@ def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     expect(page.locator("#nav-config")).not_to_be_visible()
 
     # Both-mode items are visible in demo mode
-    expect(page.locator("#nav-stats")).to_be_visible()
     expect(page.locator("#nav-settings")).to_be_visible()
 
     # Version is empty in demo mode (no backend)

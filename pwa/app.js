@@ -976,166 +976,6 @@ function startSession() {
   showPosition(0);
 }
 
-// --- Modal data helper ---
-
-/**
- * Show a modal, fetch data from an API, and build content via callback.
- * Handles loading state, error responses, and connection failures.
- * @param {string} modalId - ID of the modal element.
- * @param {string} contentId - ID of the content div inside the modal.
- * @param {string} apiUrl - API endpoint to fetch.
- * @param {Function} buildFn - Callback receiving (contentEl, data) to build DOM.
- * @param {Object} [fetchOpts] - Optional fetch options (e.g. { method: 'POST' }).
- * @async
- */
-async function showModalWithData(modalId, contentId, apiUrl, buildFn, fetchOpts) {
-  const modal = document.getElementById(modalId);
-  const content = document.getElementById(contentId);
-  if (!modal || !content) {
-    console.error(`[showModalWithData] ${modalId} elements not found`);
-    return;
-  }
-  content.textContent = 'Loading...';
-  modal.classList.remove('hidden');
-  try {
-    const resp = await fetch(apiUrl, fetchOpts);
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log(`[showModalWithData] ${modalId} API error:`, resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to load.';
-      return;
-    }
-    const data = await resp.json();
-    content.textContent = '';
-    buildFn(content, data);
-  } catch (err) {
-    console.error(`[showModalWithData] ${modalId} fetch failed:`, err);
-    content.textContent = 'Failed to connect to server.';
-  }
-}
-
-// --- Stats modal ---
-
-/**
- * Show the Raw Data Summary modal.
- * Computed entirely client-side from trainingData + srsState.
- */
-function showRawDataSummary() {
-  console.log('[showRawDataSummary] Building summary...');
-  const modal = document.getElementById('stats-modal');
-  const content = document.getElementById('stats-content');
-  while (content.firstChild) content.firstChild.remove();
-
-  const positions = (trainingData && trainingData.positions) || [];
-  const total = positions.length;
-
-  // Group positions by game.id
-  const games = new Map();
-  for (const pos of positions) {
-    const gid = (pos.game && pos.game.id) || 'unknown';
-    if (!games.has(gid)) {
-      games.set(gid, {
-        id: gid,
-        opponent: (pos.game && pos.game.opponent) || '?',
-        source: (pos.game && pos.game.source) || '',
-        date: (pos.game && pos.game.date) || '',
-        positions: 0,
-        positionIds: [],
-      });
-    }
-    const g = games.get(gid);
-    g.positions++;
-    g.positionIds.push(pos.id);
-  }
-
-  // Compute SRS stats per game
-  let totalLessons = 0;
-  let totalDismissed = 0;
-  for (const game of games.values()) {
-    let gameLessons = 0;
-    let gameDismissed = 0;
-    for (const pid of game.positionIds) {
-      const state = srsState[pid];
-      if (state && state.history) {
-        gameLessons += state.history.length;
-        for (const h of state.history) {
-          if (h.dismissed) gameDismissed++;
-        }
-      }
-    }
-    game.lessons = gameLessons;
-    game.dismissed = gameDismissed;
-    totalLessons += gameLessons;
-    totalDismissed += gameDismissed;
-  }
-
-  // Integrity check
-  const sumPositions = [...games.values()].reduce((s, g) => s + g.positions, 0);
-  if (sumPositions !== total) {
-    const warn = document.createElement('p');
-    warn.className = 'raw-data-warning';
-    warn.textContent = `⚠ Integrity error: sum of per-game positions (${sumPositions}) ≠ total (${total})`;
-    content.appendChild(warn);
-  }
-
-  // Header
-  const header = document.createElement('p');
-  header.className = 'raw-data-header';
-  header.textContent = `${total} positions from ${games.size} game${games.size !== 1 ? 's' : ''}`;
-  content.appendChild(header);
-
-  // Global SRS stats
-  const srsLine = document.createElement('p');
-  srsLine.className = 'stats-label';
-  srsLine.textContent = `${totalLessons} lesson${totalLessons !== 1 ? 's' : ''} taken · ${totalDismissed} dismissed`;
-  content.appendChild(srsLine);
-
-  // Game list
-  const table = document.createElement('table');
-  table.className = 'raw-data-table';
-  const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Opponent</th><th>Positions</th><th>Lessons</th><th>Dismissed</th></tr>';
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  for (const game of games.values()) {
-    const tr = document.createElement('tr');
-
-    // Opponent cell with link
-    const tdOpp = document.createElement('td');
-    if (game.id && game.id.startsWith('http')) {
-      const a = document.createElement('a');
-      a.href = game.id;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.textContent = game.opponent;
-      tdOpp.appendChild(a);
-    } else {
-      tdOpp.textContent = game.opponent;
-    }
-    tr.appendChild(tdOpp);
-
-    const tdPos = document.createElement('td');
-    tdPos.textContent = game.positions;
-    tr.appendChild(tdPos);
-
-    const tdLes = document.createElement('td');
-    tdLes.textContent = game.lessons;
-    tr.appendChild(tdLes);
-
-    const tdDis = document.createElement('td');
-    tdDis.textContent = game.dismissed;
-    tr.appendChild(tdDis);
-
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  content.appendChild(table);
-
-  console.log(`[showRawDataSummary] ${total} positions, ${games.size} games, ${totalLessons} lessons, ${totalDismissed} dismissed`);
-  modal.classList.remove('hidden');
-}
-
 // --- Analysis settings modal ---
 
 /**
@@ -1475,7 +1315,7 @@ function winProb(cp) {
  * Classify a move based on expected points lost.
  * @param {Object} move - Move data from analysis_data.json.
  * @param {string} playerColor - 'white' or 'black'.
- * @returns {{category: string, symbol: string, color: string, cssClass: string}}
+ * @returns {{category: string, symbol: string, color: string}}
  */
 function classifyMove(move, playerColor) {
   // Book moves: only classify as book if no eval data is available
@@ -1484,7 +1324,7 @@ function classifyMove(move, playerColor) {
     const eb = move.eval_before;
     const ea = move.eval_after;
     if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) {
-      return { category: 'book', symbol: '\u2657', color: '#a88764', cssClass: 'class-book' };
+      return { category: 'book', symbol: '\u2657', color: '#a88764' };
     }
     // Has eval data — fall through to normal classification
   }
@@ -1505,14 +1345,14 @@ function classifyMove(move, playerColor) {
       if (evalAfter.is_mate && evalAfter.mate_in != null) {
         // mate_in === 0 means checkmate delivered — best possible move
         if (evalAfter.mate_in === 0) {
-          return { category: 'best', symbol: '\u2605', color: '#96bc4b', cssClass: 'class-best' };
+          return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
         }
         const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
         if (!stillMate) {
-          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431', cssClass: 'class-missed-win' };
+          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
         }
       } else {
-        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431', cssClass: 'class-missed-win' };
+        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
       }
     }
   }
@@ -1524,17 +1364,17 @@ function classifyMove(move, playerColor) {
   const eplLost = wpBefore - wpAfter;
 
   if (eplLost <= 0) {
-    return { category: 'best', symbol: '\u2605', color: '#96bc4b', cssClass: 'class-best' };
+    return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
   } else if (eplLost <= 0.02) {
-    return { category: 'excellent', symbol: '!', color: '#96bc4b', cssClass: 'class-excellent' };
+    return { category: 'excellent', symbol: '!', color: '#96bc4b' };
   } else if (eplLost <= 0.05) {
-    return { category: 'good', symbol: '', color: '#95b776', cssClass: 'class-good' };
+    return { category: 'good', symbol: '', color: '#95b776' };
   } else if (eplLost <= 0.10) {
-    return { category: 'inaccuracy', symbol: '?!', color: '#f7c631', cssClass: 'class-inaccuracy' };
+    return { category: 'inaccuracy', symbol: '?!', color: '#f7c631' };
   } else if (eplLost <= 0.20) {
-    return { category: 'mistake', symbol: '?', color: '#e6912a', cssClass: 'class-mistake' };
+    return { category: 'mistake', symbol: '?', color: '#e6912a' };
   } else {
-    return { category: 'blunder', symbol: '??', color: '#ca3431', cssClass: 'class-blunder' };
+    return { category: 'blunder', symbol: '??', color: '#ca3431' };
   }
 }
 
@@ -2552,7 +2392,6 @@ async function init() {
     }
   }
 
-  wireNavItem('nav-stats', showRawDataSummary, 'stats-modal');
   wireNavItem('nav-refresh', async () => {
     console.log('[nav-refresh] Refreshing game list...');
     await autoFetchGames();

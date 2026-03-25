@@ -39,16 +39,6 @@ _CATEGORY_TIERS: dict[str, str] = {
     "maybe-loss": "LOSS",
 }
 
-# Synthetic cp_loss for WDL transitions (used internally for sorting/classification)
-_TRANSITION_CP_LOSS: dict[tuple[str, str], int] = {
-    ("WIN", "DRAW"): 300,
-    ("WIN", "LOSS"): 600,
-    ("DRAW", "LOSS"): 300,
-}
-
-_FLIP = {"WIN": "LOSS", "LOSS": "WIN", "DRAW": "DRAW"}
-
-
 @dataclass
 class TablebaseResult:
     """Result from a tablebase probe."""
@@ -147,36 +137,6 @@ def probe_position_full(fen: str) -> dict | None:
     data["tier"] = _CATEGORY_TIERS[category]
 
     return data
-
-
-def tablebase_cp_loss(
-    before: TablebaseResult,
-    after: TablebaseResult,
-    side_to_move: chess.Color,
-) -> int:
-    """Compute synthetic cp_loss from WDL transition.
-
-    Only category transitions matter (Win->Draw, Draw->Loss, etc.).
-    DTZ changes within the same category are ignored — they are noise
-    at club level and DTZ measures 50-move-rule distance, not difficulty.
-
-    Args:
-        before: Tablebase result BEFORE the player's move.
-        after: Tablebase result AFTER the player's move.
-        side_to_move: Color of the player who made the move.
-
-    Returns:
-        Synthetic cp_loss (0 = acceptable, 300 = blunder, 600 = blunder).
-    """
-    tier_before = before.tier
-    tier_after = after.tier
-
-    # Flip perspective for Black (API always returns from side-to-move perspective)
-    if side_to_move == chess.BLACK:
-        tier_before = _FLIP[tier_before]
-        tier_after = _FLIP[tier_after]
-
-    return _TRANSITION_CP_LOSS.get((tier_before, tier_after), 0)
 
 
 def tablebase_context(

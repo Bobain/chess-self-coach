@@ -1,7 +1,7 @@
 """Shared constants for chess analysis engine.
 
 Single source of truth for values used across multiple modules
-(analysis.py, trainer.py, tablebase.py, analyze.py).
+(analysis.py, trainer.py, tablebase.py).
 """
 
 from __future__ import annotations

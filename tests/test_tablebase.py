@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import chess
-
 from chess_self_coach.tablebase import (
     TablebaseResult,
     tablebase_context,
-    tablebase_cp_loss,
     tablebase_explanation,
 )
 
@@ -15,64 +12,6 @@ from chess_self_coach.tablebase import (
 def _tb(category: str, dtz: int | None = None, dtm: int | None = None) -> TablebaseResult:
     """Shortcut to create a TablebaseResult."""
     return TablebaseResult(category=category, dtz=dtz, dtm=dtm, best_move=None)
-
-
-# --- tablebase_cp_loss ---
-
-
-def test_classify_win_to_draw():
-    """Win -> Draw is a blunder (300cp)."""
-    assert tablebase_cp_loss(_tb("win"), _tb("draw"), chess.WHITE) == 300
-
-
-def test_classify_win_to_loss():
-    """Win -> Loss is a severe blunder (600cp)."""
-    assert tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE) == 600
-
-
-def test_classify_draw_to_loss():
-    """Draw -> Loss is a blunder (300cp)."""
-    assert tablebase_cp_loss(_tb("draw"), _tb("loss"), chess.WHITE) == 300
-
-
-def test_classify_win_to_win():
-    """Win -> Win is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("win", dtz=5), _tb("win", dtz=40), chess.WHITE) == 0
-
-
-def test_classify_draw_to_draw():
-    """Draw -> Draw is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("draw"), _tb("draw"), chess.WHITE) == 0
-
-
-def test_classify_loss_to_loss():
-    """Loss -> Loss is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("loss"), _tb("loss"), chess.WHITE) == 0
-
-
-def test_classify_loss_to_draw():
-    """Loss -> Draw (opponent blundered) is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("loss"), _tb("draw"), chess.WHITE) == 0
-
-
-def test_classify_cursed_win_treated_as_draw():
-    """cursed-win is grouped with DRAW tier."""
-    assert tablebase_cp_loss(_tb("win"), _tb("cursed-win"), chess.WHITE) == 300
-
-
-def test_classify_blessed_loss_treated_as_draw():
-    """blessed-loss is grouped with DRAW tier."""
-    assert tablebase_cp_loss(_tb("blessed-loss"), _tb("loss"), chess.WHITE) == 300
-
-
-def test_classify_black_perspective():
-    """Black's perspective is flipped: API 'loss' for Black means side-to-move loses."""
-    # From API: before=loss (Black is losing), after=draw
-    # From Black's perspective: before=WIN (opponent losing), after=DRAW
-    # This is a blunder for Black? No — the API categories are already from
-    # side-to-move perspective. We flip to normalize.
-    # before=loss -> flipped to WIN, after=draw -> stays DRAW -> WIN->DRAW = 300
-    assert tablebase_cp_loss(_tb("loss"), _tb("draw"), chess.BLACK) == 300
 
 
 # --- format_verdict ---
@@ -179,18 +118,6 @@ def test_context_black_winning_says_winning():
     tb = _tb("win", dtz=-10)
     ctx = tablebase_context(tb, 7, "black")
     assert "winning" in ctx, f"Black is winning but context says: {ctx}"
-
-
-def test_cp_loss_black_loss_to_win_is_blunder():
-    """Black LOSS→WIN (side-to-move): after flip = WIN→LOSS = 600cp blunder."""
-    cp = tablebase_cp_loss(_tb("loss"), _tb("win"), chess.BLACK)
-    assert cp == 600, f"Expected 600 cp_loss for flipped WIN→LOSS, got {cp}"
-
-
-def test_cp_loss_white_win_to_loss_is_blunder():
-    """White WIN→LOSS (no flip needed): 600cp blunder."""
-    cp = tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE)
-    assert cp == 600, f"Expected 600 cp_loss for WIN→LOSS, got {cp}"
 
 
 # --- probe_position_full ---
