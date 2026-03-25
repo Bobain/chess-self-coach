@@ -82,7 +82,7 @@ sequenceDiagram
 
 ### Key details
 
-- **Game list**: default view, shows all games (analyzed + cached). Cards showing opponent, date, result (W/D/L badge), opening name, move count. Analyzed games also show accuracy % and classification badges.
+- **Game list**: default view, shows all games (analyzed + cached). Cards showing opponent, date, result (W/D/L badge), opening name, move count. Analyzed games also show accuracy % and classification badges. All games have checkboxes for (re-)analysis; selecting an already-analyzed game auto-sets `reanalyze_all`.
 - **Training**: accessible via hamburger menu → "Training" (all positions) or per-game "Train" button in review.
 - **Move classifications**: win probability model — `winProb(cp) = 1/(1+10^(-cp/400))`, thresholds: Best ≤0, Excellent ≤0.02, Good ≤0.05, Inaccuracy ≤0.10, Mistake ≤0.20, Blunder >0.20. Special: Brilliant (sacrifice + EPL ≤0.02 + wpBefore <0.95).
 - **Eval bar**: sigmoid mapping, 50% at equal, smooth CSS transition. For book moves (no Stockfish eval), derives approximate cp from opening explorer win/draw/loss stats. Shows "M3" for mate.
@@ -111,7 +111,7 @@ sequenceDiagram
     participant C as Chess.com API
 
     U->>PWA: Select games (checkboxes) + click "Analyze selected"
-    PWA->>API: POST /api/analysis/start {game_ids}
+    PWA->>API: POST /api/analysis/start {game_ids, reanalyze_all}
     API-->>PWA: 202 + job_id
     PWA->>API: GET /api/jobs/{id}/events (SSE)
 
