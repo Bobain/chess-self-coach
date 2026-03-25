@@ -1224,56 +1224,39 @@ function startSession() {
 function showAnalysisProgress(jobId) {
   console.log('[showAnalysisProgress] Starting job:', jobId);
 
-  // Header progress bar (non-blocking, visible across all views)
-  const headerProgress = document.getElementById('analysis-progress');
-  const progressBar = document.getElementById('analysis-progress-bar');
-  const progressText = document.getElementById('analysis-progress-text');
-  if (headerProgress) headerProgress.classList.remove('hidden');
-  if (progressBar) progressBar.value = 0;
-  if (progressText) progressText.textContent = 'Starting...';
+  const el = document.getElementById('analysis-progress');
+  if (!el) return;
+  el.textContent = 'Analyzing...';
+  el.classList.remove('hidden');
 
-  // Click on progress bar to cancel
-  if (headerProgress) {
-    headerProgress.style.cursor = 'pointer';
-    headerProgress.title = 'Click to cancel analysis';
-    headerProgress.onclick = async () => {
-      try {
-        await fetch(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
-        console.log('[showAnalysisProgress] Cancel requested');
-      } catch (err) {
-        console.error('[showAnalysisProgress] Cancel failed:', err);
-      }
-    };
-  }
+  // Click to cancel
+  el.onclick = async () => {
+    try {
+      await fetch(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
+      console.log('[showAnalysisProgress] Cancel requested');
+    } catch (err) {
+      console.error('[showAnalysisProgress] Cancel failed:', err);
+    }
+  };
 
   const evtSource = new EventSource(`/api/jobs/${jobId}/events`);
   evtSource.onmessage = (e) => {
     const event = JSON.parse(e.data);
     console.log('[showAnalysisProgress] Event:', event.phase, event.percent);
 
-    // Update header progress bar
-    if (progressBar && event.percent != null) {
-      progressBar.value = event.percent;
-    }
-    if (progressText) {
-      if (event.current != null && event.total != null) {
-        progressText.textContent = `${event.current}/${event.total}`;
-      } else if (event.phase === 'fetch') {
-        progressText.textContent = 'Fetching...';
-      } else if (event.phase === 'derive') {
-        progressText.textContent = 'Deriving...';
-      } else {
-        progressText.textContent = `${event.percent || 0}%`;
-      }
+    if (event.phase === 'fetch') {
+      el.textContent = 'Fetching...';
+    } else if (event.current != null && event.total != null) {
+      el.textContent = `Analyzing ${event.current}/${event.total}`;
+    } else if (event.phase === 'derive') {
+      el.textContent = 'Finalizing...';
+    } else if (event.phase === 'analyze') {
+      el.textContent = 'Analyzing...';
     }
 
     if (event.phase === 'done' || event.phase === 'error' || event.phase === 'interrupted') {
       evtSource.close();
-      // Hide header progress after a short delay
-      setTimeout(() => {
-        if (headerProgress) headerProgress.classList.add('hidden');
-      }, 2000);
-      // Refresh game list to show newly analyzed games
+      setTimeout(() => el.classList.add('hidden'), 2000);
       if (event.phase === 'done') {
         loadAnalysisData();
       }
@@ -1281,7 +1264,7 @@ function showAnalysisProgress(jobId) {
   };
   evtSource.onerror = () => {
     evtSource.close();
-    if (headerProgress) headerProgress.classList.add('hidden');
+    el.classList.add('hidden');
   };
 }
 
