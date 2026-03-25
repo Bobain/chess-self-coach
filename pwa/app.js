@@ -1387,6 +1387,29 @@ function winProb(cp) {
   return 1 / (1 + Math.pow(10, -cp / 400));
 }
 
+/** Piece values in pawns (used for sacrifice detection). */
+const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+
+/**
+ * Detect whether a move is a material sacrifice.
+ * A sacrifice occurs when the moved piece can be recaptured by the opponent
+ * and the net material exchange is negative for the moving side.
+ * @param {Object} move - Move data with fen_before and move_san.
+ * @returns {boolean} True if the move is a sacrifice.
+ */
+function isSacrifice(move) {
+  if (!move.fen_before || !move.move_san) return false;
+  const chess = new Chess(move.fen_before);
+  const result = chess.move(move.move_san);
+  if (!result) return false;
+  const capturedValue = result.captured ? PIECE_VALUES[result.captured] : 0;
+  const ourPieceValue = PIECE_VALUES[result.piece];
+  const opponentMoves = chess.moves({ verbose: true });
+  const recaptures = opponentMoves.filter(m => m.to === result.to);
+  if (recaptures.length === 0) return false;
+  return (capturedValue - ourPieceValue) < -0.5;
+}
+
 /**
  * Classify a move based on expected points lost.
  * @param {Object} move - Move data from analysis_data.json.
@@ -1439,6 +1462,11 @@ function classifyMove(move, playerColor) {
   const wpAfter = winProb(evalAfter.score_cp * sign);
   const eplLost = wpBefore - wpAfter;
 
+  // Brilliant detection: sacrifice + best/near-best + not already dominating
+  if (eplLost <= 0.02 && wpBefore < 0.95 && isSacrifice(move)) {
+    return { category: 'brilliant', symbol: '!!', color: '#1baca6' };
+  }
+
   if (eplLost <= 0) {
     return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
   } else if (eplLost <= 0.02) {
@@ -1456,6 +1484,7 @@ function classifyMove(move, playerColor) {
 
 // Expose for E2E testing (module-scoped functions are not accessible from page.evaluate)
 window._classifyMove = classifyMove;
+window._isSacrifice = isSacrifice;
 
 /**
  * Classify all moves in a game for both players.
@@ -1696,6 +1725,7 @@ async function showGameSelector() {
     const playerAcc = computeAccuracy(game.moves, classified, game.player_color);
     const opponentAcc = computeAccuracy(game.moves, classified, opponentColor);
     const categories = [
+      { key: 'brilliant', label: '!!', color: '#1baca6', title: 'brilliant moves' },
       { key: 'inaccuracy', label: '?!', color: '#f7c631', title: 'inaccuracies' },
       { key: 'mistake', label: '?', color: '#e6912a', title: 'mistakes' },
       { key: 'blunder', label: '??', color: '#ca3431', title: 'blunders' },
@@ -2182,7 +2212,7 @@ function renderScoreChart() {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const cp = getEval(moves[i]);
         const y = cpToY(cp);
@@ -2296,7 +2326,7 @@ function renderScoreChartBase(ctx, w, h) {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const y = cpToY(getEval(moves[i]));
         ctx.beginPath();
