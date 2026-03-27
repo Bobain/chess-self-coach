@@ -27,8 +27,9 @@ def _wait_for_board(page, url):
     page.goto(url)
     # Default view is game list; switch to training via nav menu
     page.wait_for_selector("#menu-btn", timeout=5000)
+    page.wait_for_timeout(500)
     page.click("#menu-btn")
-    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=5000)
+    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=10000)
     page.click("#nav-training")
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
 

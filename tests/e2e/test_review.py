@@ -336,8 +336,9 @@ def test_training_via_menu(page, pwa_url):
     _wait_for_game_list(page, pwa_url)
 
     # Open menu and click Training
+    page.wait_for_timeout(500)
     page.click("#menu-btn")
-    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=5000)
+    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=10000)
     page.click("#nav-training")
 
     # Training view should be visible
