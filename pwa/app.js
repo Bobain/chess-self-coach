@@ -1640,6 +1640,31 @@ function updateAnalyzeButton() {
 }
 
 /**
+ * Build pagination controls element.
+ * @param {number} totalPages - Total number of pages.
+ * @param {number} totalGames - Total number of filtered games.
+ * @returns {HTMLDivElement}
+ */
+function _buildPagination(totalPages, totalGames) {
+  const el = document.createElement('div');
+  el.className = 'game-list-pagination';
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = '\u2190 Previous';
+  prevBtn.disabled = gameListPage === 0;
+  prevBtn.addEventListener('click', () => { gameListPage--; showGameSelector(); });
+  const info = document.createElement('span');
+  info.textContent = `Page ${gameListPage + 1} / ${totalPages} (${totalGames} games)`;
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next \u2192';
+  nextBtn.disabled = gameListPage >= totalPages - 1;
+  nextBtn.addEventListener('click', () => { gameListPage++; showGameSelector(); });
+  el.appendChild(prevBtn);
+  el.appendChild(info);
+  el.appendChild(nextBtn);
+  return el;
+}
+
+/**
  * Render the game selector list with checkboxes and analysis status.
  */
 async function showGameSelector() {
@@ -1681,16 +1706,36 @@ async function showGameSelector() {
     }
   }
 
-  // Build opening counts for the dropdown (before filtering by opening)
+  // Helper: extract opening name from game moves (last known opening = most specific)
+  function getEntryOpening(entry) {
+    const game = entry.richData;
+    if (!game || !game.moves) return '';
+    let name = '';
+    for (const m of game.moves) {
+      if (m.opening_explorer && m.opening_explorer.moves) {
+        for (const om of m.opening_explorer.moves) {
+          if (om.opening && om.opening.name && om.uci === m.move_uci) {
+            name = om.opening.name;
+          }
+        }
+      }
+    }
+    return name;
+  }
+
+  // Cache opening names for all entries (used for filter + dropdown)
+  const entryOpenings = new Map();
   const openingCounts = new Map();
   for (const entry of unifiedList) {
-    const opening = entry.richData?.headers?.opening || entry.apiData?.opening || '';
+    const opening = getEntryOpening(entry);
+    entryOpenings.set(entry.gameId, opening);
     if (opening) openingCounts.set(opening, (openingCounts.get(opening) || 0) + 1);
   }
+
+  // Populate opening dropdown from ALL games (not just current page)
   const openingSelect = document.getElementById('opening-filter-select');
   if (openingSelect) {
     const currentVal = openingFilter;
-    // Clear and rebuild options using DOM methods (safe, no innerHTML)
     while (openingSelect.options.length > 1) openingSelect.remove(1);
     const sorted = [...openingCounts.entries()].sort((a, b) => b[1] - a[1]);
     for (const [name, count] of sorted) {
@@ -1719,8 +1764,7 @@ async function showGameSelector() {
     if (colorFilter !== 'all' && pc !== colorFilter) return false;
     // Opening filter
     if (openingFilter !== 'all') {
-      const opening = entry.richData?.headers?.opening || entry.apiData?.opening || '';
-      if (opening !== openingFilter) return false;
+      if (entryOpenings.get(entry.gameId) !== openingFilter) return false;
     }
     // Status filter
     if (statusFilter === 'analyzed' && !entry.analyzed) return false;
@@ -1754,6 +1798,11 @@ async function showGameSelector() {
       if (selectAllLabel) selectAllLabel.classList.add('hidden');
       if (analyzeBtn) analyzeBtn.classList.add('hidden');
     }
+  }
+
+  // Top pagination
+  if (totalPages > 1) {
+    selector.appendChild(_buildPagination(totalPages, filteredList.length));
   }
 
   for (const entry of limitedEntries) {
@@ -1915,24 +1964,9 @@ async function showGameSelector() {
     selector.appendChild(card);
   }
 
-  // Pagination controls
+  // Pagination controls (bottom)
   if (totalPages > 1) {
-    const paginationEl = document.createElement('div');
-    paginationEl.className = 'game-list-pagination';
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = '← Previous';
-    prevBtn.disabled = gameListPage === 0;
-    prevBtn.addEventListener('click', () => { gameListPage--; showGameSelector(); });
-    const info = document.createElement('span');
-    info.textContent = `Page ${gameListPage + 1} / ${totalPages} (${filteredList.length} games)`;
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next →';
-    nextBtn.disabled = gameListPage >= totalPages - 1;
-    nextBtn.addEventListener('click', () => { gameListPage++; showGameSelector(); });
-    paginationEl.appendChild(prevBtn);
-    paginationEl.appendChild(info);
-    paginationEl.appendChild(nextBtn);
-    selector.appendChild(paginationEl);
+    selector.appendChild(_buildPagination(totalPages, filteredList.length));
   }
 
   updateAnalyzeButton();
