@@ -304,12 +304,21 @@ cg-container {
 
 .cg-wrap coords.ranks {
   left: -1.5rem !important;
+  top: 0 !important;
   width: 1.5rem !important;
+  align-items: center !important;
+}
+
+.cg-wrap coords.ranks coord {
+  transform: none !important;
 }
 
 .cg-wrap coords.files {
   bottom: -1.5rem !important;
+  left: 0 !important;
   height: 1.5rem !important;
+  align-items: center !important;
+  justify-content: space-around !important;
 }
 
 .cg-wrap coords coord {
@@ -317,6 +326,7 @@ cg-container {
   color: var(--text-dim) !important;
   font-size: 0.8rem !important;
   text-shadow: none !important;
+  text-align: center !important;
 }
 
 #info-panel {
