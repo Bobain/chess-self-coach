@@ -414,6 +414,7 @@ cg-container {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 #pv-line {
@@ -451,11 +452,31 @@ cg-container {
   font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.15s;
+  flex-basis: 100%;
+  text-align: center;
 }
 
 #dismiss-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+#skip-btn,
+#show-answer-btn {
+  background: none;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#skip-btn:hover,
+#show-answer-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 #retry-btn,
