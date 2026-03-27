@@ -511,6 +511,14 @@ async def job_events(job_id: str):
     return EventSourceResponse(event_generator())
 
 
+@app.get("/api/jobs/current")
+async def job_current():
+    """Return the current job ID and status, if any."""
+    if not _current_job:
+        return {"job_id": None, "status": None}
+    return {"job_id": _current_job["id"], "status": _current_job["status"]}
+
+
 @app.post("/api/jobs/{job_id}/cancel", status_code=202)
 async def job_cancel(job_id: str):
     """Request cancellation of a running job."""

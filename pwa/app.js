@@ -3003,6 +3003,26 @@ async function analyzeSelectedGames() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
     });
+    if (resp.status === 409) {
+      // Job already running (e.g. after page refresh) — queue and reconnect
+      console.log('[analyzeSelectedGames] Job already running, queuing', ids.length, 'game(s)');
+      for (const id of ids) pendingGameIds.add(id);
+      analysisTotalAll += ids.length;
+      selectedGameIds.clear();
+      // Reconnect to the running job's SSE stream
+      try {
+        const jobResp = await fetch('/api/jobs/current');
+        if (jobResp.ok) {
+          const { job_id: runningJobId, status } = await jobResp.json();
+          if (runningJobId && status === 'running') {
+            analyzingGameIds = new Set();  // unknown which games, but job is running
+            showAnalysisProgress(runningJobId);
+          }
+        }
+      } catch (e) { /* ignore */ }
+      showGameSelector();
+      return;
+    }
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       console.error('[analyzeSelectedGames] API error:', resp.status, err.detail);
