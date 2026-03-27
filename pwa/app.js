@@ -2472,7 +2472,7 @@ async function init() {
       });
 
       // Enable ready endpoints
-      const refreshItem = document.getElementById('nav-refresh');
+      const refreshItem = document.getElementById('nav-fetch');
       if (refreshItem) refreshItem.classList.remove('disabled');
 
       // Set version in menu
@@ -2596,9 +2596,21 @@ async function init() {
     }
   }
 
-  wireNavItem('nav-refresh', async () => {
-    console.log('[nav-refresh] Refreshing game list...');
-    await autoFetchGames();
+  wireNavItem('nav-fetch', () => {
+    document.getElementById('fetch-modal').classList.remove('hidden');
+  });
+
+  document.getElementById('close-fetch')?.addEventListener('click', () => {
+    document.getElementById('fetch-modal').classList.add('hidden');
+  });
+
+  document.getElementById('fetch-latest-btn')?.addEventListener('click', async () => {
+    await doFetchGames(200);
+  });
+
+  document.getElementById('fetch-count-btn')?.addEventListener('click', async () => {
+    const count = parseInt(document.getElementById('fetch-count-input').value, 10) || 50;
+    await doFetchGames(count);
   });
 
 
@@ -2800,11 +2812,32 @@ async function autoFetchGames() {
   if (selector) selector.textContent = 'Fetching your games...';
   try {
     await fetch('/api/games/fetch', { method: 'POST' });
-    // Refresh game list to show newly fetched games
     await showGameSelector();
   } catch (err) {
     console.error('[autoFetchGames] Failed:', err);
-    // Fallback: game list was already shown by showGameList
+  }
+}
+
+/**
+ * Fetch games with a specific max_games parameter. Updates the modal status.
+ * @param {number} maxGames - Maximum number of games to fetch per source.
+ */
+async function doFetchGames(maxGames) {
+  const statusEl = document.getElementById('fetch-status');
+  const btns = document.querySelectorAll('.fetch-option');
+  btns.forEach(b => { b.disabled = true; });
+  if (statusEl) statusEl.textContent = 'Fetching...';
+  try {
+    await fetch(`/api/games/fetch?max_games=${maxGames}`, { method: 'POST' });
+    if (statusEl) statusEl.textContent = 'Done!';
+    document.getElementById('fetch-modal').classList.add('hidden');
+    if (statusEl) statusEl.textContent = '';
+    await showGameSelector();
+  } catch (err) {
+    console.error('[doFetchGames] Failed:', err);
+    if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btns.forEach(b => { b.disabled = false; });
   }
 }
 

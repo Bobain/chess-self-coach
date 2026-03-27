@@ -34,7 +34,7 @@
     <ul id="nav-items">
       <li id="nav-games" class="nav-item">Games</li>
       <li id="nav-training" class="nav-item">Training</li>
-      <li id="nav-refresh" class="nav-item nav-app-only hidden">Refresh games</li>
+      <li id="nav-fetch" class="nav-item nav-app-only hidden">Fetch games</li>
       <li class="nav-separator"></li>
       <li id="nav-settings" class="nav-item">Settings</li>
       <li id="nav-about" class="nav-item">About</li>
@@ -249,6 +249,25 @@
       <div class="modal-actions">
         <span></span>
         <button id="close-about" class="modal-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fetch Games Modal -->
+  <div id="fetch-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Fetch games</h2>
+      <div class="modal-body">
+        <button id="fetch-latest-btn" class="fetch-option">Fetch latest games</button>
+        <div class="fetch-count-row">
+          <button id="fetch-count-btn" class="fetch-option">Fetch</button>
+          <input type="number" id="fetch-count-input" value="50" min="10" max="500" step="10">
+          <span>games</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <span id="fetch-status"></span>
+        <button id="close-fetch" class="modal-close">Close</button>
       </div>
     </div>
   </div>

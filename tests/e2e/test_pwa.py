@@ -541,30 +541,28 @@ def test_app_mode_smoke(page, app_url):
     assert "SF" in version_text, f"Expected SF version in nav header, got: {version_text}"
 
 
-def test_app_mode_refresh_games(page, app_url, console_errors):
-    """[App] mode: Refresh menu item triggers game fetch."""
+def test_app_mode_fetch_games(page, app_url, console_errors):
+    """[App] mode: Fetch games menu item opens fetch modal."""
     page.goto(app_url)
     page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
     # Open menu
     page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
+    page.wait_for_timeout(500)
 
-    # Refresh item should be visible and enabled
-    refresh_item = page.locator("#nav-refresh")
-    expect(refresh_item).to_be_visible()
-    expect(refresh_item).not_to_have_class("disabled")
+    # Fetch item should be visible and enabled
+    fetch_item = page.locator("#nav-fetch")
+    expect(fetch_item).to_be_visible()
 
-    # Click refresh → triggers game fetch (console should show it)
-    refresh_item.click()
-    page.wait_for_timeout(2000)
+    # Click fetch → opens modal
+    fetch_item.click()
+    expect(page.locator("#fetch-modal")).to_be_visible()
+    expect(page.locator("#fetch-latest-btn")).to_be_visible()
+    expect(page.locator("#fetch-count-btn")).to_be_visible()
 
-    # Game list should still be visible (refreshed)
-    expect(page.locator("#game-selector")).to_be_visible()
-
-    # Check console for fetch log
-    log_text = "\n".join(console_errors["messages"])
-    assert "[nav-refresh] Refreshing game list" in log_text
+    # Close modal
+    page.locator("#close-fetch").click()
+    expect(page.locator("#fetch-modal")).to_be_hidden()
 
 
 def test_app_mode_unified_settings(page, app_url, console_errors):
@@ -658,7 +656,7 @@ def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
 
-    expect(page.locator("#nav-refresh")).not_to_be_visible()
+    expect(page.locator("#nav-fetch")).not_to_be_visible()
 
     # Both-mode items are visible in demo mode
     expect(page.locator("#nav-settings")).to_be_visible()

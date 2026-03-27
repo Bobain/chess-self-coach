@@ -563,6 +563,44 @@ cg-container {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
+.fetch-option {
+  background: var(--primary);
+  color: var(--text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fetch-option:hover {
+  background: var(--primary-hover);
+}
+
+.fetch-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fetch-count-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.fetch-count-row input {
+  width: 5rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 0.4rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
 .modal-actions {
   display: flex;
   justify-content: space-between;

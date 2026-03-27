@@ -310,7 +310,7 @@ async def update_config(req: ConfigUpdateRequest) -> ConfigResponse:
 
 
 @app.post("/api/games/fetch")
-async def games_fetch() -> GameListResponse:
+async def games_fetch(max_games: int = 200) -> GameListResponse:
     """Fetch games from Lichess/chess.com and cache locally."""
     from chess_self_coach.config import load_config
     from chess_self_coach.game_cache import fetch_and_cache_games, load_game_cache
@@ -327,7 +327,7 @@ async def games_fetch() -> GameListResponse:
         )
 
     summaries = await asyncio.to_thread(
-        fetch_and_cache_games, lichess_user, chesscom_user
+        fetch_and_cache_games, lichess_user, chesscom_user, max_games
     )
     cache = load_game_cache()
 
