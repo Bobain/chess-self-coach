@@ -998,13 +998,20 @@ cg-container {
   background: var(--primary);
 }
 
+#review-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
 #review-back-btn {
   display: inline-block;
-  color: var(--text-secondary, #aaa);
+  color: var(--text, #e0e0e0);
   text-decoration: none;
-  font-size: 0.9rem;
-  padding: 0.3rem 0;
-  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.4rem 0;
   cursor: pointer;
   transition: color 0.15s;
 }

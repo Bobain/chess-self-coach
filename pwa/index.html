@@ -102,7 +102,10 @@
     </div>
     <div id="game-selector"></div>
     <div id="game-review" class="hidden">
-      <a id="review-back-btn" href="#" title="Back to games list">&larr; Back to games list</a>
+      <div id="review-top-bar">
+        <a id="review-back-btn" href="#" title="Back to games list">&larr; Back to games list</a>
+        <button id="review-train-btn" class="hidden" title="Train on positions from this game">Train on this game</button>
+      </div>
       <div id="review-game-info"></div>
       <div id="review-layout">
         <div id="review-board-col">
@@ -129,7 +132,6 @@
         <button id="review-next" title="Next move">&gt;</button>
         <button id="review-last" title="Last move">&gt;|</button>
         <button id="review-flip" title="Flip board">&#8645;</button>
-        <button id="review-train-btn" class="hidden" title="Train on positions from this game">Train on this game</button>
       </div>
     </div>
   </main>
