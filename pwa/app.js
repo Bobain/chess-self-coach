@@ -1404,7 +1404,9 @@ function isSacrifice(move) {
   if (!move.fen_before || !move.move_san || !move.move_uci) return false;
 
   const eb = move.eval_before;
-  if (!eb || !eb.pv_uci || eb.pv_uci.length < 2 || !eb.best_move_uci) return false;
+  // PV must show at least one move beyond the recapture — a 2-move PV
+  // (capture + recapture) indicates a simple exchange with no hidden depth
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 3 || !eb.best_move_uci) return false;
 
   // Must be the engine's best move (PV is only valid for that move)
   if (move.move_uci !== eb.best_move_uci) return false;
