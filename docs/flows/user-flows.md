@@ -29,7 +29,7 @@ sequenceDiagram
             PWA->>SF: getStockfishBestMove(fen)
             SF-->>PWA: Opponent response (UCI)
             PWA->>U: Animate opponent move + Retry button
-            Note over U,PWA: Player can retry<br/>unlimited times or<br/>click "Give up"
+            Note over U,PWA: Player can retry, skip,<br/>show answer (after 3 attempts),<br/>or give up
         end
         U->>PWA: Click Next
     end
@@ -40,6 +40,8 @@ sequenceDiagram
 
 - **Position selection** uses SM-2 spaced repetition: overdue positions first, then new (blunders prioritized), then learning (interval < 7 days). Mastered positions are skipped.
 - **Intra-session repetition**: a correct first attempt reinserts the position 5 slots later for confirmation. A wrong answer reinserts 3 slots later.
+- **Skip** reinserts the position 3 slots later without affecting SRS state.
+- **Show answer** (after 3 wrong attempts) reveals the correct move with explanation and PV, but records a failure in SRS.
 - **Dismiss** ("Give up on this lesson") sets interval to 99999 days — the position never appears again.
 - **SRS state** is stored per position ID in `localStorage` key `train_srs`.
 
