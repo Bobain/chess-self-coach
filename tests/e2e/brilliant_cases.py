@@ -52,7 +52,9 @@ GAMES: list[dict] = [
     {
         "game_id": "StarLight-S2_166265771230",
         "brilliant_indices": [],  # no brilliant moves in this game
-        "notes": {},
+        "notes": {
+            9: "c5 — standard positional pawn push vs London/Réti, not a sacrifice",
+        },
     },
     {
         "game_id": "Xpolash_166334588890",
