@@ -1392,8 +1392,8 @@ const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
 /**
  * Detect whether a move is a material sacrifice.
- * Uses the engine's principal variation (PV) to check if the opponent
- * actually recaptures on the destination square in the best line.
+ * Uses the engine's principal variation (PV) to simulate the full recapture
+ * chain on the destination square and check if net material is negative.
  * @param {Object} move - Move data with fen_before, move_san, move_uci, eval_before.
  * @returns {boolean} True if the move is a sacrifice.
  */
@@ -1411,13 +1411,27 @@ function isSacrifice(move) {
   const oppDest = eb.pv_uci[1].slice(2, 4);
   if (oppDest !== ourDest) return false;
 
-  // Confirm net material is negative (sacrifice)
+  // Simulate full recapture chain on destination square
   const chess = new Chess(move.fen_before);
-  const result = chess.move(move.move_san);
-  if (!result) return false;
-  const capturedValue = result.captured ? PIECE_VALUES[result.captured] : 0;
-  const ourPieceValue = PIECE_VALUES[result.piece];
-  return (capturedValue - ourPieceValue) < -0.5;
+  let materialBalance = 0;
+
+  for (let k = 0; k < eb.pv_uci.length; k++) {
+    const pvDest = eb.pv_uci[k].slice(2, 4);
+    if (k > 0 && pvDest !== ourDest) break;
+
+    const from = eb.pv_uci[k].slice(0, 2);
+    const to = pvDest;
+    const promo = eb.pv_uci[k].length > 4 ? eb.pv_uci[k][4] : undefined;
+    const result = chess.move({ from, to, promotion: promo });
+    if (!result) break;
+
+    if (result.captured) {
+      const sign = (k % 2 === 0) ? 1 : -1;
+      materialBalance += sign * PIECE_VALUES[result.captured];
+    }
+  }
+
+  return materialBalance < -0.5;
 }
 
 /**

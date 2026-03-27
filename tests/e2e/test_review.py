@@ -391,12 +391,12 @@ def test_checkmate_move_classified_as_best(page, pwa_url):
 # --- Brilliant move classification ---
 
 
-def test_brilliant_sacrifice_classified_correctly(page, pwa_url):
-    """A sacrifice that is the best move in a non-dominating position is 'brilliant'.
+def test_favorable_exchange_not_brilliant(page, pwa_url):
+    """A favorable exchange (Rxe3, Rxe3, Rxe3) is not a sacrifice.
 
     Real data: Rxe3 in DDDestryer game (ply 65, move 33).
-    Rook (5) captures knight (3) on e3, PV shows opponent recaptures Rxe3.
-    Eval +457cp → wpBefore=0.933 < 0.95, eplLost=-0.016 ≤ 0.02.
+    Full PV recapture chain: Rook captures Knight (+3), opponent Rook recaptures (-5),
+    our Rook recaptures (+5) → net balance +3 for White. Not a sacrifice.
     """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
@@ -418,12 +418,79 @@ def test_brilliant_sacrifice_classified_correctly(page, pwa_url):
         );
     }""")
 
+    assert result is not None, "classifyMove returned null for exchange move"
+    assert result["category"] == "best", (
+        f"Favorable exchange Rxe3 classified as '{result['category']}' instead of 'best'"
+    )
+    assert result["symbol"] == "\u2605"
+
+
+def test_genuine_sacrifice_is_brilliant(page, pwa_url):
+    """A genuine sacrifice (Nxf7 where Rxf7 wins the knight) is brilliant.
+
+    Knight (3) captures pawn (1) on f7, rook recaptures knight.
+    Net balance: +1 - 3 = -2 → real sacrifice.
+    Eval +200cp → wpBefore≈0.76 < 0.95, eplLost≈-0.02 ≤ 0.02.
+    """
+    page.goto(pwa_url)
+    page.wait_for_selector(".game-card", timeout=10000)
+
+    result = page.evaluate("""() => {
+        return window._classifyMove(
+            {
+                fen_before: 'r1bq1rk1/pppp1ppp/2n2n2/2b1p1N1/2B1P3/3P4/PPP2PPP/RNBQK2R w KQ - 0 7',
+                move_san: 'Nxf7',
+                move_uci: 'g5f7',
+                eval_before: {
+                    score_cp: 200, is_mate: false, mate_in: null,
+                    best_move_uci: 'g5f7',
+                    pv_uci: ['g5f7', 'f8f7', 'd1h5'],
+                },
+                eval_after: { score_cp: 220, is_mate: false, mate_in: null },
+            },
+            'white'
+        );
+    }""")
+
     assert result is not None, "classifyMove returned null for sacrifice move"
     assert result["category"] == "brilliant", (
-        f"Sacrifice Rxe3 classified as '{result['category']}' instead of 'brilliant'"
+        f"Genuine sacrifice Nxf7 classified as '{result['category']}' instead of 'brilliant'"
     )
     assert result["symbol"] == "!!"
     assert result["color"] == "#1baca6"
+
+
+def test_recapture_chain_not_sacrifice(page, pwa_url):
+    """Bxe6, Bxe6, Rxe6 is a favorable recapture, not a sacrifice.
+
+    Real data: 24...Bxe6 in game 166363391518.
+    Bishop (3) captures pawn (1), but full chain nets +1 for Black.
+    """
+    page.goto(pwa_url)
+    page.wait_for_selector(".game-card", timeout=10000)
+
+    result = page.evaluate("""() => {
+        return window._classifyMove(
+            {
+                fen_before: 'r1b1r2k/1p4p1/4Pnqp/p4p2/P4P2/BB2P1P1/2Q4P/4RRK1 b - - 2 24',
+                move_san: 'Bxe6',
+                move_uci: 'c8e6',
+                eval_before: {
+                    score_cp: -56, is_mate: false, mate_in: null,
+                    best_move_uci: 'c8e6',
+                    pv_uci: ['c8e6', 'b3e6', 'e8e6', 'a3b2'],
+                },
+                eval_after: { score_cp: -44, is_mate: false, mate_in: null },
+            },
+            'black'
+        );
+    }""")
+
+    assert result is not None, "classifyMove returned null for Bxe6"
+    assert result["category"] == "excellent", (
+        f"Recapture chain Bxe6 classified as '{result['category']}' instead of 'excellent'"
+    )
+    assert result["symbol"] == "!"
 
 
 def test_non_sacrifice_best_move_not_brilliant(page, pwa_url):
