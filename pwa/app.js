@@ -884,6 +884,9 @@ function showFeedback(correct, position, gaveUp = false) {
   nextBtn.classList.remove('hidden');
   showPosBtn.classList.remove('hidden');
   dismissBtn.classList.remove('hidden');
+  document.getElementById('retry-btn').classList.add('hidden');
+  document.getElementById('skip-btn').classList.add('hidden');
+  document.getElementById('show-answer-btn').classList.add('hidden');
 
   // Compute the FEN after best move for toggle
   let bestMoveFen = null;
@@ -1035,12 +1038,18 @@ function showTryAgain() {
   feedbackText.textContent = 'Not quite. Try again.';
   feedbackText.className = 'try-again';
   document.getElementById('dismiss-btn').classList.remove('hidden');
+  document.getElementById('skip-btn').classList.remove('hidden');
   document.getElementById('explanation').textContent = '';
 
   // Show "See moves" after 2 wrong attempts (helps understand the position)
   if (attempts >= 2) {
     const position = session[currentIndex];
     _showSeeMovesLink(position);
+  }
+
+  // Show "Show answer" after 3 wrong attempts
+  if (attempts >= 3) {
+    document.getElementById('show-answer-btn').classList.remove('hidden');
   }
 }
 
@@ -1124,6 +1133,30 @@ function dismissPosition() {
   showPosition(currentIndex + 1);
 }
 
+/**
+ * Skip a position — reinsert it later in the session for another try.
+ * Does not affect SRS state.
+ */
+function skipPosition() {
+  console.log(`[skipPosition] id=${session[currentIndex].id}`);
+  const position = session[currentIndex];
+  // Reinsert 3 positions later (or at the end)
+  const insertAt = Math.min(currentIndex + 4, session.length);
+  session.splice(insertAt, 0, position);
+  showPosition(currentIndex + 1);
+}
+
+/**
+ * Show the answer after 3+ failed attempts.
+ * Displays the same feedback as a correct answer but records a failure in SRS.
+ */
+function showAnswer() {
+  console.log(`[showAnswer] id=${session[currentIndex].id}`);
+  const position = session[currentIndex];
+  recordResult(false);
+  showFeedback(false, position, true);
+}
+
 // --- Session flow ---
 
 /**
@@ -1168,6 +1201,8 @@ function showPosition(index) {
   document.getElementById('eval-summary').classList.add('hidden');
   document.getElementById('dismiss-btn').classList.add('hidden');
   document.getElementById('retry-btn').classList.add('hidden');
+  document.getElementById('show-answer-btn').classList.add('hidden');
+  document.getElementById('skip-btn').classList.add('hidden');
   const seeMoves = document.getElementById('see-moves');
   if (seeMoves) seeMoves.classList.add('hidden');
 
@@ -2471,6 +2506,14 @@ async function init() {
 
   document.getElementById('dismiss-btn').addEventListener('click', () => {
     dismissPosition();
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', () => {
+    skipPosition();
+  });
+
+  document.getElementById('show-answer-btn').addEventListener('click', () => {
+    showAnswer();
   });
 
   document.getElementById('nav-settings').addEventListener('click', () => {
