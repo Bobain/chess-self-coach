@@ -1027,7 +1027,7 @@ cg-container {
 #review-board-footer {
   width: 100%;
   max-width: 900px;
-  margin-top: 0.25rem;
+  margin-top: -0.25rem;
 }
 
 #score-chart {
