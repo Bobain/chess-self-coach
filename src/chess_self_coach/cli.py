@@ -1,13 +1,12 @@
 """Command-line interface for chess-self-coach.
 
-Entry point for the CLI. Dispatches to subcommands: analyze, validate, import, setup, push, pull, status, train.
+Entry point for the CLI. Dispatches to subcommands: setup, train, update, syzygy.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 
 from chess_self_coach import __version__
 
@@ -20,7 +19,7 @@ def main(argv: list[str] | None = None) -> None:
     """
     parser = argparse.ArgumentParser(
         prog="chess-self-coach",
-        description="Manage a chess opening repertoire: Stockfish analysis + Lichess Study sync.",
+        description="Learn from your chess mistakes: Stockfish analysis + spaced repetition training.",
     )
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
@@ -28,40 +27,10 @@ def main(argv: list[str] | None = None) -> None:
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # --- analyze ---
-    p_analyze = subparsers.add_parser(
-        "analyze",
-        help="Analyze a PGN file with Stockfish and add [%%eval] annotations",
-    )
-    p_analyze.add_argument("pgn_file", help="Path to the PGN file to analyze")
-    p_analyze.add_argument(
-        "--depth",
-        type=int,
-        default=18,
-        help="Stockfish analysis depth (default: 18)",
-    )
-    p_analyze.add_argument(
-        "--threshold",
-        type=float,
-        default=1.0,
-        help="Score swing threshold for blunder detection (default: 1.0)",
-    )
-    p_analyze.add_argument(
-        "--engine",
-        type=str,
-        default=None,
-        help="Path to the Stockfish binary (overrides config.json)",
-    )
-    p_analyze.add_argument(
-        "--in-place",
-        action="store_true",
-        help="Overwrite the original file instead of creating *_analyzed.pgn",
-    )
-
     # --- setup ---
     subparsers.add_parser(
         "setup",
-        help="Interactive setup: verify auth, find studies, configure config.json",
+        help="Interactive setup: verify Stockfish, configure game platforms",
     )
 
     # --- update ---
@@ -70,74 +39,15 @@ def main(argv: list[str] | None = None) -> None:
         help="Update chess-self-coach to the latest version",
     )
 
-    # --- push ---
-    p_push = subparsers.add_parser(
-        "push",
-        help="Push a local PGN file to its mapped Lichess study",
+    # --- syzygy ---
+    p_syzygy = subparsers.add_parser(
+        "syzygy",
+        help="Manage Syzygy endgame tablebases",
     )
-    p_push.add_argument("pgn_file", help="Path to the PGN file to push")
-    p_push.add_argument(
-        "--no-replace",
-        action="store_true",
-        dest="no_replace",
-        help="Append chapters instead of replacing (default: replace all existing chapters)",
-    )
-
-    # --- pull ---
-    p_pull = subparsers.add_parser(
-        "pull",
-        help="Pull the latest PGN from a Lichess study to a local file",
-    )
-    p_pull.add_argument("pgn_file", help="PGN filename to pull (used to look up study mapping)")
-    p_pull.add_argument(
-        "--in-place",
-        action="store_true",
-        help="Overwrite the local file instead of creating *_from_lichess.pgn",
-    )
-
-    # --- cleanup ---
-    p_cleanup = subparsers.add_parser(
-        "cleanup",
-        help="Remove empty default chapters (e.g. 'Chapter 1') from Lichess studies",
-    )
-    p_cleanup.add_argument(
-        "pgn_file",
-        nargs="?",
-        default=None,
-        help="PGN file to clean up (default: all configured studies)",
-    )
-
-    # --- validate ---
-    p_validate = subparsers.add_parser(
-        "validate",
-        help="Validate PGN annotations against mandatory conventions",
-    )
-    p_validate.add_argument("pgn_file", help="Path to the PGN file to validate")
-
-    # --- import ---
-    p_import = subparsers.add_parser(
-        "import",
-        help="Import games from Lichess/chess.com and analyze deviations from repertoire",
-    )
-    p_import.add_argument("username", help="Lichess username")
-    p_import.add_argument(
-        "--chesscom",
-        type=str,
-        default=None,
-        help="Chess.com username (to also fetch games from chess.com)",
-    )
-    p_import.add_argument(
-        "--max",
-        type=int,
-        default=100,
-        dest="max_games",
-        help="Maximum number of games to fetch per source (default: 100)",
-    )
-
-    # --- status ---
-    subparsers.add_parser(
-        "status",
-        help="Show sync status of all repertoire files",
+    p_syzygy.add_argument(
+        "action",
+        choices=["download", "status"],
+        help="download: fetch 3-5 piece tables (~1 GB). status: show installed tables.",
     )
 
     # --- train ---
@@ -161,16 +71,40 @@ def main(argv: list[str] | None = None) -> None:
         help="Show training progress statistics",
     )
     p_train.add_argument(
+        "--derive",
+        action="store_true",
+        help="Re-derive training_data.json from analysis_data.json (no Stockfish needed)",
+    )
+    p_train.add_argument(
         "--games",
         type=int,
-        default=20,
-        help="Maximum games to fetch per source (default: 20)",
+        default=10,
+        help="Maximum games to analyze (default: 10)",
     )
     p_train.add_argument(
         "--depth",
         type=int,
         default=18,
         help="Stockfish analysis depth (default: 18)",
+    )
+    p_train.add_argument(
+        "--threads",
+        type=int,
+        default=None,
+        help="Stockfish threads (default: auto = CPU count - 1)",
+    )
+    p_train.add_argument(
+        "--hash",
+        type=int,
+        default=None,
+        dest="hash_mb",
+        help="Stockfish hash table size in MB (default: 1024)",
+    )
+    p_train.add_argument(
+        "--reanalyze-all",
+        action="store_true",
+        dest="reanalyze_all",
+        help="Re-analyze all games (skip only those with identical settings)",
     )
     p_train.add_argument(
         "--engine",
@@ -196,127 +130,70 @@ def main(argv: list[str] | None = None) -> None:
         _launch_server()
         return
 
-    if args.command == "analyze":
-        from chess_self_coach.analyze import analyze_pgn
-
-        try:
-            analyze_pgn(
-                args.pgn_file,
-                depth=args.depth,
-                threshold=args.threshold,
-                engine_path=args.engine,
-                in_place=args.in_place,
-            )
-        except FileNotFoundError as e:
-            print(f"  {e}", file=sys.stderr)
-            sys.exit(1)
-
-    elif args.command == "setup":
-        from chess_self_coach.lichess import setup
-
-        setup()
+    if args.command == "setup":
+        _setup()
 
     elif args.command == "update":
         from chess_self_coach.updater import update
 
         update()
 
-    elif args.command == "push":
-        from chess_self_coach.config import load_lichess_token
+    elif args.command == "syzygy":
+        from chess_self_coach.syzygy import download_syzygy, syzygy_status
 
-        if not load_lichess_token(required=False):
-            print("Lichess token required for push. Set LICHESS_API_TOKEN in .env", file=sys.stderr)
-            sys.exit(1)
-        from chess_self_coach.lichess import push_pgn
+        if args.action == "download":
+            try:
+                path = download_syzygy()
+                print(f"  ✓ Syzygy tables downloaded to {path}")
+            except (FileNotFoundError, Exception) as e:
+                print(f"  ❌ {e}", file=sys.stderr)
+                sys.exit(1)
+        elif args.action == "status":
+            from chess_self_coach.config import load_config
 
-        try:
-            push_pgn(args.pgn_file, replace=not args.no_replace)
-        except FileNotFoundError as e:
-            print(f"  {e}", file=sys.stderr)
-            sys.exit(1)
-
-    elif args.command == "pull":
-        from chess_self_coach.config import load_lichess_token
-
-        if not load_lichess_token(required=False):
-            print("Lichess token required for pull. Set LICHESS_API_TOKEN in .env", file=sys.stderr)
-            sys.exit(1)
-        from chess_self_coach.lichess import pull_pgn
-
-        pull_pgn(args.pgn_file, in_place=args.in_place)
-
-    elif args.command == "cleanup":
-        from chess_self_coach.config import load_lichess_token
-
-        if not load_lichess_token(required=False):
-            print("Lichess token required for cleanup. Set LICHESS_API_TOKEN in .env", file=sys.stderr)
-            sys.exit(1)
-        from chess_self_coach.lichess import cleanup_study
-        from chess_self_coach.config import load_config, get_study_mapping
-
-        config = load_config()
-        studies = config.get("studies", {})
-
-        if args.pgn_file:
-            pgn_name = Path(args.pgn_file).name
-            mapping = get_study_mapping(config, pgn_name)
-            total = cleanup_study(mapping["study_id"], mapping.get("study_name", ""))
-        else:
-            total = 0
-            for pgn_file, info in studies.items():
-                study_id = info.get("study_id", "")
-                if study_id.startswith("STUDY_ID"):
-                    continue
-                total += cleanup_study(study_id, info.get("study_name", pgn_file))
-
-        if total == 0:
-            print("  ✓ No empty default chapters found")
-        else:
-            print(f"\n  ✓ Cleaned up {total} empty chapter(s) total")
-
-    elif args.command == "validate":
-        from chess_self_coach.validate import print_report, validate_pgn
-
-        try:
-            results = validate_pgn(args.pgn_file)
-        except FileNotFoundError as e:
-            print(f"  {e}", file=sys.stderr)
-            sys.exit(1)
-        has_errors = print_report(results)
-        if has_errors:
-            sys.exit(1)
-
-    elif args.command == "import":
-        from chess_self_coach.importer import import_games
-
-        import_games(
-            args.username,
-            chesscom=args.chesscom,
-            max_games=args.max_games,
-        )
-
-    elif args.command == "status":
-        from chess_self_coach.status import show_status
-
-        show_status()
+            config = load_config()
+            status = syzygy_status(config)
+            if status["found"]:
+                print(f"  Path: {status['path']}")
+                print(f"  WDL files: {status['wdl_count']}")
+                print(f"  DTZ files: {status['dtz_count']}")
+                print(f"  Total size: {status['total_size_mb']} MB")
+            else:
+                print("  No Syzygy tables found.")
+                print("  Download with: chess-self-coach syzygy download")
 
     elif args.command == "train":
-        from chess_self_coach.trainer import (
-            prepare_training_data,
-            print_stats,
-        )
+        if args.derive:
+            from chess_self_coach.analysis import annotate_and_derive
 
-        if args.refresh_explanations:
+            try:
+                annotate_and_derive()
+            except (FileNotFoundError, RuntimeError) as e:
+                print(f"  {e}", file=sys.stderr)
+                sys.exit(1)
+        elif args.refresh_explanations:
             from chess_self_coach.trainer import refresh_explanations
 
             refresh_explanations()
         elif args.prepare:
+            from chess_self_coach.analysis import AnalysisSettings, analyze_games
+
+            # Build settings from config, with CLI overrides
+            from chess_self_coach.config import load_config
+
+            config = load_config()
+            settings = AnalysisSettings.from_config(config)
+            if args.threads is not None:
+                settings.threads = args.threads
+            if args.hash_mb is not None:
+                settings.hash_mb = args.hash_mb
+
             try:
-                prepare_training_data(
+                analyze_games(
                     max_games=args.games,
-                    depth=args.depth,
+                    reanalyze_all=args.reanalyze_all,
+                    settings=settings,
                     engine_path=args.engine,
-                    fresh=args.fresh,
                 )
             except (FileNotFoundError, RuntimeError) as e:
                 print(f"  {e}", file=sys.stderr)
@@ -325,10 +202,103 @@ def main(argv: list[str] | None = None) -> None:
             print("  Tip: you can now just run `chess-self-coach` directly.\n")
             _launch_server()
         elif args.stats:
+            from chess_self_coach.trainer import print_stats
+
             print_stats()
         else:
-            print("Usage: chess-self-coach train [--prepare|--serve|--stats]")
+            print("Usage: chess-self-coach train [--prepare|--derive|--serve|--stats]")
             print("Run 'chess-self-coach train -h' for details.")
+
+
+def _setup() -> None:
+    """Interactive setup: Stockfish, Syzygy, game platforms."""
+    import json
+
+    from chess_self_coach.config import (
+        _find_project_root,
+        check_stockfish_version,
+        find_stockfish,
+    )
+
+    print("\n  === Chess Self-Coach Setup ===\n")
+
+    # Step 1: Stockfish
+    print("  Step 1: Stockfish engine")
+    try:
+        sf_path = find_stockfish()
+        version = check_stockfish_version(sf_path)
+        print(f"  ✓ Found: {sf_path} ({version})\n")
+    except SystemExit:
+        return
+
+    # Step 1b: Syzygy tablebases
+    print("  Step 2: Syzygy endgame tablebases")
+    try:
+        from chess_self_coach.syzygy import find_syzygy
+
+        syzygy_path = find_syzygy()
+        print(f"  ✓ Found: {syzygy_path}\n")
+    except FileNotFoundError:
+        answer = input("  Syzygy tables not found. Download (~1 GB)? [y/N] ")
+        if answer.strip().lower() == "y":
+            from chess_self_coach.syzygy import download_syzygy
+
+            try:
+                syzygy_path = download_syzygy()
+                print(f"  ✓ Downloaded to {syzygy_path}\n")
+            except Exception as e:
+                print(f"  ⚠ Download failed: {e}. You can retry later.\n")
+
+    # Step 2: Game platforms
+    print("  Step 3: Game platforms (at least one required)\n")
+
+    lichess_user = input("  Lichess username (leave empty to skip): ").strip()
+    lichess_token = None
+    if lichess_user:
+        print(
+            "\n  A Lichess API token is needed to fetch your games.\n"
+            "  Create one at: https://lichess.org/account/oauth/token/create\n"
+        )
+        lichess_token = input("  Lichess API token (lip_...): ").strip()
+
+    chesscom_user = input("\n  Chess.com username (leave empty to skip): ").strip()
+
+    if not lichess_user and not chesscom_user:
+        print("\n  ❌ At least one platform is required.")
+        sys.exit(1)
+
+    # Write config
+    root = _find_project_root()
+    config: dict = {}
+    config_path = root / "config.json"
+    if config_path.exists():
+        with open(config_path) as f:
+            config = json.load(f)
+
+    config["stockfish"] = {"path": str(sf_path)}
+    players: dict[str, str] = {}
+    if lichess_user:
+        players["lichess"] = lichess_user
+    if chesscom_user:
+        players["chesscom"] = chesscom_user
+    config["players"] = players
+
+    # Remove legacy studies section if present
+    config.pop("studies", None)
+
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+    # Write .env if token provided
+    if lichess_token:
+        env_path = root / ".env"
+        with open(env_path, "w") as f:
+            f.write(f"LICHESS_API_TOKEN={lichess_token}\n")
+        print(f"\n  ✓ Token saved to {env_path}")
+
+    print(f"  ✓ Config saved to {config_path}")
+    print("\n  Setup complete! Run 'chess-self-coach train --prepare' to start.\n")
 
 
 def _launch_server() -> None:

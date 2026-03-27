@@ -17,7 +17,8 @@
   </div>
   <header>
     <button id="menu-btn" title="Menu">&#9776;</button>
-    <h1>Find a Better Move</h1>
+    <span id="analysis-progress" class="hidden" title="Click to cancel"></span>
+    <span id="header-title">Chess Self-Coach</span>
     <div id="session-info">
       <span id="progress"></span>
     </div>
@@ -31,29 +32,16 @@
       <span id="nav-version"></span>
     </div>
     <ul id="nav-items">
-      <li id="nav-refresh" class="nav-item nav-app-only hidden">Analyse latest games</li>
-      <li id="nav-config" class="nav-item nav-app-only hidden">Edit config</li>
-      <li id="nav-coming-soon" class="nav-item nav-app-only hidden">
-        <span class="nav-submenu-label">Coming soon <span class="nav-arrow">▸</span></span>
-        <ul id="nav-coming-soon-items" class="nav-submenu hidden">
-          <li class="nav-submenu-header">PGN Management</li>
-          <li id="nav-import" class="nav-coming-soon-item">Import games</li>
-          <li id="nav-validate" class="nav-coming-soon-item">Validate PGN</li>
-          <li id="nav-cleanup" class="nav-coming-soon-item">Cleanup studies</li>
-          <li class="nav-submenu-header">Coaching</li>
-          <li id="nav-journal" class="nav-coming-soon-item">Coaching journal</li>
-          <li class="nav-submenu-header">Project</li>
-          <li id="nav-status" class="nav-coming-soon-item">Project status</li>
-        </ul>
-      </li>
+      <li id="nav-games" class="nav-item">Games</li>
+      <li id="nav-training" class="nav-item">Training</li>
+      <li id="nav-refresh" class="nav-item nav-app-only hidden">Refresh games</li>
       <li class="nav-separator"></li>
-      <li id="nav-stats" class="nav-item">Raw data summary</li>
       <li id="nav-settings" class="nav-item">Settings</li>
       <li id="nav-about" class="nav-item">About</li>
     </ul>
   </nav>
 
-  <main>
+  <main id="training-view" class="hidden">
     <div id="board-wrapper">
       <div class="board-info-row">
         <div id="material-top" class="material-balance"></div>
@@ -94,56 +82,143 @@
     </div>
   </main>
 
-  <!-- Config Modal -->
-  <div id="config-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Edit Config</h2>
-      <label>
-        Lichess username:
-        <input type="text" id="config-lichess" placeholder="username">
+  <main id="analysis-view">
+    <div id="game-list-toolbar" class="hidden">
+      <div id="result-filters">
+        <button class="result-filter active" data-result="win" title="Show wins">W</button>
+        <button class="result-filter active" data-result="loss" title="Show losses">L</button>
+        <button class="result-filter active" data-result="draw" title="Show draws">D</button>
+      </div>
+      <label id="select-all-label">
+        <input type="checkbox" id="select-all-checkbox">
+        <span>Select all</span>
       </label>
-      <label>
-        Chess.com username:
-        <input type="text" id="config-chesscom" placeholder="username">
-      </label>
-      <label>
-        Default analysis depth:
-        <input type="number" id="config-depth" min="1" max="30" value="18">
-      </label>
-      <label>
-        Blunder threshold (cp):
-        <input type="number" id="config-threshold" min="0.1" max="5.0" step="0.1" value="1.0">
-      </label>
-      <div class="modal-actions">
-        <span id="config-status"></span>
-        <button id="save-config">Save</button>
-        <button id="close-config" class="modal-close">Close</button>
+      <select id="game-limit-select">
+        <option value="20">20 games</option>
+        <option value="50">50 games</option>
+        <option value="100">100 games</option>
+      </select>
+      <button id="analyze-selected-btn" class="hidden" disabled>Analyze selected</button>
+    </div>
+    <div id="game-selector"></div>
+    <div id="game-review" class="hidden">
+      <div id="review-top-bar">
+        <a id="review-back-btn" href="#" title="Back to games list">&larr; Back to games list</a>
+        <button id="review-train-btn" class="hidden" title="Train on positions from this game">Train on this game</button>
+      </div>
+      <div id="review-game-info"></div>
+      <div id="review-layout">
+        <div id="review-board-col">
+          <div id="eval-bar">
+            <div id="eval-bar-fill"></div>
+            <span id="eval-bar-label">0.0</span>
+          </div>
+          <div id="review-board-container">
+            <div id="review-board"></div>
+          </div>
+        </div>
+        <div id="review-panel">
+          <div id="review-summary"></div>
+          <div id="review-opening"></div>
+          <div id="review-moves"></div>
+          <div id="review-pv"></div>
+        </div>
+      </div>
+      <canvas id="score-chart"></canvas>
+      <div id="review-controls">
+        <button id="review-first" title="First move">|&lt;</button>
+        <button id="review-prev" title="Previous move">&lt;</button>
+        <button id="review-play" title="Auto-play">&#9654;</button>
+        <button id="review-next" title="Next move">&gt;</button>
+        <button id="review-last" title="Last move">&gt;|</button>
+        <button id="review-flip" title="Flip board">&#8645;</button>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- Settings Modal -->
+  <!-- Unified Settings Modal -->
   <div id="settings-modal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content settings-wide">
       <h2>Settings</h2>
-      <label>
-        Positions per session:
-        <input type="number" id="session-size" min="1" max="50" value="10">
-      </label>
-      <label>
-        Analysis depth:
-        <input type="number" id="analysis-depth" min="1" max="30" value="12">
-      </label>
-      <label>
-        Difficulty:
-        <select id="difficulty">
-          <option value="all">All mistakes</option>
-          <option value="blunders">Blunders only</option>
-          <option value="blunders+mistakes">Blunders + Mistakes</option>
-        </select>
-      </label>
+
+      <!-- Training (always visible) -->
+      <fieldset class="settings-section">
+        <legend>Training</legend>
+        <label title="How many positions to practice per session (1-50)">
+          Positions per session:
+          <input type="number" id="session-size" min="1" max="50" value="10">
+        </label>
+        <label title="Stockfish depth for the best-move hint in training mode (browser engine, not batch analysis)">
+          Hint depth:
+          <input type="number" id="analysis-depth" min="1" max="30" value="12">
+        </label>
+        <label title="Which mistakes to include in training sessions">
+          Difficulty:
+          <select id="difficulty">
+            <option value="all">All mistakes</option>
+            <option value="blunders">Blunders only</option>
+            <option value="blunders+mistakes">Blunders + Mistakes</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <!-- Accounts (app-only) -->
+      <fieldset class="settings-section settings-app-only hidden">
+        <legend>Accounts</legend>
+        <label title="Your Lichess username (used to fetch your games)">
+          Lichess username:
+          <input type="text" id="config-lichess" placeholder="username">
+        </label>
+        <label title="Your Chess.com username (used to fetch your games)">
+          Chess.com username:
+          <input type="text" id="config-chesscom" placeholder="username">
+        </label>
+      </fieldset>
+
+      <!-- Analysis (app-only) -->
+      <fieldset class="settings-section settings-app-only hidden">
+        <legend>Analysis</legend>
+        <label title="Stockfish search depth for batch analysis (higher = slower but more accurate)">
+          Analysis depth:
+          <input type="number" id="config-depth" min="1" max="30" value="18">
+        </label>
+        <label title="Minimum score loss (in pawns) to flag a move as a blunder. 1.0 = losing 1 pawn worth of advantage">
+          Blunder threshold (pawns):
+          <input type="number" id="config-threshold" min="0.1" max="5.0" step="0.1" value="1.0">
+        </label>
+        <label title="How many recent games to fetch and analyze">
+          Games to fetch:
+          <input type="number" id="analysis-max-games" min="1" max="100" value="10">
+        </label>
+        <div class="preset-group">
+          <span class="preset-label">Analysis speed:</span>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" data-preset="quick">Quick<span class="preset-hint">~30s/game</span></button>
+            <button type="button" class="preset-btn active" data-preset="balanced">Balanced<span class="preset-hint">~2min/game</span></button>
+            <button type="button" class="preset-btn" data-preset="deep">Deep<span class="preset-hint">~5min/game</span></button>
+          </div>
+        </div>
+        <details>
+          <summary>Advanced engine settings</summary>
+          <label title="CPU threads for Stockfish (more = faster, but uses more resources)">Threads: <input type="number" id="analysis-threads" min="1" max="64" value="7"></label>
+          <label title="Memory for Stockfish hash table in megabytes (more = better for deep analysis)">Hash (MB): <input type="number" id="analysis-hash" min="128" max="16384" step="128" value="1024"></label>
+          <h4>Depth / time limits by position type</h4>
+          <label title="King + pawns only (7 or fewer pieces)">K+P endgame: depth <input type="number" id="limit-kp-depth" min="1" max="99" value="60" class="narrow-input"> time (s) <input type="number" id="limit-kp-time" min="0" max="60" step="0.5" value="5" class="narrow-input"></label>
+          <label title="7 or fewer pieces — endgames with minor/major pieces">Endgame: depth <input type="number" id="limit-eg-depth" min="1" max="99" value="50" class="narrow-input"> time (s) <input type="number" id="limit-eg-time" min="0" max="60" step="0.5" value="5" class="narrow-input"></label>
+          <label title="12 or fewer pieces — late middlegame positions">Late middlegame: depth <input type="number" id="limit-mg-depth" min="1" max="99" value="40" class="narrow-input"> time (s) <input type="number" id="limit-mg-time" min="0" max="60" step="0.5" value="5" class="narrow-input"></label>
+          <label title="Opening and early middlegame — all other positions">Default: depth <input type="number" id="limit-default-depth" min="1" max="40" value="18" class="narrow-input"></label>
+        </details>
+      </fieldset>
+
+      <!-- Danger zone (always visible) -->
+      <div class="settings-danger-zone">
+        <h4>Danger zone</h4>
+        <button id="reset-progress" title="Erase all spaced repetition progress — cannot be undone">Reset training progress</button>
+      </div>
+
       <div class="modal-actions">
-        <button id="reset-progress">Reset Progress</button>
+        <span id="settings-status"></span>
+        <button id="save-settings">Save</button>
         <button id="close-settings" class="modal-close">Close</button>
       </div>
     </div>
@@ -155,82 +230,6 @@
       <h2>Session Complete</h2>
       <div id="summary-stats"></div>
       <button id="new-session">New Session</button>
-    </div>
-  </div>
-
-  <!-- Raw Data Summary Modal -->
-  <div id="stats-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Raw Data Summary</h2>
-      <div id="stats-content" class="modal-body"></div>
-      <div class="modal-actions">
-        <span></span>
-        <button id="close-stats" class="modal-close">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Project Status Modal -->
-  <div id="status-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Project Status</h2>
-      <div id="status-content" class="modal-body"></div>
-      <div class="modal-actions">
-        <span></span>
-        <button id="close-status" class="modal-close">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cleanup Studies Modal -->
-  <div id="cleanup-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Cleanup Studies</h2>
-      <div id="cleanup-content" class="modal-body"></div>
-      <div class="modal-actions">
-        <span></span>
-        <button id="close-cleanup" class="modal-close">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Refresh Training Modal -->
-  <div id="refresh-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Refresh Training</h2>
-      <div id="refresh-content" class="modal-body">
-        <div id="refresh-steps"></div>
-      </div>
-      <div class="modal-actions">
-        <button id="interrupt-refresh" class="modal-interrupt hidden"
-                title="Stop the analysis and save partial results">Interrupt</button>
-        <button id="close-refresh" class="modal-close"
-                title="Hide this dialog — the refresh continues in the background">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Validate PGN Modal -->
-  <div id="validate-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>PGN Validation</h2>
-      <div id="validate-content" class="modal-body"></div>
-      <div class="modal-actions">
-        <span></span>
-        <button id="close-validate" class="modal-close">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Coaching Journal Modal -->
-  <div id="journal-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2 id="journal-title">Coaching Journal</h2>
-      <div id="journal-content" class="modal-body"></div>
-      <div class="modal-actions">
-        <button id="journal-back" class="hidden">Back</button>
-        <button id="close-journal" class="modal-close">Close</button>
-      </div>
     </div>
   </div>
 

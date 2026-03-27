@@ -19,5 +19,5 @@ if [ ! -f "$MARKER" ]; then
 fi
 
 cat <<'EOF'
-{"decision": "block", "reason": "FLOW DOCS SYNC — Flow-relevant code was modified during this session. Check if docs/flows/ needs updating:\n- trainer.py, config.py → data-flows.md\n- server.py, sw.js → system-flows.md\n- lichess.py → coming-soon-flows.md\n- app.js, cli.py → user-flows.md\nIf the docs are already up to date, remove the marker with: rm .claude/.pending-flows-check"}
+{"decision": "block", "reason": "FLOW DOCS SYNC — Flow-relevant code was modified during this session. Check if docs/flows/ needs updating:\n- trainer.py, config.py → data-flows.md\n- server.py, sw.js → system-flows.md\n- app.js, cli.py → user-flows.md\nIf the docs are already up to date, remove the marker with: rm -f .claude/.pending-flows-check"}
 EOF

@@ -1,0 +1,4 @@
+{
+  "name": "ux-auditor",
+  "description": "Visual UX auditor: screenshots app with Playwright, compares to chess.com patterns, writes recommendations"
+}

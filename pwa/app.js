@@ -89,6 +89,40 @@ let sessionOriginalSize = 0;
 /** @type {?number} Timer ID for the wrong-move animation sequence */
 let animationTimer = null;
 
+// --- Analysis mode state ---
+/** @type {string} Current view: 'games' (game list), 'review', or 'training' */
+let appView = 'games';
+/** @type {Set<string>} Selected game IDs for batch analysis */
+let selectedGameIds = new Set();
+/** @type {Set<string>} Game IDs in the current analysis job */
+let analyzingGameIds = new Set();
+/** @type {Set<string>} Game IDs queued for the next analysis batch */
+let pendingGameIds = new Set();
+/** @type {number} Games completed in previous batches (for unified counter) */
+let analysisOffset = 0;
+/** @type {number} Total games across all batches */
+let analysisTotalAll = 0;
+/** @type {number} How many games to show in the list */
+let gameListLimit = 20;
+/** @type {Set<string>} Active result filters ('win', 'loss', 'draw') */
+let resultFilters = new Set(['win', 'loss', 'draw']);
+/** @type {?string} When training on a specific game, its ID; null = all positions */
+let trainingGameFilter = null;
+/** @type {?Object} Parsed analysis_data.json */
+let analysisData = null;
+/** @type {?Object} Currently selected game for review */
+let reviewGame = null;
+/** @type {number} Current ply in review (0 = starting position) */
+let currentPly = 0;
+/** @type {?Object} Second chessground instance for review board */
+let reviewCg = null;
+/** @type {string} Review board orientation */
+let reviewOrientation = 'white';
+/** @type {?number} Auto-play interval ID */
+let autoPlayTimer = null;
+/** @type {?Array} Classified moves for current game */
+let classifiedMoves = null;
+
 // --- Animation constants ---
 const CATEGORY_LABELS = { blunder: '??', mistake: '?', inaccuracy: '?!' };
 const CATEGORY_COLORS = { blunder: '#e94560', mistake: '#f0a500', inaccuracy: '#999' };
@@ -125,6 +159,244 @@ function loadSettings() {
  */
 function saveSettings(s) {
   localStorage.setItem('train_settings', JSON.stringify(s));
+}
+
+// --- Analysis presets (Quick / Balanced / Deep) ---
+
+const ANALYSIS_PRESETS = {
+  quick: {
+    kings_pawns_le7: { depth: 40, time: 2 },
+    pieces_le7: { depth: 30, time: 2 },
+    pieces_le12: { depth: 25, time: 1.5 },
+    default: { depth: 14 },
+  },
+  balanced: {
+    kings_pawns_le7: { depth: 60, time: 5 },
+    pieces_le7: { depth: 50, time: 5 },
+    pieces_le12: { depth: 40, time: 5 },
+    default: { depth: 18 },
+  },
+  deep: {
+    kings_pawns_le7: { depth: 80, time: 15 },
+    pieces_le7: { depth: 70, time: 12 },
+    pieces_le12: { depth: 55, time: 10 },
+    default: { depth: 24 },
+  },
+};
+
+/**
+ * Populate the limit form fields from a limits object.
+ * @param {Object} limits - Limits keyed by bracket name.
+ */
+function populateLimitFields(limits) {
+  const lim = limits || {};
+  if (lim.kings_pawns_le7) {
+    document.getElementById('limit-kp-depth').value = lim.kings_pawns_le7.depth || 60;
+    document.getElementById('limit-kp-time').value = lim.kings_pawns_le7.time || 5;
+  }
+  if (lim.pieces_le7) {
+    document.getElementById('limit-eg-depth').value = lim.pieces_le7.depth || 50;
+    document.getElementById('limit-eg-time').value = lim.pieces_le7.time || 5;
+  }
+  if (lim.pieces_le12) {
+    document.getElementById('limit-mg-depth').value = lim.pieces_le12.depth || 40;
+    document.getElementById('limit-mg-time').value = lim.pieces_le12.time || 5;
+  }
+  if (lim.default) {
+    document.getElementById('limit-default-depth').value = lim.default.depth || 18;
+  }
+}
+
+/**
+ * Read limit values from the form fields.
+ * @returns {Object} Limits object keyed by bracket name.
+ */
+function readLimitFields() {
+  return {
+    kings_pawns_le7: {
+      depth: parseInt(document.getElementById('limit-kp-depth').value, 10),
+      time: parseFloat(document.getElementById('limit-kp-time').value),
+    },
+    pieces_le7: {
+      depth: parseInt(document.getElementById('limit-eg-depth').value, 10),
+      time: parseFloat(document.getElementById('limit-eg-time').value),
+    },
+    pieces_le12: {
+      depth: parseInt(document.getElementById('limit-mg-depth').value, 10),
+      time: parseFloat(document.getElementById('limit-mg-time').value),
+    },
+    default: {
+      depth: parseInt(document.getElementById('limit-default-depth').value, 10),
+    },
+  };
+}
+
+/**
+ * Detect which preset matches the current limit field values and update buttons.
+ */
+function detectPreset() {
+  const current = readLimitFields();
+  let matched = null;
+  for (const [name, preset] of Object.entries(ANALYSIS_PRESETS)) {
+    if (
+      current.kings_pawns_le7.depth === preset.kings_pawns_le7.depth &&
+      current.kings_pawns_le7.time === preset.kings_pawns_le7.time &&
+      current.pieces_le7.depth === preset.pieces_le7.depth &&
+      current.pieces_le7.time === preset.pieces_le7.time &&
+      current.pieces_le12.depth === preset.pieces_le12.depth &&
+      current.pieces_le12.time === preset.pieces_le12.time &&
+      current.default.depth === preset.default.depth
+    ) {
+      matched = name;
+      break;
+    }
+  }
+  document.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.preset === matched);
+  });
+}
+
+/**
+ * Wire preset buttons: click applies preset values, field changes detect preset.
+ */
+function wirePresets() {
+  document.querySelectorAll('.preset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const preset = ANALYSIS_PRESETS[btn.dataset.preset];
+      if (!preset) return;
+      console.log('[wirePresets] Applying preset:', btn.dataset.preset);
+      populateLimitFields(preset);
+      document.querySelectorAll('.preset-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // When any advanced field changes, re-detect preset
+  document.querySelectorAll('#analysis-threads, #analysis-hash, [id^="limit-"]').forEach((input) => {
+    input.addEventListener('input', () => detectPreset());
+  });
+}
+
+/**
+ * Open the unified settings modal, populating all fields.
+ * @async
+ */
+async function openSettings() {
+  console.log('[openSettings] Opening unified settings modal');
+  const modal = document.getElementById('settings-modal');
+  const statusEl = document.getElementById('settings-status');
+  if (statusEl) statusEl.textContent = '';
+
+  // 1. Populate training fields from localStorage
+  const settings = loadSettings();
+  document.getElementById('session-size').value = settings.sessionSize;
+  document.getElementById('difficulty').value = settings.difficulty;
+  const defaultDepth = appMode === 'app' ? 18 : 12;
+  document.getElementById('analysis-depth').value = settings.analysisDepth || defaultDepth;
+
+  // 2. Show/hide app-only sections
+  document.querySelectorAll('.settings-app-only').forEach((el) => {
+    el.classList.toggle('hidden', appMode !== 'app');
+  });
+
+  // 3. Populate max_games from localStorage
+  const savedMaxGames = localStorage.getItem('analysis_max_games');
+  if (savedMaxGames) {
+    document.getElementById('analysis-max-games').value = savedMaxGames;
+  }
+
+  // 4. In app mode, fetch config + analysis settings from backend
+  if (appMode === 'app') {
+    try {
+      const [configResp, analysisResp] = await Promise.all([
+        fetch('/api/config'),
+        fetch('/api/analysis/settings'),
+      ]);
+      if (configResp.ok) {
+        const config = await configResp.json();
+        document.getElementById('config-lichess').value = config.players.lichess || '';
+        document.getElementById('config-chesscom').value = config.players.chesscom || '';
+        document.getElementById('config-depth').value = config.analysis.default_depth || 18;
+        document.getElementById('config-threshold').value = config.analysis.blunder_threshold || 1.0;
+      }
+      if (analysisResp.ok) {
+        const data = await analysisResp.json();
+        document.getElementById('analysis-threads').value = data.threads;
+        document.getElementById('analysis-hash').value = data.hash_mb;
+        populateLimitFields(data.limits);
+        detectPreset();
+      }
+    } catch (err) {
+      console.error('[openSettings] Failed to load backend settings:', err);
+      if (statusEl) statusEl.textContent = 'Could not load server settings.';
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+/**
+ * Save all settings from the unified modal.
+ * @async
+ */
+async function saveAllSettings() {
+  console.log('[saveAllSettings] Saving...');
+  const statusEl = document.getElementById('settings-status');
+  if (statusEl) statusEl.textContent = 'Saving...';
+
+  // 1. Save training settings to localStorage (always)
+  const defaultDepth = appMode === 'app' ? 18 : 12;
+  const trainSettings = {
+    sessionSize: parseInt(document.getElementById('session-size').value) || 10,
+    difficulty: document.getElementById('difficulty').value,
+    analysisDepth: parseInt(document.getElementById('analysis-depth').value) || defaultDepth,
+  };
+  saveSettings(trainSettings);
+
+  // 2. Save max_games to localStorage
+  localStorage.setItem('analysis_max_games', document.getElementById('analysis-max-games').value);
+
+  // 3. In app mode, save config + analysis settings to backend
+  if (appMode === 'app') {
+    try {
+      const configBody = {
+        players: {
+          lichess: document.getElementById('config-lichess').value.trim(),
+          chesscom: document.getElementById('config-chesscom').value.trim(),
+        },
+        analysis: {
+          default_depth: parseInt(document.getElementById('config-depth').value) || 18,
+          blunder_threshold: parseFloat(document.getElementById('config-threshold').value) || 1.0,
+        },
+      };
+      const analysisBody = {
+        threads: parseInt(document.getElementById('analysis-threads').value, 10),
+        hash_mb: parseInt(document.getElementById('analysis-hash').value, 10),
+        limits: readLimitFields(),
+      };
+
+      const [configResp, analysisResp] = await Promise.all([
+        fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(configBody) }),
+        fetch('/api/analysis/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(analysisBody) }),
+      ]);
+
+      if (!configResp.ok || !analysisResp.ok) {
+        console.error('[saveAllSettings] Backend save failed:', configResp.status, analysisResp.status);
+        if (statusEl) statusEl.textContent = 'Failed to save server settings.';
+        return;
+      }
+    } catch (err) {
+      console.error('[saveAllSettings] Backend save failed:', err);
+      if (statusEl) statusEl.textContent = 'Connection failed.';
+      return;
+    }
+  }
+
+  console.log('[saveAllSettings] All settings saved');
+  if (statusEl) statusEl.textContent = 'Saved!';
+  setTimeout(() => {
+    document.getElementById('settings-modal').classList.add('hidden');
+  }, 600);
 }
 
 // --- SRS (SM-2 algorithm) ---
@@ -925,9 +1197,14 @@ function showSummary() {
  * resets session state, and shows the first position.
  */
 function startSession() {
-  console.log('[startSession] Starting new session');
+  console.log('[startSession] Starting new session, gameFilter:', trainingGameFilter);
   const settings = loadSettings();
-  session = selectPositions(trainingData.positions, settings.sessionSize);
+  let positions = trainingData.positions;
+  if (trainingGameFilter) {
+    positions = positions.filter((p) => p.game && p.game.id === trainingGameFilter);
+    console.log(`[startSession] Filtered to ${positions.length} position(s) for game ${trainingGameFilter}`);
+  }
+  session = selectPositions(positions, settings.sessionSize);
   console.log(`[startSession] Selected ${session.length} position(s)`);
   sessionResults = [];
   sessionAppearances = new Map();
@@ -945,742 +1222,1169 @@ function startSession() {
   showPosition(0);
 }
 
-// --- Modal data helper ---
+// --- Analysis settings modal ---
+
 
 /**
- * Show a modal, fetch data from an API, and build content via callback.
- * Handles loading state, error responses, and connection failures.
- * @param {string} modalId - ID of the modal element.
- * @param {string} contentId - ID of the content div inside the modal.
- * @param {string} apiUrl - API endpoint to fetch.
- * @param {Function} buildFn - Callback receiving (contentEl, data) to build DOM.
- * @param {Object} [fetchOpts] - Optional fetch options (e.g. { method: 'POST' }).
- * @async
+ * Display analysis job progress in the refresh modal.
+ * @param {string} jobId - The job ID to track.
  */
-async function showModalWithData(modalId, contentId, apiUrl, buildFn, fetchOpts) {
-  const modal = document.getElementById(modalId);
-  const content = document.getElementById(contentId);
-  if (!modal || !content) {
-    console.error(`[showModalWithData] ${modalId} elements not found`);
-    return;
-  }
-  content.textContent = 'Loading...';
-  modal.classList.remove('hidden');
-  try {
-    const resp = await fetch(apiUrl, fetchOpts);
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log(`[showModalWithData] ${modalId} API error:`, resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to load.';
-      return;
+function showAnalysisProgress(jobId) {
+  console.log('[showAnalysisProgress] Starting job:', jobId);
+  const currentBatchSize = analyzingGameIds.size;
+
+  const el = document.getElementById('analysis-progress');
+  if (!el) return;
+  el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
+  el.classList.remove('hidden');
+
+  // Click to cancel
+  el.onclick = async () => {
+    try {
+      await fetch(`/api/jobs/${jobId}/cancel`, { method: 'POST' });
+      console.log('[showAnalysisProgress] Cancel requested');
+    } catch (err) {
+      console.error('[showAnalysisProgress] Cancel failed:', err);
     }
-    const data = await resp.json();
-    content.textContent = '';
-    buildFn(content, data);
-  } catch (err) {
-    console.error(`[showModalWithData] ${modalId} fetch failed:`, err);
-    content.textContent = 'Failed to connect to server.';
-  }
-}
+  };
 
-// --- Stats modal ---
+  const evtSource = new EventSource(`/api/jobs/${jobId}/events`);
+  evtSource.onmessage = (e) => {
+    const event = JSON.parse(e.data);
+    console.log('[showAnalysisProgress] Event:', event.phase, event.percent);
 
-/**
- * Fetch training stats from the API and display in a modal.
- * Only available in [App] mode.
- * @async
- */
-/**
- * Show the Raw Data Summary modal.
- * Computed entirely client-side from trainingData + srsState.
- */
-function showRawDataSummary() {
-  console.log('[showRawDataSummary] Building summary...');
-  const modal = document.getElementById('stats-modal');
-  const content = document.getElementById('stats-content');
-  while (content.firstChild) content.firstChild.remove();
-
-  const positions = (trainingData && trainingData.positions) || [];
-  const total = positions.length;
-
-  // Group positions by game.id
-  const games = new Map();
-  for (const pos of positions) {
-    const gid = (pos.game && pos.game.id) || 'unknown';
-    if (!games.has(gid)) {
-      games.set(gid, {
-        id: gid,
-        opponent: (pos.game && pos.game.opponent) || '?',
-        source: (pos.game && pos.game.source) || '',
-        date: (pos.game && pos.game.date) || '',
-        positions: 0,
-        positionIds: [],
-      });
+    if (event.phase === 'fetch') {
+      el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
+    } else if (event.current != null && event.total != null) {
+      el.textContent = `Analyzing ${analysisOffset + event.current}/${analysisTotalAll}`;
+    } else if (event.phase === 'derive') {
+      el.textContent = 'Finalizing...';
+    } else if (event.phase === 'analyze') {
+      el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
     }
-    const g = games.get(gid);
-    g.positions++;
-    g.positionIds.push(pos.id);
-  }
 
-  // Compute SRS stats per game
-  let totalLessons = 0;
-  let totalDismissed = 0;
-  for (const game of games.values()) {
-    let gameLessons = 0;
-    let gameDismissed = 0;
-    for (const pid of game.positionIds) {
-      const state = srsState[pid];
-      if (state && state.history) {
-        gameLessons += state.history.length;
-        for (const h of state.history) {
-          if (h.dismissed) gameDismissed++;
+    if (event.phase === 'done' || event.phase === 'error' || event.phase === 'interrupted') {
+      evtSource.close();
+      analysisOffset += currentBatchSize;
+
+      if (event.phase === 'done' && pendingGameIds.size > 0) {
+        // Continue with pending queue
+        analyzingGameIds = new Set(pendingGameIds);
+        pendingGameIds.clear();
+        showGameSelector();
+        startAnalysisJob(Array.from(analyzingGameIds));
+      } else {
+        // All done — reset state and refresh
+        analyzingGameIds.clear();
+        pendingGameIds.clear();
+        analysisOffset = 0;
+        analysisTotalAll = 0;
+        setTimeout(() => el.classList.add('hidden'), 2000);
+        if (event.phase === 'done') {
+          loadAnalysisData();
+          loadTrainingData();
         }
+        showGameSelector();
       }
     }
-    game.lessons = gameLessons;
-    game.dismissed = gameDismissed;
-    totalLessons += gameLessons;
-    totalDismissed += gameDismissed;
+  };
+  evtSource.onerror = () => {
+    evtSource.close();
+    analyzingGameIds.clear();
+    pendingGameIds.clear();
+    analysisOffset = 0;
+    analysisTotalAll = 0;
+    el.classList.add('hidden');
+  };
+}
+
+
+// --- View switching ---
+
+/**
+ * Show the game list view (default main view).
+ */
+function showGameList() {
+  console.log('[showGameList] Switching to game list');
+  appView = 'games';
+  document.getElementById('training-view').classList.add('hidden');
+  document.getElementById('analysis-view').classList.remove('hidden');
+  document.getElementById('progress').textContent = '';
+  if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+  if (!analysisData) {
+    loadAnalysisData();
+  } else {
+    showGameSelector();
   }
+}
 
-  // Integrity check
-  const sumPositions = [...games.values()].reduce((s, g) => s + g.positions, 0);
-  if (sumPositions !== total) {
-    const warn = document.createElement('p');
-    warn.className = 'raw-data-warning';
-    warn.textContent = `⚠ Integrity error: sum of per-game positions (${sumPositions}) ≠ total (${total})`;
-    content.appendChild(warn);
+/**
+ * Show the training view, optionally scoped to one game.
+ * @param {?string} gameId - If set, train only on positions from this game.
+ */
+function showTrainingView(gameId = null) {
+  console.log('[showTrainingView] gameId:', gameId);
+  trainingGameFilter = gameId;
+  appView = 'training';
+  document.getElementById('training-view').classList.remove('hidden');
+  document.getElementById('analysis-view').classList.add('hidden');
+  if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+  if (trainingData) startSession();
+}
+
+/**
+ * Load analysis_data.json from server or static file.
+ */
+/**
+ * Load training_data.json from server or static file.
+ */
+async function loadTrainingData() {
+  console.log('[loadTrainingData] Fetching training data...');
+  try {
+    const resp = await fetch('training_data.json?t=' + Date.now());
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    trainingData = await resp.json();
+    console.log(`[loadTrainingData] Loaded ${trainingData.positions.length} position(s)`);
+  } catch (err) {
+    const hint = appMode === 'app'
+      ? 'No training data yet. Use menu ☰ → Analyse latest games to generate it.'
+      : 'Could not load training data.';
+    document.getElementById('prompt').textContent = hint;
+    console.error('[loadTrainingData] Failed:', err);
   }
+}
 
-  // Header
-  const header = document.createElement('p');
-  header.className = 'raw-data-header';
-  header.textContent = `${total} positions from ${games.size} game${games.size !== 1 ? 's' : ''}`;
-  content.appendChild(header);
-
-  // Global SRS stats
-  const srsLine = document.createElement('p');
-  srsLine.className = 'stats-label';
-  srsLine.textContent = `${totalLessons} lesson${totalLessons !== 1 ? 's' : ''} taken · ${totalDismissed} dismissed`;
-  content.appendChild(srsLine);
-
-  // Game list
-  const table = document.createElement('table');
-  table.className = 'raw-data-table';
-  const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th>Opponent</th><th>Positions</th><th>Lessons</th><th>Dismissed</th></tr>';
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  for (const game of games.values()) {
-    const tr = document.createElement('tr');
-
-    // Opponent cell with link
-    const tdOpp = document.createElement('td');
-    if (game.id && game.id.startsWith('http')) {
-      const a = document.createElement('a');
-      a.href = game.id;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      a.textContent = game.opponent;
-      tdOpp.appendChild(a);
+/**
+ * Load analysis_data.json from server or static file.
+ */
+async function loadAnalysisData() {
+  console.log('[loadAnalysisData] Fetching analysis data...');
+  const selector = document.getElementById('game-selector');
+  selector.textContent = 'Loading analysis data...';
+  try {
+    const resp = await fetch('analysis_data.json?t=' + Date.now());
+    if (!resp.ok) {
+      console.log('[loadAnalysisData] Not found:', resp.status);
+      analysisData = { games: {} };
     } else {
-      tdOpp.textContent = game.opponent;
+      analysisData = await resp.json();
     }
-    tr.appendChild(tdOpp);
-
-    const tdPos = document.createElement('td');
-    tdPos.textContent = game.positions;
-    tr.appendChild(tdPos);
-
-    const tdLes = document.createElement('td');
-    tdLes.textContent = game.lessons;
-    tr.appendChild(tdLes);
-
-    const tdDis = document.createElement('td');
-    tdDis.textContent = game.dismissed;
-    tr.appendChild(tdDis);
-
-    tbody.appendChild(tr);
+    console.log(`[loadAnalysisData] Loaded ${Object.keys(analysisData.games || {}).length} game(s)`);
+    await showGameSelector();
+  } catch (err) {
+    console.error('[loadAnalysisData] Failed:', err);
+    analysisData = { games: {} };
+    await showGameSelector();
   }
-  table.appendChild(tbody);
-  content.appendChild(table);
-
-  console.log(`[showRawDataSummary] ${total} positions, ${games.size} games, ${totalLessons} lessons, ${totalDismissed} dismissed`);
-  modal.classList.remove('hidden');
 }
 
-// --- Cleanup modal ---
-
 /**
- * Trigger study cleanup via the API and display results in a modal.
- * Only available in [App] mode.
- * @async
+ * Compute win probability from centipawn score (chess.com model).
+ * @param {number} cp - Centipawn score from white's perspective.
+ * @returns {number} Win probability for the side (0-1).
  */
-async function showCleanup() {
-  console.log('[showCleanup] Triggering study cleanup...');
-  await showModalWithData('cleanup-modal', 'cleanup-content', '/api/pgn/cleanup', (content, data) => {
-    console.log('[showCleanup] Results:', data.total_deleted, 'deleted');
-
-    if (data.total_deleted === 0) {
-      content.textContent = 'No empty default chapters found.';
-      return;
-    }
-
-    const summary = document.createElement('p');
-    summary.className = 'stats-value';
-    summary.textContent = 'Cleaned up ' + data.total_deleted + ' empty chapter(s).';
-    content.appendChild(summary);
-
-    for (const r of data.results) {
-      if (r.deleted > 0) {
-        const p = document.createElement('p');
-        p.style.paddingLeft = '1rem';
-        p.textContent = r.study + ': ' + r.deleted + ' removed';
-        content.appendChild(p);
-      }
-    }
-  }, { method: 'POST' });
+function winProb(cp) {
+  return 1 / (1 + Math.pow(10, -cp / 400));
 }
 
-// --- Status modal ---
+/** Piece values in pawns (used for sacrifice detection). */
+const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
 /**
- * Fetch project status from the API and display in a modal.
- * Only available in [App] mode.
- * @async
+ * Detect whether a move is a sacrifice or tactical trap.
+ * Simulates the full PV recapture chain on the destination square.
+ * Returns true for:
+ *   - Genuine sacrifice: full chain loses material (e.g. Nxf7, Rxf7 → net -2)
+ *   - Tactical trap: first move appears to sacrifice, but full chain gains more
+ *     than the apparent sacrifice (e.g. Rxe3 chain → apparent -2, net +3)
+ * @param {Object} move - Move data with fen_before, move_san, move_uci, eval_before.
+ * @returns {boolean} True if the move is a sacrifice or tactical trap.
  */
-async function showProjectStatus() {
-  console.log('[showProjectStatus] Fetching project status...');
-  await showModalWithData('status-modal', 'status-content', '/api/pgn/status', (content, data) => {
-    console.log('[showProjectStatus] Status received, config_ok:', data.config_ok);
+function isSacrifice(move) {
+  if (!move.fen_before || !move.move_san || !move.move_uci) return false;
 
-    if (!data.config_ok) {
-      content.textContent = 'config.json not found. Run chess-self-coach setup.';
-      return;
+  const eb = move.eval_before;
+  // PV must show at least one move beyond the recapture — a 2-move PV
+  // (capture + recapture) indicates a simple exchange with no hidden depth
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 3 || !eb.best_move_uci) return false;
+
+  // Must be the engine's best move (PV is only valid for that move)
+  if (move.move_uci !== eb.best_move_uci) return false;
+
+  // Opponent must recapture on the same square in the PV
+  const ourDest = move.move_uci.slice(2, 4);
+  const oppDest = eb.pv_uci[1].slice(2, 4);
+  if (oppDest !== ourDest) return false;
+
+  // Simulate full recapture chain on destination square
+  const chess = new Chess(move.fen_before);
+  let materialBalance = 0;
+  let firstCapturedValue = 0;
+  let firstPieceValue = 0;
+
+  for (let k = 0; k < eb.pv_uci.length; k++) {
+    const pvDest = eb.pv_uci[k].slice(2, 4);
+    if (k > 0 && pvDest !== ourDest) break;
+
+    const from = eb.pv_uci[k].slice(0, 2);
+    const to = pvDest;
+    const promo = eb.pv_uci[k].length > 4 ? eb.pv_uci[k][4] : undefined;
+    const result = chess.move({ from, to, promotion: promo });
+    if (!result) break;
+
+    if (result.captured) {
+      const sign = (k % 2 === 0) ? 1 : -1;
+      materialBalance += sign * PIECE_VALUES[result.captured];
     }
 
-    // Stockfish
-    const sfSection = document.createElement('div');
-    sfSection.className = 'status-section';
-    const sfTitle = document.createElement('p');
-    sfTitle.className = 'status-section-title';
-    sfTitle.textContent = 'Stockfish:';
-    sfSection.appendChild(sfTitle);
-    const sfStatus = document.createElement('p');
-    sfStatus.style.paddingLeft = '1rem';
-    sfStatus.className = data.stockfish.available ? 'status-ok' : 'status-warn';
-    sfStatus.textContent = data.stockfish.available ? data.stockfish.version : 'Not found';
-    sfSection.appendChild(sfStatus);
-    content.appendChild(sfSection);
+    if (k === 0) {
+      firstCapturedValue = result.captured ? PIECE_VALUES[result.captured] : 0;
+      firstPieceValue = PIECE_VALUES[result.piece];
+    }
+  }
 
-    // Token
-    const tokenSection = document.createElement('div');
-    tokenSection.className = 'status-section';
-    const tokenTitle = document.createElement('p');
-    tokenTitle.className = 'status-section-title';
-    tokenTitle.textContent = 'Lichess token:';
-    tokenSection.appendChild(tokenTitle);
-    const tokenStatus = document.createElement('p');
-    tokenStatus.style.paddingLeft = '1rem';
-    tokenStatus.className = data.has_token ? 'status-ok' : 'status-warn';
-    tokenStatus.textContent = data.has_token ? 'Configured' : 'Not configured';
-    tokenSection.appendChild(tokenStatus);
-    content.appendChild(tokenSection);
+  const firstMoveNet = firstCapturedValue - firstPieceValue;
 
-    // Files
-    if (data.files.length > 0) {
-      const filesSection = document.createElement('div');
-      filesSection.className = 'status-section';
-      const filesTitle = document.createElement('p');
-      filesTitle.className = 'status-section-title';
-      filesTitle.textContent = 'PGN files:';
-      filesSection.appendChild(filesTitle);
-      for (const f of data.files) {
-        const p = document.createElement('p');
-        p.className = 'status-file';
-        const icon = f.study_configured ? '\u2713' : '\u26A0';
-        p.textContent = icon + ' ' + f.file + ' (' + f.chapters + ' chapters, ' + f.modified + ')';
-        filesSection.appendChild(p);
+  // Pawn sacrifices are not brilliant — must sacrifice a piece (value > 2)
+  if (firstPieceValue <= 2) return false;
+
+  // Genuine sacrifice: full chain loses material
+  if (materialBalance < -0.5) return true;
+
+  // Tactical trap: first move appears to sacrifice, but full chain gains
+  // more than the apparent sacrifice (exploiting mate threats, forks, etc.)
+  if (firstMoveNet < -0.5 && materialBalance > Math.abs(firstMoveNet)) return true;
+
+  return false;
+}
+
+/**
+ * Classify a move based on expected points lost.
+ * @param {Object} move - Move data from analysis_data.json.
+ * @param {string} playerColor - 'white' or 'black'.
+ * @returns {{category: string, symbol: string, color: string}}
+ */
+function classifyMove(move, playerColor) {
+  // Book moves: only classify as book if no eval data is available
+  const isBook = move.in_opening !== undefined ? move.in_opening : (move.eval_source === 'opening_explorer');
+  if (isBook) {
+    const eb = move.eval_before;
+    const ea = move.eval_after;
+    if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) {
+      return { category: 'book', symbol: '\u2657', color: '#a88764' };
+    }
+    // Has eval data — fall through to normal classification
+  }
+
+  const evalBefore = move.eval_before;
+  const evalAfter = move.eval_after;
+
+  // No eval data available
+  if (!evalBefore || evalBefore.score_cp == null || !evalAfter || evalAfter.score_cp == null) {
+    return null;
+  }
+
+  // Mate detection
+  if (evalBefore.is_mate && evalBefore.mate_in != null) {
+    const mateForPlayer = (playerColor === 'white') ? evalBefore.mate_in > 0 : evalBefore.mate_in < 0;
+    if (mateForPlayer) {
+      // Player had mate, check if they played best
+      if (evalAfter.is_mate && evalAfter.mate_in != null) {
+        // mate_in === 0 means checkmate delivered — best possible move
+        if (evalAfter.mate_in === 0) {
+          return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
+        }
+        const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
+        if (!stillMate) {
+          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
+        }
+      } else {
+        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
       }
-      content.appendChild(filesSection);
     }
+  }
 
-    // Suggestions
-    if (data.suggestions.length > 0) {
-      const sugSection = document.createElement('div');
-      sugSection.className = 'status-section';
-      const sugTitle = document.createElement('p');
-      sugTitle.className = 'status-section-title';
-      sugTitle.textContent = 'Suggestions:';
-      sugSection.appendChild(sugTitle);
-      for (const s of data.suggestions) {
-        const p = document.createElement('p');
-        p.style.paddingLeft = '1rem';
-        p.className = 'status-warn';
-        p.textContent = s;
-        sugSection.appendChild(p);
-      }
-      content.appendChild(sugSection);
-    }
+  // Win probability model
+  const sign = playerColor === 'white' ? 1 : -1;
+  const wpBefore = winProb(evalBefore.score_cp * sign);
+  const wpAfter = winProb(evalAfter.score_cp * sign);
+  const eplLost = wpBefore - wpAfter;
+
+  // Brilliant detection: sacrifice + best/near-best + not dominating + not hopeless + not opening theory
+  const isOpening = move.in_opening !== undefined ? move.in_opening : false;
+  if (eplLost <= 0.02 && wpBefore > 0.05 && wpBefore < 0.95 && !isOpening && isSacrifice(move)) {
+    return { category: 'brilliant', symbol: '!!', color: '#1baca6' };
+  }
+
+  if (eplLost <= 0) {
+    return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
+  } else if (eplLost <= 0.02) {
+    return { category: 'excellent', symbol: '!', color: '#96bc4b' };
+  } else if (eplLost <= 0.05) {
+    return { category: 'good', symbol: '', color: '#95b776' };
+  } else if (eplLost <= 0.10) {
+    return { category: 'inaccuracy', symbol: '?!', color: '#f7c631' };
+  } else if (eplLost <= 0.20) {
+    return { category: 'mistake', symbol: '?', color: '#e6912a' };
+  } else {
+    return { category: 'blunder', symbol: '??', color: '#ca3431' };
+  }
+}
+
+// Expose for E2E testing (module-scoped functions are not accessible from page.evaluate)
+window._classifyMove = classifyMove;
+window._isSacrifice = isSacrifice;
+
+/**
+ * Classify all moves in a game for both players.
+ * @param {Array} moves - Array of move objects.
+ * @param {string} playerColor - Player's color.
+ * @returns {Array} Array of classification objects (one per move, null if unclassifiable).
+ */
+function classifyAllMoves(moves, playerColor) {
+  return moves.map(move => {
+    const color = move.side;
+    return classifyMove(move, color);
   });
 }
 
-// --- Validate modal ---
-
 /**
- * Fetch PGN validation results from the API and display in a modal.
- * Only available in [App] mode.
- * @async
+ * Compute accuracy percentage for a color.
+ * @param {Array} moves - All moves.
+ * @param {Array} classifications - Classification for each move.
+ * @param {string} color - 'white' or 'black'.
+ * @returns {number} Accuracy 0-100.
  */
-async function showValidate() {
-  console.log('[showValidate] Fetching PGN validation...');
-  await showModalWithData('validate-modal', 'validate-content', '/api/pgn/validate', (content, data) => {
-    console.log('[showValidate] Results received:', data.files.length, 'file(s)');
+function computeAccuracy(moves, classifications, color) {
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < moves.length; i++) {
+    const move = moves[i];
+    if (move.side !== color) continue;
+    const eb = move.eval_before;
+    const ea = move.eval_after;
+    if (!eb || eb.score_cp == null || !ea || ea.score_cp == null) continue;
 
-    for (const file of data.files) {
-      const fileEl = document.createElement('p');
-      fileEl.className = 'validate-file';
-      fileEl.textContent = file.file;
-      content.appendChild(fileEl);
+    const sign = color === 'white' ? 1 : -1;
+    const wpBefore = winProb(eb.score_cp * sign);
+    const wpAfter = winProb(ea.score_cp * sign);
 
-      for (const ch of file.chapters) {
-        const hasErrors = ch.errors.length > 0;
-        const hasWarnings = ch.warnings.length > 0;
-        const status = hasErrors ? 'ERROR' : hasWarnings ? 'WARN' : 'OK';
-        const cls = hasErrors ? 'validate-error' : hasWarnings ? 'validate-warn' : 'validate-ok';
-
-        const chEl = document.createElement('p');
-        chEl.className = 'validate-chapter ' + cls;
-        chEl.textContent = '[' + status + '] ' + ch.name;
-        content.appendChild(chEl);
-
-        for (const e of ch.errors) {
-          const d = document.createElement('p');
-          d.className = 'validate-detail validate-error';
-          d.textContent = e;
-          content.appendChild(d);
-        }
-        for (const w of ch.warnings) {
-          const d = document.createElement('p');
-          d.className = 'validate-detail validate-warn';
-          d.textContent = w;
-          content.appendChild(d);
-        }
-      }
-    }
-  }, { method: 'POST' });
+    if (wpBefore <= 0) continue; // avoid division by zero
+    const moveAcc = Math.min(wpAfter / wpBefore, 1.0);
+    sum += moveAcc;
+    count++;
+  }
+  return count > 0 ? Math.round((sum / count) * 100) : null;
 }
 
-// --- Refresh training ---
+/**
+ * Update the "Analyze selected (N)" button text and disabled state.
+ */
+function updateAnalyzeButton() {
+  const btn = document.getElementById('analyze-selected-btn');
+  if (!btn) return;
+  const n = selectedGameIds.size;
+  btn.textContent = n > 0 ? `Analyze selected (${n})` : 'Analyze selected';
+  btn.disabled = n === 0;
+}
 
 /**
- * Start a training refresh job and display progress in a modal.
- * POSTs to /api/train/prepare, then opens an EventSource on
- * /api/jobs/{id}/events to stream progress updates.
- * @async
+ * Render the game selector list with checkboxes and analysis status.
  */
-async function refreshTraining() {
-  console.log('[refreshTraining] Starting refresh...');
-  const modal = document.getElementById('refresh-modal');
-  const stepsContainer = document.getElementById('refresh-steps');
-  const interruptBtn = document.getElementById('interrupt-refresh');
-  if (!modal || !stepsContainer) {
-    console.error('[refreshTraining] Modal elements not found');
+async function showGameSelector() {
+  console.log('[showGameSelector] Rendering game list');
+  const selector = document.getElementById('game-selector');
+  const review = document.getElementById('game-review');
+  const toolbar = document.getElementById('game-list-toolbar');
+  selector.textContent = '';
+  selector.classList.remove('hidden');
+  review.classList.add('hidden');
+  selectedGameIds.clear();
+
+  // In app mode, use the unified API list (sorted by date, analyzed + cached)
+  // In demo mode, use analysisData only
+  let unifiedList = []; // [{gameId, analyzed, apiData, richData}]
+
+  if (appMode === 'app') {
+    try {
+      const resp = await fetch('/api/games?limit=' + gameListLimit);
+      if (resp.ok) {
+        const data = await resp.json();
+        for (const g of data.games) {
+          const richData = analysisData?.games?.[g.game_id];
+          unifiedList.push({ gameId: g.game_id, analyzed: !!richData || g.analyzed, apiData: g, richData });
+        }
+        console.log(`[showGameSelector] Unified list: ${unifiedList.length} games (${unifiedList.filter(g => !g.analyzed).length} unanalyzed)`);
+      }
+    } catch (err) {
+      console.log('[showGameSelector] Could not fetch unified game list:', err);
+    }
+  }
+
+  // Fallback (demo mode or API failure): use analysisData
+  if (unifiedList.length === 0 && analysisData?.games) {
+    const entries = Object.entries(analysisData.games);
+    entries.sort((a, b) => (b[1].headers.date || '').localeCompare(a[1].headers.date || ''));
+    for (const [gameId, game] of entries) {
+      unifiedList.push({ gameId, analyzed: true, apiData: null, richData: game });
+    }
+  }
+
+  // Filter by result
+  const filteredList = unifiedList.filter((entry) => {
+    const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
+    const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
+    const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
+    const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
+    if (isWin) return resultFilters.has('win');
+    if (isLoss) return resultFilters.has('loss');
+    return resultFilters.has('draw');
+  });
+
+  const limitedEntries = filteredList.slice(0, gameListLimit);
+
+  if (limitedEntries.length === 0) {
+    selector.textContent = appMode === 'app'
+      ? 'No games yet. Use menu \u2630 \u2192 Refresh games to fetch your games.'
+      : 'No analyzed games available.';
+    if (toolbar) toolbar.classList.add('hidden');
     return;
   }
 
-  // Step definitions: id, default text
-  const STEPS = [
-    { id: 'init', text: 'Detecting Stockfish...' },
-    { id: 'fetch', text: 'Fetching games...' },
-    { id: 'analyze', text: 'Analyzing games...' },
-    { id: 'finalize', text: 'Generating training data' },
-  ];
-
-  // Render initial step list (all pending) using safe DOM methods
-  while (stepsContainer.firstChild) stepsContainer.firstChild.remove();
-  const stepEls = {};
-  for (const step of STEPS) {
-    const div = document.createElement('div');
-    div.className = 'refresh-step step-pending';
-    const icon = document.createElement('span');
-    icon.className = 'step-icon';
-    icon.textContent = '\u25CB';
-    const text = document.createElement('span');
-    text.className = 'step-text';
-    text.textContent = step.text;
-    div.appendChild(icon);
-    div.appendChild(text);
-    stepsContainer.appendChild(div);
-    stepEls[step.id] = div;
+  // Show toolbar (select-all + analyze only in app mode)
+  if (toolbar) {
+    toolbar.classList.remove('hidden');
+    const selectAllLabel = document.getElementById('select-all-label');
+    const analyzeBtn = document.getElementById('analyze-selected-btn');
+    if (appMode === 'app') {
+      if (selectAllLabel) selectAllLabel.classList.remove('hidden');
+      if (analyzeBtn) analyzeBtn.classList.remove('hidden');
+    } else {
+      if (selectAllLabel) selectAllLabel.classList.add('hidden');
+      if (analyzeBtn) analyzeBtn.classList.add('hidden');
+    }
   }
 
-  let sawAnalyze = false;
+  for (const entry of limitedEntries) {
+    const gameId = entry.gameId;
+    const game = entry.richData;  // null for unanalyzed
+    const api = entry.apiData;    // null for demo mode
+
+    const card = document.createElement('div');
+    card.className = entry.analyzed ? 'game-card' : 'game-card game-card-unanalyzed';
+    card.dataset.gameId = gameId;
+
+    // Checkbox (app mode only, not for queued games — includes analyzed for re-analysis)
+    const isQueued = analyzingGameIds.has(gameId) || pendingGameIds.has(gameId);
+    if (appMode === 'app' && !isQueued) {
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'game-card-checkbox';
+      cb.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (cb.checked) selectedGameIds.add(gameId);
+        else selectedGameIds.delete(gameId);
+        updateAnalyzeButton();
+        const selectAll = document.getElementById('select-all-checkbox');
+        const selectableCount = limitedEntries.filter(e => !analyzingGameIds.has(e.gameId) && !pendingGameIds.has(e.gameId)).length;
+        if (selectAll) selectAll.checked = selectedGameIds.size > 0 && selectedGameIds.size === selectableCount;
+      });
+      card.appendChild(cb);
+    }
+
+    if (entry.analyzed) {
+      card.addEventListener('click', () => selectGame(gameId));
+    }
+
+    // Result badge
+    const resultEl = document.createElement('div');
+    resultEl.className = 'game-card-result';
+    const result = game ? game.headers.result : api.result;
+    const playerColor = game ? game.player_color : api.player_color;
+    const isWin = (result === '1-0' && playerColor === 'white') || (result === '0-1' && playerColor === 'black');
+    const isLoss = (result === '1-0' && playerColor === 'black') || (result === '0-1' && playerColor === 'white');
+    if (isWin) {
+      resultEl.textContent = 'W';
+      resultEl.classList.add('win');
+    } else if (isLoss) {
+      resultEl.textContent = 'L';
+      resultEl.classList.add('loss');
+    } else {
+      resultEl.textContent = 'D';
+      resultEl.classList.add('draw');
+    }
+    card.appendChild(resultEl);
+
+    // Info
+    const infoEl = document.createElement('div');
+    infoEl.className = 'game-card-info';
+    const opponent = document.createElement('div');
+    opponent.className = 'game-card-opponent';
+    let opponentName, dateStr, moveCountText;
+    if (game) {
+      opponentName = playerColor === 'white' ? game.headers.black : game.headers.white;
+      dateStr = (game.headers.date || '').replace(/\./g, '-');
+      let openingName = '';
+      for (const m of game.moves) {
+        if (m.opening_explorer && m.opening_explorer.moves) {
+          for (const om of m.opening_explorer.moves) {
+            if (om.opening && om.opening.name && om.uci === m.move_uci) {
+              openingName = om.opening.name;
+              break;
+            }
+          }
+          if (openingName) break;
+        }
+      }
+      moveCountText = `${game.moves.length} moves${openingName ? ' \u00b7 ' + openingName : ''}`;
+    } else {
+      opponentName = playerColor === 'white' ? api.black : api.white;
+      dateStr = api.date || '';
+      moveCountText = `${api.move_count} moves \u00b7 ${api.opening || api.source}`;
+    }
+    opponent.textContent = `vs ${opponentName}`;
+    infoEl.appendChild(opponent);
+
+    const meta = document.createElement('div');
+    meta.className = 'game-card-meta';
+    meta.textContent = `${dateStr} \u00b7 ${moveCountText}`;
+    infoEl.appendChild(meta);
+    card.appendChild(infoEl);
+
+    // Accuracy + classification badges (analyzed), "Queued", or "Not analyzed" badge
+    if (!game) {
+      const badge = document.createElement('div');
+      if (isQueued) {
+        badge.className = 'game-card-accuracy queued-badge';
+        badge.textContent = 'Queued';
+      } else if (entry.analyzed) {
+        badge.className = 'game-card-accuracy unanalyzed-badge';
+        badge.textContent = 'Analyzed';
+      } else {
+        badge.className = 'game-card-accuracy unanalyzed-badge';
+        badge.textContent = 'Not analyzed';
+      }
+      card.appendChild(badge);
+      selector.appendChild(card);
+      continue;
+    }
+
+    const opponentColor = game.player_color === 'white' ? 'black' : 'white';
+    const classified = classifyAllMoves(game.moves, game.player_color);
+    const playerAcc = computeAccuracy(game.moves, classified, game.player_color);
+    const opponentAcc = computeAccuracy(game.moves, classified, opponentColor);
+    const categories = [
+      { key: 'brilliant', label: '!!', color: '#1baca6', title: 'brilliant moves' },
+      { key: 'inaccuracy', label: '?!', color: '#f7c631', title: 'inaccuracies' },
+      { key: 'mistake', label: '?', color: '#e6912a', title: 'mistakes' },
+      { key: 'blunder', label: '??', color: '#ca3431', title: 'blunders' },
+    ];
+
+    function buildAccuracyRow(color, acc, isOpponent) {
+      const row = document.createElement('div');
+      row.className = 'accuracy-row' + (isOpponent ? ' opponent' : '');
+      const label = document.createElement('span');
+      label.className = 'accuracy-label';
+      label.textContent = isOpponent ? 'Opp:' : 'You:';
+      row.appendChild(label);
+      if (acc !== null) {
+        const val = document.createElement('span');
+        val.className = 'accuracy-value';
+        val.textContent = `${acc}%`;
+        row.appendChild(val);
+      }
+      const counts = {};
+      for (let i = 0; i < game.moves.length; i++) {
+        const cls = classified[i];
+        if (cls && game.moves[i].side === color) {
+          counts[cls.category] = (counts[cls.category] || 0) + 1;
+        }
+      }
+      for (const cat of categories) {
+        const c = counts[cat.key] || 0;
+        if (c > 0) {
+          const badge = document.createElement('span');
+          badge.className = 'class-badge';
+          badge.style.color = cat.color;
+          badge.style.border = `1px solid ${cat.color}`;
+          badge.textContent = `${c}${cat.label}`;
+          badge.title = `${c} ${cat.title}`;
+          row.appendChild(badge);
+        }
+      }
+      return row;
+    }
+
+    const accEl = document.createElement('div');
+    accEl.className = 'game-card-accuracy';
+    accEl.appendChild(buildAccuracyRow(game.player_color, playerAcc, false));
+    accEl.appendChild(buildAccuracyRow(opponentColor, opponentAcc, true));
+    card.appendChild(accEl);
+
+    selector.appendChild(card);
+  }
+
+  updateAnalyzeButton();
+}
+
+/**
+ * Select a game for review.
+ * @param {string} gameId - Game URL key.
+ */
+function selectGame(gameId) {
+  console.log('[selectGame] Selected:', gameId);
+  reviewGame = analysisData.games[gameId];
+  reviewGame._id = gameId;
+  currentPly = 0;
+  reviewOrientation = reviewGame.player_color;
+
+  // Classify all moves
+  classifiedMoves = classifyAllMoves(reviewGame.moves, reviewGame.player_color);
+
+  // Hide selector and toolbar, show review
+  document.getElementById('game-selector').classList.add('hidden');
+  document.getElementById('game-list-toolbar').classList.add('hidden');
+  document.getElementById('game-review').classList.remove('hidden');
+
+  // Game info bar
+  const infoEl = document.getElementById('review-game-info');
+  const result = reviewGame.headers.result;
+  infoEl.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+
+  // Show/hide "Train on this game" button
+  const trainBtn = document.getElementById('review-train-btn');
+  if (trainBtn && trainingData) {
+    const hasPositions = trainingData.positions.some((p) => p.game && p.game.id === gameId);
+    if (hasPositions) {
+      trainBtn.classList.remove('hidden');
+      trainBtn.onclick = () => showTrainingView(gameId);
+    } else {
+      trainBtn.classList.add('hidden');
+    }
+  }
+
+  appView = 'review';
+
+  // Render components
+  renderGameSummary();
+  renderOpeningInfo();
+  renderMoveList();
+  setupReviewBoard();
+  goToMove(0);
+  renderScoreChart();
+}
+
+/**
+ * Find the opening name from the game moves.
+ * @returns {string} Opening name or empty string.
+ */
+function getOpeningName() {
+  let name = '';
+  let eco = '';
+  if (!reviewGame) return '';
+  for (const m of reviewGame.moves) {
+    if (m.opening_explorer && m.opening_explorer.moves) {
+      for (const om of m.opening_explorer.moves) {
+        if (om.opening && om.opening.name && om.uci === m.move_uci) {
+          name = om.opening.name;
+          eco = om.opening.eco || '';
+        }
+      }
+    }
+  }
+  return eco ? `${eco}: ${name}` : name;
+}
+
+/**
+ * Render the game summary (player names).
+ */
+function renderGameSummary() {
+  const el = document.getElementById('review-summary');
+  el.textContent = '';
+
+  for (const color of ['white', 'black']) {
+    const block = document.createElement('div');
+    block.className = 'accuracy-block';
+
+    const label = document.createElement('div');
+    label.className = 'accuracy-label';
+    label.textContent = color === 'white' ? reviewGame.headers.white : reviewGame.headers.black;
+    block.appendChild(label);
+
+    el.appendChild(block);
+  }
+}
+
+/**
+ * Render opening info.
+ */
+function renderOpeningInfo() {
+  const el = document.getElementById('review-opening');
+  const name = getOpeningName();
+  el.textContent = name || '';
+}
+
+/**
+ * Render the two-column move list.
+ */
+function renderMoveList() {
+  const el = document.getElementById('review-moves');
+  el.textContent = '';
+
+  const moves = reviewGame.moves;
+  // Find theory departure point
+  let theoryDeparture = -1;
+  for (let i = 0; i < moves.length; i++) {
+    if (i > 0 && moves[i].eval_source !== 'opening_explorer' && moves[i - 1].eval_source === 'opening_explorer') {
+      theoryDeparture = i;
+      break;
+    }
+  }
+
+  for (let i = 0; i < moves.length; i += 2) {
+    const moveNum = Math.floor(i / 2) + 1;
+
+    // Move number
+    const numEl = document.createElement('div');
+    numEl.className = 'move-number';
+    numEl.textContent = moveNum + '.';
+    el.appendChild(numEl);
+
+    // White move
+    const whiteCell = createMoveCell(i, moves[i], classifiedMoves[i], theoryDeparture);
+    el.appendChild(whiteCell);
+
+    // Black move
+    if (i + 1 < moves.length) {
+      const blackCell = createMoveCell(i + 1, moves[i + 1], classifiedMoves[i + 1], theoryDeparture);
+      el.appendChild(blackCell);
+    } else {
+      el.appendChild(document.createElement('div'));
+    }
+  }
+}
+
+/**
+ * Create a move cell element for the move list.
+ * @param {number} idx - Move index in the moves array.
+ * @param {Object} move - Move data.
+ * @param {?Object} cls - Classification data.
+ * @param {number} theoryDep - Index of theory departure.
+ * @returns {HTMLElement}
+ */
+function createMoveCell(idx, move, cls, theoryDep) {
+  const cell = document.createElement('div');
+  cell.className = 'move-cell';
+  cell.dataset.ply = move.ply;
+  if (idx === theoryDep) cell.classList.add('theory-marker');
+
+  if (cls) {
+    const dot = document.createElement('span');
+    dot.className = 'class-dot';
+    dot.style.backgroundColor = cls.color;
+    cell.appendChild(dot);
+
+    if (cls.symbol) {
+      const sym = document.createElement('span');
+      sym.className = 'class-symbol';
+      sym.style.color = cls.color;
+      sym.textContent = cls.symbol;
+      cell.appendChild(sym);
+    }
+  }
+
+  const san = document.createElement('span');
+  san.textContent = move.move_san;
+  cell.appendChild(san);
+
+  cell.addEventListener('click', () => goToMove(move.ply));
+  return cell;
+}
+
+/**
+ * Navigate to a specific ply in the review.
+ * @param {number} ply - Move ply (0 = starting position).
+ */
+function goToMove(ply) {
+  if (!reviewGame) return;
+  ply = Math.max(0, Math.min(ply, reviewGame.moves.length));
+  currentPly = ply;
+
+  // Determine FEN
+  let fen;
+  if (ply === 0) {
+    fen = reviewGame.moves.length > 0 ? reviewGame.moves[0].fen_before : 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+  } else {
+    fen = reviewGame.moves[ply - 1].fen_after;
+  }
+
+  // Determine last move highlight
+  let lastMove = undefined;
+  if (ply > 0) {
+    const uci = reviewGame.moves[ply - 1].move_uci;
+    lastMove = [uci.slice(0, 2), uci.slice(2, 4)];
+  }
+
+  // Update board
+  if (reviewCg) {
+    reviewCg.set({
+      fen,
+      lastMove,
+      drawable: { autoShapes: [] },
+    });
+    updateBoardArrows(ply);
+  }
+
+  // Update eval bar
+  updateEvalBar(ply);
+
+  // Highlight active move in list
+  const moveCells = document.querySelectorAll('#review-moves .move-cell');
+  moveCells.forEach(cell => {
+    cell.classList.toggle('active-move', parseInt(cell.dataset.ply) === ply);
+  });
+
+  // Auto-scroll move list to active move
+  const activeCell = document.querySelector('#review-moves .move-cell.active-move');
+  if (activeCell) {
+    activeCell.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // Update PV line
+  updatePvLine(ply);
+
+  // Update score chart cursor
+  updateChartCursor();
+}
+
+/**
+ * Set up the review board (second Chessground instance).
+ */
+function setupReviewBoard() {
+  console.log('[setupReviewBoard] Creating review board');
+  const boardEl = document.getElementById('review-board');
+  if (reviewCg) reviewCg.destroy();
+
+  reviewCg = Chessground(boardEl, {
+    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    orientation: reviewOrientation,
+    viewOnly: true,
+    coordinates: true,
+    highlight: { lastMove: true },
+  });
+}
+
+/**
+ * Update the eval bar for a given ply.
+ * @param {number} ply - Current ply.
+ */
+function updateEvalBar(ply) {
+  const fill = document.getElementById('eval-bar-fill');
+  const label = document.getElementById('eval-bar-label');
+
+  if (ply === 0 || !reviewGame) {
+    fill.style.height = '50%';
+    label.textContent = '0.0';
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const evalData = move.eval_after;
+
+  if (!evalData || evalData.score_cp == null) {
+    fill.style.height = '50%';
+    label.textContent = '—';
+    return;
+  }
+
+  if (evalData.is_mate && evalData.mate_in != null) {
+    const mateMoves = evalData.mate_in;
+    fill.style.height = mateMoves > 0 ? '95%' : '5%';
+    label.textContent = `M${Math.abs(mateMoves)}`;
+    return;
+  }
+
+  const cp = evalData.score_cp;
+  // Sigmoid mapping: 50 + 50 * (2/(1+exp(-cp/200)) - 1)
+  const pct = 50 + 50 * (2 / (1 + Math.exp(-cp / 200)) - 1);
+  const clamped = Math.max(3, Math.min(97, pct));
+  fill.style.height = clamped + '%';
+
+  const pawns = cp / 100;
+  label.textContent = (pawns >= 0 ? '+' : '') + pawns.toFixed(1);
+}
+
+/**
+ * Update board arrows showing best move and played move.
+ * @param {number} ply - Current ply.
+ */
+function updateBoardArrows(ply) {
+  if (!reviewCg || !reviewGame || ply === 0) {
+    if (reviewCg) reviewCg.set({ drawable: { autoShapes: [] } });
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const shapes = [];
+
+  // Best move arrow (green) — from eval_before of current move
+  const evalBefore = move.eval_before;
+  if (evalBefore && evalBefore.best_move_uci) {
+    const bestUci = evalBefore.best_move_uci;
+    shapes.push({
+      orig: bestUci.slice(0, 2),
+      dest: bestUci.slice(2, 4),
+      brush: 'green',
+    });
+  }
+
+  // Played move arrow (red) if it's a mistake/blunder/inaccuracy
+  const cls = classifiedMoves ? classifiedMoves[ply - 1] : null;
+  if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+    const playedUci = move.move_uci;
+    const bestUci = evalBefore ? evalBefore.best_move_uci : null;
+    if (bestUci && playedUci !== bestUci) {
+      shapes.push({
+        orig: playedUci.slice(0, 2),
+        dest: playedUci.slice(2, 4),
+        brush: 'red',
+      });
+    }
+  }
+
+  reviewCg.set({ drawable: { autoShapes: shapes } });
+}
+
+/**
+ * Update the PV line display.
+ * @param {number} ply - Current ply.
+ */
+function updatePvLine(ply) {
+  const el = document.getElementById('review-pv');
+  if (ply === 0 || !reviewGame) {
+    el.textContent = '';
+    return;
+  }
+
+  const move = reviewGame.moves[ply - 1];
+  const evalBefore = move.eval_before;
+  if (evalBefore && evalBefore.pv_san && evalBefore.pv_san.length > 0) {
+    const depth = evalBefore.depth ? ` (depth ${evalBefore.depth})` : '';
+    el.textContent = `Best: ${evalBefore.pv_san.slice(0, 8).join(' ')}${depth}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+/**
+ * Render the score chart.
+ */
+function renderScoreChart() {
+  const canvas = document.getElementById('score-chart');
+  if (!canvas || !reviewGame) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const w = rect.width;
+  const h = rect.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const moves = reviewGame.moves;
+  if (moves.length === 0) return;
+
+  const maxCp = 1000; // clamp
+  const midY = h / 2;
 
   /**
-   * Update a step's visual state and text.
-   * @param {string} id - Step id
-   * @param {'done'|'active'|'pending'|'error'} state
-   * @param {string} [text] - Optional new text
-   * @param {number|null} [progressValue] - If set, add/update progress bar
+   * Get eval value for a move, clamped.
+   * @param {Object} move
+   * @returns {number} cp value, clamped.
    */
-  function setStep(id, state, text, progressValue) {
-    const el = stepEls[id];
-    if (!el) return;
-    const icons = { done: '\u2713', active: '\u27F3', pending: '\u25CB', error: '\u2717' };
-    el.className = 'refresh-step step-' + state;
-    el.querySelector('.step-icon').textContent = icons[state];
-    if (text) el.querySelector('.step-text').textContent = text;
+  function getEval(move) {
+    const ea = move.eval_after;
+    if (!ea || ea.score_cp == null) return 0;
+    if (ea.is_mate && ea.mate_in != null) return ea.mate_in > 0 ? maxCp : -maxCp;
+    return Math.max(-maxCp, Math.min(maxCp, ea.score_cp));
+  }
 
-    // Progress bar for active analyze step
-    let bar = el.querySelector('.step-progress');
-    if (progressValue != null && state === 'active') {
-      if (!bar) {
-        bar = document.createElement('progress');
-        bar.className = 'step-progress';
-        bar.max = 100;
-        el.appendChild(bar);
+  function cpToY(cp) {
+    return midY - (cp / maxCp) * midY;
+  }
+
+  const stepX = w / (moves.length + 1);
+
+  // Draw center line
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, midY);
+  ctx.lineTo(w, midY);
+  ctx.stroke();
+
+  // Draw area fills
+  ctx.beginPath();
+  ctx.moveTo(stepX, midY);
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const cp = getEval(moves[i]);
+    const y = cpToY(cp);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(stepX * moves.length, midY);
+  ctx.closePath();
+
+  // Fill white area above, black area below
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Draw eval line
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const cp = getEval(moves[i]);
+    const y = cpToY(cp);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Draw colored dots for mistakes/blunders
+  if (classifiedMoves) {
+    for (let i = 0; i < moves.length; i++) {
+      const cls = classifiedMoves[i];
+      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+        const x = stepX * (i + 1);
+        const cp = getEval(moves[i]);
+        const y = cpToY(cp);
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = cls.color;
+        ctx.fill();
       }
-      bar.value = progressValue;
-    } else if (bar) {
-      bar.remove();
     }
   }
 
-  /** Mark all steps up to (but not including) targetId as done. */
-  function markPriorDone(targetId) {
-    for (const step of STEPS) {
-      if (step.id === targetId) break;
-      const el = stepEls[step.id];
-      if (el && !el.classList.contains('step-done')) {
-        setStep(step.id, 'done');
-      }
-    }
-  }
-
-  modal.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/train/prepare', { method: 'POST' });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[refreshTraining] API error:', resp.status, err.detail);
-      setStep('init', 'error', err.detail || 'Failed to start refresh.');
-      return;
-    }
-    const data = await resp.json();
-    const jobId = data.job_id;
-    console.log('[refreshTraining] Job started:', jobId);
-
-    // Show interrupt button and wire cancel
-    if (interruptBtn) {
-      interruptBtn.classList.remove('hidden');
-      interruptBtn.disabled = false;
-      interruptBtn.textContent = 'Interrupt';
-      interruptBtn.addEventListener('click', async () => {
-        console.log('[refreshTraining] Interrupt requested');
-        interruptBtn.disabled = true;
-        interruptBtn.textContent = 'Stopping\u2026';
-        try {
-          await fetch('/api/jobs/' + jobId + '/cancel', { method: 'POST' });
-        } catch (err) {
-          console.error('[refreshTraining] Cancel request failed:', err);
-        }
-      }, { once: true });
-    }
-
-    const eventSource = new EventSource('/api/jobs/' + jobId + '/events');
-    eventSource.onmessage = async (e) => {
-      const event = JSON.parse(e.data);
-      console.log('[refreshTraining] Event:', event.phase, event.percent, event.current, event.total);
-
-      if (event.phase === 'init') {
-        setStep('init', 'active', event.message);
-      } else if (event.phase === 'fetch') {
-        markPriorDone('fetch');
-        if (event.percent <= 5) {
-          setStep('fetch', 'active', 'Fetching games...');
-        } else {
-          setStep('fetch', 'active', event.message);
-        }
-      } else if (event.phase === 'analyze') {
-        sawAnalyze = true;
-        markPriorDone('analyze');
-        const label = event.current + '/' + event.total;
-        setStep('analyze', 'active', 'Analyzing games  ' + label, event.percent);
-      } else if (event.phase === 'done') {
-        eventSource.close();
-        if (interruptBtn) interruptBtn.classList.add('hidden');
-        // If no analyze events were received, remove the analyze step
-        if (!sawAnalyze) {
-          stepEls.analyze.remove();
-        } else {
-          setStep('analyze', 'done', 'Analysis complete');
-        }
-        markPriorDone('finalize');
-        setStep('finalize', 'done', 'Training data saved');
-        const summary = document.createElement('p');
-        summary.className = 'refresh-summary';
-        summary.textContent = event.message;
-        stepsContainer.after(summary);
-
-        // Reload training data and restart session
-        try {
-          const tdResp = await fetch('training_data.json');
-          if (tdResp.ok) {
-            trainingData = await tdResp.json();
-            console.log('[refreshTraining] Reloaded training data:', trainingData.positions.length, 'positions');
-            srsState = loadSRSState();
-            startSession();
-          }
-        } catch (err) {
-          console.error('[refreshTraining] Failed to reload training data:', err);
-        }
-      } else if (event.phase === 'interrupted') {
-        eventSource.close();
-        if (interruptBtn) interruptBtn.classList.add('hidden');
-        if (!sawAnalyze) {
-          stepEls.analyze.remove();
-        } else {
-          setStep('analyze', 'done', 'Analysis interrupted \u2014 partial results saved');
-        }
-        markPriorDone('finalize');
-        setStep('finalize', 'done', 'Training data saved');
-        const intSummary = document.createElement('p');
-        intSummary.className = 'refresh-summary';
-        intSummary.textContent = event.message;
-        stepsContainer.after(intSummary);
-
-        // Reload partial training data
-        try {
-          const tdResp = await fetch('training_data.json');
-          if (tdResp.ok) {
-            trainingData = await tdResp.json();
-            console.log('[refreshTraining] Reloaded partial training data:', trainingData.positions.length, 'positions');
-            srsState = loadSRSState();
-            startSession();
-          }
-        } catch (err) {
-          console.error('[refreshTraining] Failed to reload training data:', err);
-        }
-      } else if (event.phase === 'error') {
-        eventSource.close();
-        if (interruptBtn) interruptBtn.classList.add('hidden');
-        // Mark current active step as error, or init if none active
-        let marked = false;
-        for (const step of STEPS) {
-          if (stepEls[step.id] && stepEls[step.id].classList.contains('step-active')) {
-            setStep(step.id, 'error', event.message);
-            marked = true;
-            break;
-          }
-        }
-        if (!marked) setStep('init', 'error', event.message);
-      }
-    };
-    eventSource.onerror = () => {
-      console.log('[refreshTraining] EventSource error');
-      eventSource.close();
-      if (interruptBtn) interruptBtn.classList.add('hidden');
-      // Mark active step as error
-      for (const step of STEPS) {
-        if (stepEls[step.id] && stepEls[step.id].classList.contains('step-active')) {
-          setStep(step.id, 'error', 'Connection lost. Check server logs.');
-          return;
-        }
-      }
-      setStep('init', 'error', 'Connection lost. Check server logs.');
-    };
-  } catch (err) {
-    console.error('[refreshTraining] Fetch failed:', err);
-    setStep('init', 'error', 'Failed to connect to server.');
-  }
+  // Draw current ply indicator
+  updateChartCursor();
 }
 
-// --- Config modal ---
-
 /**
- * Fetch config from backend and populate the config modal.
- * @async
+ * Update the score chart cursor for current ply.
  */
-async function showConfig() {
-  console.log('[showConfig] Fetching config...');
-  const modal = document.getElementById('config-modal');
-  const statusEl = document.getElementById('config-status');
-  statusEl.textContent = '';
-  modal.classList.remove('hidden');
+function updateChartCursor() {
+  const canvas = document.getElementById('score-chart');
+  if (!canvas || !reviewGame) return;
 
-  try {
-    const resp = await fetch('/api/config');
-    if (!resp.ok) {
-      statusEl.textContent = 'Failed to load config.';
-      return;
-    }
-    const data = await resp.json();
-    console.log('[showConfig] Config loaded');
+  // We redraw the chart and add cursor — for simplicity, store image and overlay
+  // Actually, let's just draw a vertical line on top
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
 
-    document.getElementById('config-lichess').value = data.players.lichess || '';
-    document.getElementById('config-chesscom').value = data.players.chesscom || '';
-    document.getElementById('config-depth').value = data.analysis.default_depth || 18;
-    document.getElementById('config-threshold').value = data.analysis.blunder_threshold || 1.0;
-  } catch (err) {
-    console.error('[showConfig] Fetch failed:', err);
-    statusEl.textContent = 'Failed to connect to server.';
+  // Redraw full chart (simple approach)
+  renderScoreChartBase(ctx, w, h);
+
+  if (currentPly > 0 && currentPly <= reviewGame.moves.length) {
+    const stepX = w / (reviewGame.moves.length + 1);
+    const x = stepX * currentPly;
+    ctx.strokeStyle = 'rgba(76,175,80,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, h * 0.25);
+    ctx.lineTo(x, h * 0.75);
+    ctx.stroke();
   }
 }
 
 /**
- * Save config modal values to backend.
- * @async
+ * Render the score chart base (without cursor). Used for cursor updates.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} w - Canvas logical width.
+ * @param {number} h - Canvas logical height.
  */
-async function saveConfig() {
-  console.log('[saveConfig] Saving config...');
-  const statusEl = document.getElementById('config-status');
-  statusEl.textContent = 'Saving...';
+function renderScoreChartBase(ctx, w, h) {
+  if (!reviewGame) return;
+  const moves = reviewGame.moves;
+  if (moves.length === 0) return;
 
-  const body = {
-    players: {
-      lichess: document.getElementById('config-lichess').value.trim(),
-      chesscom: document.getElementById('config-chesscom').value.trim(),
-    },
-    analysis: {
-      default_depth: parseInt(document.getElementById('config-depth').value) || 18,
-      blunder_threshold: parseFloat(document.getElementById('config-threshold').value) || 1.0,
-    },
-  };
+  const maxCp = 1000;
+  const midY = h / 2;
 
-  try {
-    const resp = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (resp.ok) {
-      console.log('[saveConfig] Config saved');
-      statusEl.textContent = 'Saved!';
-    } else {
-      statusEl.textContent = 'Failed to save.';
-    }
-  } catch (err) {
-    console.error('[saveConfig] Fetch failed:', err);
-    statusEl.textContent = 'Failed to connect to server.';
-  }
-}
-
-// --- Journal modal ---
-
-/**
- * Strip YAML front matter from markdown content.
- * @param {string} text - Full file content with optional --- front matter ---.
- * @returns {string} Body text without front matter.
- */
-function stripFrontmatter(text) {
-  if (!text.startsWith('---')) return text;
-  const end = text.indexOf('---', 3);
-  if (end === -1) return text;
-  return text.slice(end + 3).trim();
-}
-
-/**
- * Fetch and display the coaching journal topic list in a modal.
- * @async
- */
-async function showJournal() {
-  console.log('[showJournal] Fetching coaching topics...');
-  const modal = document.getElementById('journal-modal');
-  const content = document.getElementById('journal-content');
-  const title = document.getElementById('journal-title');
-  const backBtn = document.getElementById('journal-back');
-  if (!modal || !content) {
-    console.error('[showJournal] Modal elements not found');
-    return;
+  function getEval(move) {
+    const ea = move.eval_after;
+    if (!ea || ea.score_cp == null) return 0;
+    if (ea.is_mate && ea.mate_in != null) return ea.mate_in > 0 ? maxCp : -maxCp;
+    return Math.max(-maxCp, Math.min(maxCp, ea.score_cp));
   }
 
-  title.textContent = 'Coaching Journal';
-  backBtn.classList.add('hidden');
-  content.textContent = 'Loading...';
-  modal.classList.remove('hidden');
+  function cpToY(cp) {
+    return midY - (cp / maxCp) * midY;
+  }
 
-  try {
-    const resp = await fetch('/api/coaching/topics');
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: 'Unknown error' }));
-      console.log('[showJournal] API error:', resp.status, err.detail);
-      content.textContent = err.detail || 'Failed to load journal.';
-      return;
-    }
-    const data = await resp.json();
-    console.log('[showJournal] Topics received:', data.topics.length);
+  const stepX = w / (moves.length + 1);
 
-    content.textContent = '';
+  ctx.clearRect(0, 0, w, h);
 
-    if (data.topics.length === 0) {
-      content.textContent = 'No coaching topics yet.';
-      return;
-    }
+  // Center line
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, midY);
+  ctx.lineTo(w, midY);
+  ctx.stroke();
 
-    for (const topic of data.topics) {
-      const div = document.createElement('div');
-      div.className = 'journal-topic';
-      div.addEventListener('click', () => showJournalTopic(topic.slug));
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(stepX, midY);
+  for (let i = 0; i < moves.length; i++) {
+    ctx.lineTo(stepX * (i + 1), cpToY(getEval(moves[i])));
+  }
+  ctx.lineTo(stepX * moves.length, midY);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = grad;
+  ctx.fill();
 
-      const titleLine = document.createElement('div');
-      titleLine.textContent = topic.topic;
-      if (topic.status) {
-        const badge = document.createElement('span');
-        badge.className = 'journal-topic-status ' + topic.status;
-        badge.textContent = topic.status;
-        titleLine.appendChild(badge);
+  // Eval line
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < moves.length; i++) {
+    const x = stepX * (i + 1);
+    const y = cpToY(getEval(moves[i]));
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Colored dots
+  if (classifiedMoves) {
+    for (let i = 0; i < moves.length; i++) {
+      const cls = classifiedMoves[i];
+      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+        const x = stepX * (i + 1);
+        const y = cpToY(getEval(moves[i]));
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = cls.color;
+        ctx.fill();
       }
-      div.appendChild(titleLine);
-
-      const dateLine = document.createElement('div');
-      dateLine.className = 'journal-topic-date';
-      dateLine.textContent = topic.date;
-      div.appendChild(dateLine);
-
-      content.appendChild(div);
     }
-  } catch (err) {
-    console.error('[showJournal] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
-  }
-}
-
-/**
- * Fetch and display one coaching topic in the journal modal.
- * @param {string} slug - Topic slug (filename without .md).
- * @async
- */
-async function showJournalTopic(slug) {
-  console.log('[showJournalTopic] Fetching:', slug);
-  const content = document.getElementById('journal-content');
-  const title = document.getElementById('journal-title');
-  const backBtn = document.getElementById('journal-back');
-
-  content.textContent = 'Loading...';
-  backBtn.classList.remove('hidden');
-
-  try {
-    const resp = await fetch('/api/coaching/topics/' + slug);
-    if (!resp.ok) {
-      content.textContent = 'Failed to load topic.';
-      return;
-    }
-    const data = await resp.json();
-    console.log('[showJournalTopic] Content loaded:', slug);
-
-    const body = stripFrontmatter(data.content);
-    title.textContent = slug.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
-    content.textContent = '';
-    const pre = document.createElement('div');
-    pre.className = 'journal-detail';
-    pre.textContent = body;
-    content.appendChild(pre);
-  } catch (err) {
-    console.error('[showJournalTopic] Fetch failed:', err);
-    content.textContent = 'Failed to connect to server.';
   }
 }
 
@@ -1718,10 +2422,6 @@ async function init() {
       // Enable ready endpoints
       const refreshItem = document.getElementById('nav-refresh');
       if (refreshItem) refreshItem.classList.remove('disabled');
-      const configItem = document.getElementById('nav-config');
-      if (configItem) configItem.classList.remove('disabled');
-      const comingSoonItem = document.getElementById('nav-coming-soon');
-      if (comingSoonItem) comingSoonItem.classList.remove('disabled');
 
       // Set version in menu
       const versionText = stockfishVersion
@@ -1750,18 +2450,7 @@ async function init() {
   }
 
   // Load training data
-  try {
-    const resp = await fetch('training_data.json');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    trainingData = await resp.json();
-    console.log(`[init] Loaded ${trainingData.positions.length} position(s)`);
-  } catch (err) {
-    const hint = appMode === 'app'
-      ? 'No training data yet. Use menu ☰ → Refresh Training to generate it.'
-      : 'Could not load training data.';
-    document.getElementById('prompt').textContent = hint;
-    console.error('[init] Training data load failed:', err);
-  }
+  await loadTrainingData();
 
   // Load SRS state
   srsState = loadSRSState();
@@ -1778,34 +2467,25 @@ async function init() {
 
   document.getElementById('nav-settings').addEventListener('click', () => {
     closeMenu();
-    const modal = document.getElementById('settings-modal');
-    const settings = loadSettings();
-    document.getElementById('session-size').value = settings.sessionSize;
-    document.getElementById('difficulty').value = settings.difficulty;
-    const defaultDepth = appMode === 'app' ? 18 : 12;
-    document.getElementById('analysis-depth').value = settings.analysisDepth || defaultDepth;
-    modal.classList.remove('hidden');
+    openSettings();
   });
 
+  document.getElementById('save-settings').addEventListener('click', () => saveAllSettings());
+
   document.getElementById('close-settings').addEventListener('click', () => {
-    const defaultDepth = appMode === 'app' ? 18 : 12;
-    const settings = {
-      sessionSize: parseInt(document.getElementById('session-size').value) || 10,
-      difficulty: document.getElementById('difficulty').value,
-      analysisDepth: parseInt(document.getElementById('analysis-depth').value) || defaultDepth,
-    };
-    saveSettings(settings);
     document.getElementById('settings-modal').classList.add('hidden');
   });
 
   document.getElementById('reset-progress').addEventListener('click', () => {
-    if (confirm('Reset all training progress? This cannot be undone.')) {
+    if (confirm('Erase all training progress? This cannot be undone.')) {
       localStorage.removeItem('train_srs');
       srsState = {};
       document.getElementById('settings-modal').classList.add('hidden');
       startSession();
     }
   });
+
+  wirePresets();
 
   document.getElementById('new-session').addEventListener('click', () => {
     document.getElementById('summary-modal').classList.add('hidden');
@@ -1856,26 +2536,11 @@ async function init() {
     }
   }
 
-  wireNavItem('nav-stats', showRawDataSummary, 'stats-modal');
-  wireNavItem('nav-refresh', refreshTraining, 'refresh-modal');
-  wireNavItem('nav-config', showConfig, 'config-modal');
-
-  // Wire "Coming soon" submenu toggle
-  const comingSoonToggle = document.getElementById('nav-coming-soon');
-  const comingSoonItems = document.getElementById('nav-coming-soon-items');
-  if (comingSoonToggle && comingSoonItems) {
-    comingSoonToggle.addEventListener('click', () => {
-      const expanded = !comingSoonItems.classList.contains('hidden');
-      comingSoonItems.classList.toggle('hidden');
-      comingSoonToggle.classList.toggle('expanded', !expanded);
-      console.log('[nav] Coming soon', expanded ? 'collapsed' : 'expanded');
-    });
-    comingSoonItems.addEventListener('click', (e) => e.stopPropagation());
-  }
-
-  document.getElementById('save-config').addEventListener('click', () => {
-    saveConfig();
+  wireNavItem('nav-refresh', async () => {
+    console.log('[nav-refresh] Refreshing game list...');
+    await autoFetchGames();
   });
+
 
   // Wire up nav-about (both modes)
   document.getElementById('nav-about').addEventListener('click', () => {
@@ -1922,6 +2587,126 @@ async function init() {
     document.getElementById('nav-version').textContent = versionText;
   }
 
+  // Wire nav menu items
+  wireNavItem('nav-games', () => showGameList());
+  wireNavItem('nav-training', () => showTrainingView(null));
+
+  // Wire game list toolbar
+  const selectAllCb = document.getElementById('select-all-checkbox');
+  if (selectAllCb) {
+    selectAllCb.addEventListener('change', () => {
+      const checkboxes = document.querySelectorAll('.game-card-checkbox');
+      checkboxes.forEach((cb) => {
+        cb.checked = selectAllCb.checked;
+        const gameId = cb.closest('.game-card').dataset.gameId;
+        if (selectAllCb.checked) selectedGameIds.add(gameId);
+        else selectedGameIds.delete(gameId);
+      });
+      updateAnalyzeButton();
+    });
+  }
+
+  const limitSelect = document.getElementById('game-limit-select');
+  if (limitSelect) {
+    limitSelect.addEventListener('change', () => {
+      gameListLimit = parseInt(limitSelect.value, 10);
+      console.log('[init] Game list limit changed to', gameListLimit);
+      showGameSelector();
+    });
+  }
+
+  // Wire result filter toggles
+  document.querySelectorAll('.result-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const result = btn.dataset.result;
+      if (resultFilters.has(result)) resultFilters.delete(result);
+      else resultFilters.add(result);
+      btn.classList.toggle('active');
+      console.log('[init] Result filter toggled:', result, resultFilters);
+      showGameSelector();
+    });
+  });
+
+  const analyzeSelBtn = document.getElementById('analyze-selected-btn');
+  if (analyzeSelBtn) {
+    analyzeSelBtn.addEventListener('click', () => analyzeSelectedGames());
+  }
+
+  // Wire review controls
+  document.getElementById('review-first').addEventListener('click', () => goToMove(0));
+  document.getElementById('review-prev').addEventListener('click', () => goToMove(currentPly - 1));
+  document.getElementById('review-next').addEventListener('click', () => goToMove(currentPly + 1));
+  document.getElementById('review-last').addEventListener('click', () => {
+    if (reviewGame) goToMove(reviewGame.moves.length);
+  });
+  document.getElementById('review-play').addEventListener('click', () => {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      document.getElementById('review-play').textContent = '\u25b6';
+    } else {
+      document.getElementById('review-play').textContent = '\u23f8';
+      autoPlayTimer = setInterval(() => {
+        if (!reviewGame || currentPly >= reviewGame.moves.length) {
+          clearInterval(autoPlayTimer);
+          autoPlayTimer = null;
+          document.getElementById('review-play').textContent = '\u25b6';
+          return;
+        }
+        goToMove(currentPly + 1);
+      }, 1000);
+    }
+  });
+  document.getElementById('review-flip').addEventListener('click', () => {
+    reviewOrientation = reviewOrientation === 'white' ? 'black' : 'white';
+    if (reviewCg) reviewCg.set({ orientation: reviewOrientation });
+  });
+  document.getElementById('review-back-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+    showGameList();
+  });
+
+  // Score chart click handler
+  document.getElementById('score-chart').addEventListener('click', (e) => {
+    if (!reviewGame) return;
+    const canvas = e.target;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const stepX = rect.width / (reviewGame.moves.length + 1);
+    const ply = Math.round(x / stepX);
+    goToMove(Math.max(0, Math.min(ply, reviewGame.moves.length)));
+  });
+
+  // Keyboard navigation for analysis mode
+  document.addEventListener('keydown', (e) => {
+    if (appView !== 'review' || !reviewGame) return;
+    // Don't capture if user is typing in an input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToMove(currentPly - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToMove(currentPly + 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goToMove(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToMove(reviewGame.moves.length); }
+  });
+
+  // Close modals on Escape key or backdrop click
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const open = document.querySelector('.modal:not(.hidden)');
+      if (open) open.classList.add('hidden');
+    }
+  });
+  document.querySelectorAll('.modal').forEach((modal) => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+  });
+
+  // Resize handler for score chart
+  window.addEventListener('resize', () => {
+    if (appView === 'review' && reviewGame) renderScoreChart();
+  });
+
   // Register service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch((err) =>
@@ -1929,8 +2714,111 @@ async function init() {
     );
   }
 
-  // Start first session (skip if no training data loaded)
-  if (trainingData) startSession();
+  // Default view: game list (load analysis data to populate it)
+  showGameList();
+
+  // In app mode, auto-fetch games
+  if (appMode === 'app') {
+    autoFetchGames();
+  }
+}
+
+/**
+ * Auto-fetch games from Lichess/chess.com at startup.
+ * Falls back to analysis_data.json on error.
+ * @async
+ */
+async function autoFetchGames() {
+  console.log('[autoFetchGames] Fetching games...');
+  const selector = document.getElementById('game-selector');
+  if (selector) selector.textContent = 'Fetching your games...';
+  try {
+    await fetch('/api/games/fetch', { method: 'POST' });
+    // Refresh game list to show newly fetched games
+    await showGameSelector();
+  } catch (err) {
+    console.error('[autoFetchGames] Failed:', err);
+    // Fallback: game list was already shown by showGameList
+  }
+}
+
+/**
+ * Analyze the selected games (send game_ids to analysis API).
+ * @async
+ */
+async function analyzeSelectedGames() {
+  const ids = Array.from(selectedGameIds);
+  console.log('[analyzeSelectedGames] Analyzing', ids.length, 'game(s)');
+  if (ids.length === 0) return;
+
+  // If a job is already running, queue these games for the next batch
+  if (analyzingGameIds.size > 0) {
+    console.log('[analyzeSelectedGames] Job running, queuing', ids.length, 'game(s)');
+    for (const id of ids) pendingGameIds.add(id);
+    analysisTotalAll += ids.length;
+    selectedGameIds.clear();
+    // Update progress text with new total
+    const el = document.getElementById('analysis-progress');
+    if (el && !el.classList.contains('hidden')) {
+      el.textContent = el.textContent.replace(/\/\d+/, '/' + analysisTotalAll);
+    }
+    showGameSelector();
+    return;
+  }
+
+  // Start a new job (reanalyze_all if any selected game is already analyzed)
+  const hasAnalyzed = ids.some(id => analysisData?.games?.[id]);
+  try {
+    const resp = await fetch('/api/analysis/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.error('[analyzeSelectedGames] API error:', resp.status, err.detail);
+      return;
+    }
+    const { job_id: jobId } = await resp.json();
+    console.log('[analyzeSelectedGames] Job started:', jobId);
+
+    analyzingGameIds = new Set(ids);
+    analysisOffset = 0;
+    analysisTotalAll = ids.length + pendingGameIds.size;
+    selectedGameIds.clear();
+    showGameSelector();
+    showAnalysisProgress(jobId);
+  } catch (err) {
+    console.error('[analyzeSelectedGames] Fetch failed:', err);
+  }
+}
+
+/**
+ * Start an analysis job for the given game IDs (internal helper for queue continuation).
+ * @param {string[]} ids - Game IDs to analyze.
+ * @async
+ */
+async function startAnalysisJob(ids) {
+  console.log('[startAnalysisJob] Starting batch of', ids.length, 'game(s)');
+  const hasAnalyzed = ids.some(id => analysisData?.games?.[id]);
+  try {
+    const resp = await fetch('/api/analysis/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
+    });
+    if (!resp.ok) {
+      console.error('[startAnalysisJob] API error:', resp.status);
+      analyzingGameIds.clear();
+      return;
+    }
+    const { job_id: jobId } = await resp.json();
+    console.log('[startAnalysisJob] Job started:', jobId);
+    showAnalysisProgress(jobId);
+  } catch (err) {
+    console.error('[startAnalysisJob] Fetch failed:', err);
+    analyzingGameIds.clear();
+  }
 }
 
 init();

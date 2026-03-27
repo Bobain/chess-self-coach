@@ -84,7 +84,7 @@ The PWA has identical features everywhere (Stockfish WASM runs in the browser). 
 
 Full architecture table: see CONTRIBUTING.md § Architecture.
 
-Detailed flow diagrams: see [docs/flows/](../../docs/flows/) — training session, data lifecycle, CI/CD, Stockfish, PGN sync, and more. Hooks auto-remind to update them when flow-relevant code changes.
+Detailed flow diagrams: see [docs/flows/](../../docs/flows/) — training session, data lifecycle, CI/CD, Stockfish, and more. Hooks auto-remind to update them when flow-relevant code changes.
 
 ---
 
@@ -150,4 +150,4 @@ A review checks: dependency ordering still correct? New gaps? DoD still clear? P
 
 ## Chess Context
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for chess-specific context: player profile, repertoire, PGN conventions, 2-zone workflow, and coaching journal rules.
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for chess-specific context: player profile and coaching journal rules.

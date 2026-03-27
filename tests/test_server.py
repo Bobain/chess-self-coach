@@ -132,137 +132,6 @@ def test_training_data_missing(tmp_path):
     assert resp.status_code == 404
 
 
-# --- /api/train/stats ---
-
-
-def test_train_stats_returns_data(tmp_path):
-    """GET /api/train/stats returns stats when training data exists."""
-    data = {
-        "generated": "2026-03-16T00:00:00Z",
-        "positions": [
-            {"category": "blunder", "game": {"source": "lichess"}},
-            {"category": "mistake", "game": {"source": "chess.com"}},
-            {"category": "blunder", "game": {"source": "lichess"}},
-        ],
-    }
-    (tmp_path / "training_data.json").write_text(json.dumps(data))
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/train/stats")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["total"] == 3
-    assert body["by_category"] == {"blunder": 2, "mistake": 1}
-    assert body["by_source"] == {"lichess": 2, "chess.com": 1}
-    assert body["generated"] == "2026-03-16T00:00:00Z"
-
-
-def test_train_stats_missing_data(tmp_path):
-    """GET /api/train/stats returns 404 when no training data."""
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/train/stats")
-    assert resp.status_code == 404
-
-
-# --- /api/pgn/validate ---
-
-
-_TEST_PGN = """\
-[Event "Test Chapter"]
-[Site "?"]
-[Result "*"]
-
-1. e4 {Italian Game (ECO C50). THEORY: main line.} e5 {Plan: develop pieces.} *
-"""
-
-
-def test_pgn_validate_returns_results(tmp_path):
-    """POST /api/pgn/validate returns validation results for PGN files."""
-    (tmp_path / "test.pgn").write_text(_TEST_PGN)
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.post("/api/pgn/validate")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert len(body["files"]) == 1
-    assert body["files"][0]["file"] == "test.pgn"
-    assert len(body["files"][0]["chapters"]) == 1
-    assert body["files"][0]["chapters"][0]["name"] == "Test Chapter"
-
-
-def test_pgn_validate_no_files(tmp_path):
-    """POST /api/pgn/validate returns 404 when no PGN files exist."""
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.post("/api/pgn/validate")
-    assert resp.status_code == 404
-
-
-# --- /api/pgn/status ---
-
-
-def test_pgn_status_with_config(tmp_path):
-    """GET /api/pgn/status returns project status when config exists."""
-    config = {"studies": {"test.pgn": {"study_id": "abc123"}}}
-    (tmp_path / "config.json").write_text(json.dumps(config))
-    (tmp_path / "pgn").mkdir()
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/pgn/status")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["config_ok"] is True
-    assert len(body["files"]) == 1
-    assert body["files"][0]["file"] == "test.pgn"
-    assert body["files"][0]["study_configured"] is True
-
-
-def test_pgn_status_no_config(tmp_path):
-    """GET /api/pgn/status returns config_ok=false when no config."""
-    with patch.object(server, "_project_root", tmp_path):
-        resp = client.get("/api/pgn/status")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["config_ok"] is False
-    assert body["files"] == []
-
-
-# --- /api/pgn/cleanup ---
-
-
-def test_pgn_cleanup_success(tmp_path):
-    """POST /api/pgn/cleanup returns cleanup results."""
-    config = {"studies": {"test.pgn": {"study_id": "abc123", "study_name": "Test"}}}
-    (tmp_path / "config.json").write_text(json.dumps(config))
-    with (
-        patch.object(server, "_project_root", tmp_path),
-        patch("chess_self_coach.config.load_lichess_token", return_value="lip_test"),
-        patch("chess_self_coach.lichess.cleanup_study", return_value=2),
-    ):
-        resp = client.post("/api/pgn/cleanup")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["total_deleted"] == 2
-    assert len(body["results"]) == 1
-    assert body["results"][0]["study"] == "test.pgn"
-
-
-def test_pgn_cleanup_no_token(tmp_path):
-    """POST /api/pgn/cleanup returns 401 when no token."""
-    with (
-        patch.object(server, "_project_root", tmp_path),
-        patch("chess_self_coach.config.load_lichess_token", return_value=None),
-    ):
-        resp = client.post("/api/pgn/cleanup")
-    assert resp.status_code == 401
-
-
-def test_pgn_cleanup_no_config(tmp_path):
-    """POST /api/pgn/cleanup returns 404 when no config."""
-    with (
-        patch.object(server, "_project_root", tmp_path),
-        patch("chess_self_coach.config.load_lichess_token", return_value="lip_test"),
-    ):
-        resp = client.post("/api/pgn/cleanup")
-    assert resp.status_code == 404
-
-
 # --- Port scanner ---
 
 
@@ -311,7 +180,7 @@ def test_bestmove_crash_recovery():
         server._sf_path = original_sf_path
 
 
-# --- /api/train/prepare ---
+# --- /api/analysis/start ---
 
 
 def _reset_job():
@@ -319,17 +188,17 @@ def _reset_job():
     server._current_job = None
 
 
-def test_train_prepare_starts_job():
-    """POST /api/train/prepare returns 202 + job_id."""
+def test_analysis_start_returns_202():
+    """POST /api/analysis/start returns 202 + job_id."""
     _reset_job()
 
-    def fake_prepare(**kwargs):
+    def fake_analyze(**kwargs):
         on_progress = kwargs.get("on_progress")
         if on_progress:
             on_progress({"phase": "done", "message": "Done!", "percent": 100})
 
-    with patch("chess_self_coach.trainer.prepare_training_data", fake_prepare):
-        resp = client.post("/api/train/prepare")
+    with patch("chess_self_coach.analysis.analyze_games", fake_analyze):
+        resp = client.post("/api/analysis/start", json={"max_games": 5})
 
     assert resp.status_code == 202
     data = resp.json()
@@ -341,7 +210,7 @@ def test_train_prepare_starts_job():
     _reset_job()
 
 
-def test_train_prepare_rejects_concurrent():
+def test_analysis_start_rejects_concurrent():
     """Second POST returns 409 while a job is running."""
     _reset_job()
     import asyncio
@@ -354,7 +223,7 @@ def test_train_prepare_rejects_concurrent():
         "cancel": threading.Event(),
     }
 
-    resp = client.post("/api/train/prepare")
+    resp = client.post("/api/analysis/start", json={"max_games": 5})
     assert resp.status_code == 409
 
     _reset_job()
@@ -436,68 +305,6 @@ def test_job_cancel_not_running():
     _reset_job()
 
 
-# --- /api/coaching/topics ---
-
-
-def test_coaching_topics_lists_files(tmp_path):
-    """GET /api/coaching/topics returns topic summaries from coaching/topics/."""
-    topics_dir = tmp_path / "coaching" / "topics"
-    topics_dir.mkdir(parents=True)
-    (topics_dir / "2026-03-15-test-topic.md").write_text(
-        "---\ndate: 2026-03-15\ntopic: Test topic\nstatus: resolved\n---\n\nBody text."
-    )
-
-    original = server._project_root
-    server._project_root = tmp_path
-    try:
-        resp = client.get("/api/coaching/topics")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert len(data["topics"]) == 1
-        assert data["topics"][0]["slug"] == "2026-03-15-test-topic"
-        assert data["topics"][0]["topic"] == "Test topic"
-        assert data["topics"][0]["status"] == "resolved"
-    finally:
-        server._project_root = original
-
-
-def test_coaching_topics_empty():
-    """GET /api/coaching/topics returns empty list when no coaching dir."""
-    original = server._project_root
-    server._project_root = Path("/nonexistent")
-    try:
-        resp = client.get("/api/coaching/topics")
-        assert resp.status_code == 200
-        assert resp.json()["topics"] == []
-    finally:
-        server._project_root = original
-
-
-def test_coaching_topic_detail(tmp_path):
-    """GET /api/coaching/topics/{slug} returns the topic content."""
-    topics_dir = tmp_path / "coaching" / "topics"
-    topics_dir.mkdir(parents=True)
-    content = "---\ndate: 2026-03-15\ntopic: Test\nstatus: active\n---\n\n## Body"
-    (topics_dir / "2026-03-15-test.md").write_text(content)
-
-    original = server._project_root
-    server._project_root = tmp_path
-    try:
-        resp = client.get("/api/coaching/topics/2026-03-15-test")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["slug"] == "2026-03-15-test"
-        assert "## Body" in data["content"]
-    finally:
-        server._project_root = original
-
-
-def test_coaching_topic_not_found():
-    """GET /api/coaching/topics/{slug} returns 404 for unknown slug."""
-    resp = client.get("/api/coaching/topics/nonexistent")
-    assert resp.status_code == 404
-
-
 # --- /api/config ---
 
 
@@ -507,7 +314,6 @@ def test_get_config(tmp_path):
         "stockfish": {"path": "/usr/bin/stockfish"},
         "players": {"lichess": "testuser", "chesscom": "testcom"},
         "analysis": {"default_depth": 18, "blunder_threshold": 1.0},
-        "studies": {},
     }
     (tmp_path / "config.json").write_text(json.dumps(config))
 
@@ -519,9 +325,8 @@ def test_get_config(tmp_path):
         data = resp.json()
         assert data["players"]["lichess"] == "testuser"
         assert data["analysis"]["default_depth"] == 18
-        # stockfish and studies should NOT be exposed
+        # stockfish should NOT be exposed
         assert "stockfish" not in data
-        assert "studies" not in data
     finally:
         server._project_root = original
 
@@ -543,7 +348,6 @@ def test_update_config(tmp_path):
         "stockfish": {"path": "/usr/bin/stockfish"},
         "players": {"lichess": "old", "chesscom": "old"},
         "analysis": {"default_depth": 18, "blunder_threshold": 1.0},
-        "studies": {"test.pgn": {"study_id": "abc"}},
     }
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config))
@@ -563,7 +367,6 @@ def test_update_config(tmp_path):
         # Verify file was written and other fields preserved
         saved = json.loads(config_path.read_text())
         assert saved["stockfish"]["path"] == "/usr/bin/stockfish"
-        assert saved["studies"]["test.pgn"]["study_id"] == "abc"
         assert saved["players"]["lichess"] == "newuser"
     finally:
         server._project_root = original

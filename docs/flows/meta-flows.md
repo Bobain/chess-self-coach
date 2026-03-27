@@ -14,7 +14,8 @@ flowchart TD
         CODE_CHANGE[Claude edits a code file] --> MATCH{Path matches<br/>flow-relevant pattern?}
         MATCH -->|src/trainer.py| DATA[Set .pending-flows-check<br/>Category: data flows]
         MATCH -->|src/server.py| SYS[Set .pending-flows-check<br/>Category: system flows]
-        MATCH -->|src/lichess.py| SOON[Set .pending-flows-check<br/>Category: coming-soon flows]
+        MATCH -->|src/config.py, cli.py| MULTI[Set .pending-flows-check<br/>Category: user + data flows]
+        MATCH -->|src/importer.py| IMP[Set .pending-flows-check<br/>Category: data flows]
         MATCH -->|pwa/app.js| USER[Set .pending-flows-check<br/>Category: user flows]
         MATCH -->|pwa/sw.js| SYS2[Set .pending-flows-check<br/>Category: system flows]
         MATCH -->|No match| SKIP[No action]
@@ -49,6 +50,8 @@ flowchart TD
 |------------|---------------|
 | `src/chess_self_coach/trainer.py` | [Data flows](data-flows.md) |
 | `src/chess_self_coach/server.py` | [System flows](system-flows.md) |
-| `src/chess_self_coach/lichess.py` | [Coming soon flows](coming-soon-flows.md) |
+| `src/chess_self_coach/config.py` | [Data flows](data-flows.md) |
+| `src/chess_self_coach/cli.py` | [User flows](user-flows.md) |
+| `src/chess_self_coach/importer.py` | [Data flows](data-flows.md) |
 | `pwa/app.js` | [User flows](user-flows.md) |
 | `pwa/sw.js` | [System flows](system-flows.md) |

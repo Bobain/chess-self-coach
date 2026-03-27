@@ -1,30 +1,13 @@
-# chess-self-coach
+# Chess Self-Coach
 
-CLI to manage a chess opening repertoire: Stockfish analysis + Lichess Study sync.
+**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish, drills you on the correct moves with spaced repetition, and provides chess.com-quality game review.
 
-## Overview
+## What's in these docs
 
-chess-self-coach automates the workflow between:
-
-1. **Local PGN files** — annotated opening repertoire
-2. **Stockfish 18** — engine analysis and blunder detection
-3. **Lichess Studies** — online study platform (source of truth)
-4. **Chessdriller** — spaced-repetition drilling from Lichess Studies
-
-## Openings Covered
-
-| Color | Opening | Key Variation |
-|-------|---------|--------------|
-| White | Queen's Gambit (1.d4 2.c4) | Harrwitz Attack (5.Bf4) vs QGD |
-| Black vs 1.e4 | Modern Scandinavian (1...d5 2.exd5 Nf6) | Fianchetto setup |
-| Black vs 1.d4 | Slav Defense (1...d5 2...c6) | Czech Variation |
-
-## Quick Start
-
-```bash
-pip install chess-self-coach
-chess-self-coach setup
-chess-self-coach status
-```
-
-See the [Setup Guide](setup.md) for detailed instructions.
+| Section | Description |
+|---------|-------------|
+| [Training Mode](training.md) | How the "Find a Better Move" drill and game review work: preparation, architecture, SRS, analysis UI |
+| [Flows](flows/index.md) | Visual diagrams of every workflow (user, data, system) |
+| [Dev Setup](setup.md) | Clone, install, configure — for contributors and developers |
+| [CLI Reference](cli.md) | All CLI commands and flags |
+| [API Reference](api.md) | Python and PWA (JavaScript) API docs |

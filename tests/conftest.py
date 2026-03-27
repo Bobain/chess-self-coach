@@ -39,12 +39,6 @@ def tmp_project(tmp_path: Path) -> Path:
             "fallback_path": "/usr/games/stockfish",
         },
         "analysis": {"default_depth": 18, "blunder_threshold": 1.0},
-        "studies": {
-            "repertoire_blancs_gambit_dame_annote.pgn": {
-                "study_id": "abc123",
-                "study_name": "Whites - Queen's Gambit",
-            },
-        },
     }
     (tmp_path / "config.json").write_text(json.dumps(config, indent=2))
 

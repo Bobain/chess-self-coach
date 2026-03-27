@@ -76,6 +76,15 @@ show_dependency_summary() {
     needs_install=1
   fi
 
+  # Syzygy tables
+  local syzygy_dir="$HOME/.local/share/syzygy"
+  if [ -d "$syzygy_dir" ] && ls "$syzygy_dir"/*.rtbw &>/dev/null 2>&1; then
+    echo "  ✓ Syzygy endgame tables — already installed"
+  else
+    echo "  ⬇ Syzygy endgame tables (3-5 pieces, ~1 GB) — will be downloaded"
+    needs_install=1
+  fi
+
   # chess-self-coach
   if check_uv && check_package; then
     echo "  ✓ $PACKAGE — already installed (will check for upgrade)"
@@ -162,6 +171,29 @@ install_package() {
   echo "  ✓ $PACKAGE ready"
 }
 
+install_syzygy() {
+  local syzygy_dir="$HOME/.local/share/syzygy"
+  if [ -d "$syzygy_dir" ] && ls "$syzygy_dir"/*.rtbw &>/dev/null; then
+    echo "  ✓ Syzygy tables already installed at $syzygy_dir"
+    return
+  fi
+
+  if ! command -v wget &>/dev/null; then
+    echo "  ⚠ wget not found — skipping Syzygy download"
+    echo "    Install wget and run: chess-self-coach syzygy download"
+    return
+  fi
+
+  echo "  Downloading 3-5 piece tables (~1 GB) to $syzygy_dir..."
+  mkdir -p "$syzygy_dir"
+  wget -q -c -r -np -nH --cut-dirs=2 -e robots=off -A "*.rtbw,*.rtbz" \
+      -P "$syzygy_dir" http://tablebase.sesse.net/syzygy/3-4-5/ || {
+    echo "  ⚠ Syzygy download failed (analysis will still work via API fallback)"
+    return
+  }
+  echo "  ✓ Syzygy endgame tables installed"
+}
+
 # --- Main ---
 
 main() {
@@ -177,9 +209,9 @@ main() {
   show_dependency_summary
 
   # Compute total steps
-  local total=3
+  local total=4
   if [ "$PLATFORM" = "macos" ] && ! check_homebrew; then
-    total=4
+    total=5
   fi
 
   local step=0
@@ -202,6 +234,12 @@ main() {
   step=$((step + 1))
   echo "Step $step/$total: Stockfish"
   install_stockfish
+  echo ""
+
+  # Syzygy endgame tables
+  step=$((step + 1))
+  echo "Step $step/$total: Syzygy endgame tables"
+  install_syzygy
   echo ""
 
   # chess-self-coach

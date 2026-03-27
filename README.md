@@ -2,13 +2,19 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, and drills you on the correct moves with spaced repetition.
+**Learn from your own mistakes.** Chess Self-Coach fetches your games from Lichess and chess.com, finds your blunders with Stockfish and Lichess tablebases, drills you on the correct moves with spaced repetition, and provides chess.com-quality game review with eval bar, score chart, and move classifications.
 
 **[Static demo](https://bobain.github.io/chess-self-coach/train/)** | **[Documentation](https://bobain.github.io/chess-self-coach/docs/)** | **[Landing page](https://bobain.github.io/chess-self-coach/)**
 
 ## How It Works
 
-**Your games → Stockfish analysis → Spaced repetition training**
+**Your games → Stockfish analysis → Training drills + Game review**
+
+The PWA opens on a **game list** — your recent games from Lichess and chess.com. From there:
+
+- **Select games** to analyze with Stockfish (checkboxes + batch analyze)
+- **Click a game** for chess.com-style game review (eval bar, score chart, move classifications)
+- **Train** on any analyzed game, or open full **Training** from the menu for spaced repetition drills across all your mistakes
 
 ### One command to start
 
@@ -77,9 +83,8 @@ chess-self-coach update
 
 The `setup` command will:
 1. Find Stockfish on your system
-2. Guide you through **Lichess token creation** (bilingual FR/EN, step by step)
+2. Guide you through **Lichess token creation** (step by step)
 3. Ask for your **chess.com username** (for importing games)
-4. Auto-detect your Lichess Studies
 
 ## CLI Reference
 
@@ -87,7 +92,7 @@ The `setup` command will:
 
 ```bash
 # Fetch your games and analyze with Stockfish
-chess-self-coach train --prepare                    # 20 games, depth 18, parallel
+chess-self-coach train --prepare                    # 10 games, depth 18, parallel
 chess-self-coach train --prepare --games 50         # more games
 chess-self-coach train --prepare --depth 12         # faster analysis
 
@@ -106,23 +111,17 @@ chess-self-coach train --prepare --fresh            # [dev] discard data, start 
 chess-self-coach train --refresh-explanations       # [dev] regenerate texts without Stockfish
 ```
 
-### Repertoire management (secondary)
-
-Also includes tools for managing opening repertoire PGN files synced with Lichess Studies:
+### Other commands
 
 ```bash
-chess-self-coach analyze <file.pgn>     # Stockfish analysis with [%eval] annotations
-chess-self-coach push <file.pgn>        # push PGN to Lichess Study
-chess-self-coach pull <file.pgn>        # pull from Lichess Study
-chess-self-coach cleanup [file.pgn]     # remove empty default chapters
-chess-self-coach status                 # sync status of all repertoire files
+chess-self-coach syzygy [download|status]  # manage Syzygy endgame tablebases
 chess-self-coach setup                  # interactive configuration wizard
 ```
 
 ## Data & Privacy
 
 - Your games are fetched from public APIs (Lichess, chess.com)
-- `training_data.json` is stored locally (gitignored)
+- `training_data.json` and `analysis_data.json` are stored locally (gitignored)
 - Drill progress is in your browser's localStorage
 - No server, no account, no tracking
 

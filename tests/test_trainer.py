@@ -2,99 +2,19 @@
 
 from __future__ import annotations
 
-import io
-
 import chess
-import chess.engine
-import chess.pgn
 
-from chess_self_coach.trainer import (
+from chess_self_coach.constants import (
     BLUNDER_THRESHOLD,
     INACCURACY_THRESHOLD,
     MISTAKE_THRESHOLD,
-    TrainingInterrupted,
-    _analysis_limit,
-    _atomic_write_json,
-    _build_output,
+)
+from chess_self_coach.trainer import (
     _classify_mistake,
-    _detect_source,
-    _determine_player_color,
     _format_score_cp,
-    _make_position_id,
-    _score_to_cp,
     _time_pressure_context,
-    compute_cp_loss,
     generate_explanation,
 )
-
-
-# --- Helper ---
-
-
-def _make_game(pgn_text: str) -> chess.pgn.Game:
-    """Parse a PGN string into a Game object."""
-    return chess.pgn.read_game(io.StringIO(pgn_text))
-
-
-# --- _score_to_cp ---
-
-
-def test_score_to_cp_positive():
-    """Positive centipawn score from white's perspective."""
-    score = chess.engine.PovScore(chess.engine.Cp(150), chess.WHITE)
-    assert _score_to_cp(score) == (150, False)
-
-
-def test_score_to_cp_negative():
-    """Negative centipawn score from white's perspective."""
-    score = chess.engine.PovScore(chess.engine.Cp(-100), chess.WHITE)
-    assert _score_to_cp(score) == (-100, False)
-
-
-def test_score_to_cp_mate_positive():
-    """Positive mate score returns sentinel value and is_mate=True."""
-    score = chess.engine.PovScore(chess.engine.Mate(3), chess.WHITE)
-    assert _score_to_cp(score) == (10000, True)
-
-
-def test_score_to_cp_mate_negative():
-    """Negative mate score returns negative sentinel value and is_mate=True."""
-    score = chess.engine.PovScore(chess.engine.Mate(-2), chess.WHITE)
-    assert _score_to_cp(score) == (-10000, True)
-
-
-def test_score_to_cp_black_perspective():
-    """Score from black's POV is converted to white's perspective."""
-    score = chess.engine.PovScore(chess.engine.Cp(200), chess.BLACK)
-    assert _score_to_cp(score) == (-200, False)
-
-
-# --- compute_cp_loss ---
-
-
-def test_cp_loss_white_loses_advantage():
-    """White had +100, now +20: lost 80cp."""
-    assert compute_cp_loss(100, 20, chess.WHITE) == 80
-
-
-def test_cp_loss_white_gains():
-    """White had +100, now +150: gained (negative loss)."""
-    assert compute_cp_loss(100, 150, chess.WHITE) == -50
-
-
-def test_cp_loss_black_loses_advantage():
-    """Eval was -100 (good for black), now -20: black lost 80cp."""
-    assert compute_cp_loss(-100, -20, chess.BLACK) == 80
-
-
-def test_cp_loss_black_gains():
-    """Eval was -100, now -150: black gained (negative loss)."""
-    assert compute_cp_loss(-100, -150, chess.BLACK) == -50
-
-
-def test_cp_loss_zero():
-    """No change in position means zero loss."""
-    assert compute_cp_loss(50, 50, chess.WHITE) == 0
 
 
 # --- _classify_mistake ---
@@ -178,116 +98,6 @@ def test_explanation_invalid_best_san():
     assert "A better move was INVALID" in result
 
 
-# --- _make_position_id ---
-
-
-def test_position_id_deterministic():
-    """Same inputs produce same ID."""
-    fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    id1 = _make_position_id(fen, "e4")
-    id2 = _make_position_id(fen, "e4")
-    assert id1 == id2
-
-
-def test_position_id_different_moves():
-    """Different moves produce different IDs."""
-    fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    id1 = _make_position_id(fen, "e4")
-    id2 = _make_position_id(fen, "d4")
-    assert id1 != id2
-
-
-def test_position_id_length():
-    """ID is 12 hex characters."""
-    pid = _make_position_id("fen", "e4")
-    assert len(pid) == 12
-    assert all(c in "0123456789abcdef" for c in pid)
-
-
-# --- _determine_player_color ---
-
-
-def test_determine_color_white():
-    game = _make_game('[White "testuser"]\n[Black "opponent"]\n\n1. e4 e5 *')
-    assert _determine_player_color(game, "testuser", None) == chess.WHITE
-
-
-def test_determine_color_black():
-    game = _make_game('[White "opponent"]\n[Black "testuser"]\n\n1. e4 e5 *')
-    assert _determine_player_color(game, "testuser", None) == chess.BLACK
-
-
-def test_determine_color_chesscom():
-    game = _make_game('[White "opponent"]\n[Black "ChesscomUser"]\n\n1. e4 e5 *')
-    assert _determine_player_color(game, "lichessuser", "chesscomuser") == chess.BLACK
-
-
-def test_determine_color_not_found():
-    game = _make_game('[White "other1"]\n[Black "other2"]\n\n1. e4 e5 *')
-    assert _determine_player_color(game, "testuser", None) is None
-
-
-def test_determine_color_case_insensitive():
-    game = _make_game('[White "TestUser"]\n[Black "opponent"]\n\n1. e4 e5 *')
-    assert _determine_player_color(game, "testuser", None) == chess.WHITE
-
-
-# --- _detect_source ---
-
-
-def test_detect_source_lichess():
-    game = _make_game('[Site "https://lichess.org/abc123"]\n\n1. e4 *')
-    assert _detect_source(game) == "lichess"
-
-
-def test_detect_source_chesscom():
-    game = _make_game('[Site "https://www.chess.com/game/live/12345"]\n\n1. e4 *')
-    assert _detect_source(game) == "chess.com"
-
-
-def test_detect_source_unknown():
-    game = _make_game('[Site "unknown"]\n\n1. e4 *')
-    assert _detect_source(game) == "unknown"
-
-
-# --- _analysis_limit ---
-
-
-def test_analysis_limit_kings_and_pawns():
-    """King+pawns endgame (<=7 pieces) gets maximum time."""
-    board = chess.Board("8/4k3/8/8/8/3K4/4P3/8 w - - 0 1")  # K+P vs K
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 6.0
-    assert limit.depth == 60
-
-
-def test_analysis_limit_pure_endgame():
-    """Endgame with pieces (<=7) gets high time."""
-    board = chess.Board("8/4k3/8/8/8/3K4/4R3/8 w - - 0 1")  # K+R vs K
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 5.0
-    assert limit.depth == 50
-
-
-def test_analysis_limit_late_middlegame():
-    """8-12 pieces gets moderate time."""
-    # 10 pieces: 2K + 2R + 2B + 4P
-    board = chess.Board("r1b1k3/8/8/8/8/8/4PP2/R1B1K3 w - - 0 1")
-    assert len(board.piece_map()) <= 12
-    assert len(board.piece_map()) > 7
-    limit = _analysis_limit(board, 18)
-    assert limit.time == 4.0
-    assert limit.depth == 40
-
-
-def test_analysis_limit_opening():
-    """Many pieces (>12) uses default depth only."""
-    board = chess.Board()  # Starting position, 32 pieces
-    limit = _analysis_limit(board, 18)
-    assert limit.time is None
-    assert limit.depth == 18
-
-
 # --- _time_pressure_context ---
 
 
@@ -321,73 +131,3 @@ def test_time_neutral():
     """Similar clocks, no time pressure."""
     result = _time_pressure_context(600, 500)  # 10min vs 8min
     assert result == ""
-
-
-# --- Atomic write ---
-
-
-def test_atomic_write_json(tmp_path):
-    """_atomic_write_json writes valid JSON and leaves no .tmp file."""
-    target = tmp_path / "data.json"
-    data = {"key": "value", "list": [1, 2, 3]}
-    _atomic_write_json(target, data)
-
-    import json
-    from pathlib import Path
-
-    assert target.exists()
-    assert not Path(str(target) + ".tmp").exists()
-    assert not target.with_suffix(".tmp").exists()
-    loaded = json.loads(target.read_text())
-    assert loaded == data
-
-
-def test_atomic_write_preserves_old_on_target_exists(tmp_path):
-    """_atomic_write_json replaces existing file atomically."""
-    target = tmp_path / "data.json"
-    target.write_text('{"old": true}\n')
-
-    _atomic_write_json(target, {"new": True})
-
-    import json
-
-    loaded = json.loads(target.read_text())
-    assert loaded == {"new": True}
-
-
-# --- TrainingInterrupted ---
-
-
-def test_training_interrupted_is_exception():
-    """TrainingInterrupted carries the message."""
-    exc = TrainingInterrupted("Stopped at 3/5 games")
-    assert str(exc) == "Stopped at 3/5 games"
-    assert isinstance(exc, Exception)
-
-
-# --- _build_output ---
-
-
-def test_build_output_includes_analyzed_game_ids():
-    """_build_output includes sorted analyzed_game_ids in output."""
-    pos = {
-        "pos1": {
-            "id": "pos1", "category": "blunder", "cp_loss": 300,
-            "fen": "x", "player_move": "e4", "best_move": "d4",
-        },
-    }
-    result = _build_output(pos, "user", "", analyzed_game_ids={"b_id", "a_id"})
-    assert result["analyzed_game_ids"] == ["a_id", "b_id"]
-    assert len(result["positions"]) == 1
-
-
-def test_build_output_no_game_ids():
-    """_build_output defaults to empty analyzed_game_ids."""
-    pos = {
-        "pos1": {
-            "id": "pos1", "category": "mistake", "cp_loss": 150,
-            "fen": "x", "player_move": "e4", "best_move": "d4",
-        },
-    }
-    result = _build_output(pos, "user", "")
-    assert result["analyzed_game_ids"] == []

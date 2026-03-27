@@ -15,6 +15,8 @@ from dataclasses import dataclass
 import chess
 import requests
 
+from chess_self_coach.constants import ENDGAME_PIECES_MAX
+
 # API endpoint (public, no auth required)
 _API_URL = "https://tablebase.lichess.ovh/standard"
 
@@ -22,7 +24,7 @@ _API_URL = "https://tablebase.lichess.ovh/standard"
 _TIMEOUT = 5.0
 
 # Maximum pieces for tablebase lookup
-MAX_PIECES = 7
+MAX_PIECES = ENDGAME_PIECES_MAX
 
 # Map API categories to WDL tiers
 _CATEGORY_TIERS: dict[str, str] = {
@@ -36,16 +38,6 @@ _CATEGORY_TIERS: dict[str, str] = {
     "syzygy-loss": "LOSS",
     "maybe-loss": "LOSS",
 }
-
-# Synthetic cp_loss for WDL transitions (used internally for sorting/classification)
-_TRANSITION_CP_LOSS: dict[tuple[str, str], int] = {
-    ("WIN", "DRAW"): 300,
-    ("WIN", "LOSS"): 600,
-    ("DRAW", "LOSS"): 300,
-}
-
-_FLIP = {"WIN": "LOSS", "LOSS": "WIN", "DRAW": "DRAW"}
-
 
 @dataclass
 class TablebaseResult:
@@ -111,34 +103,40 @@ def probe_position(fen: str) -> TablebaseResult | None:
     )
 
 
-def tablebase_cp_loss(
-    before: TablebaseResult,
-    after: TablebaseResult,
-    side_to_move: chess.Color,
-) -> int:
-    """Compute synthetic cp_loss from WDL transition.
+def probe_position_full(fen: str) -> dict | None:
+    """Probe the Lichess tablebase API and return the complete response.
 
-    Only category transitions matter (Win->Draw, Draw->Loss, etc.).
-    DTZ changes within the same category are ignored — they are noise
-    at club level and DTZ measures 50-move-rule distance, not difficulty.
+    Unlike probe_position() which returns a simplified TablebaseResult,
+    this returns the raw API response including all legal moves with their
+    WDL/DTM/DTZ data — suitable for storing in analysis_data.json.
 
     Args:
-        before: Tablebase result BEFORE the player's move.
-        after: Tablebase result AFTER the player's move.
-        side_to_move: Color of the player who made the move.
+        fen: FEN string of the position.
 
     Returns:
-        Synthetic cp_loss (0 = acceptable, 300 = blunder, 600 = blunder).
+        Full API response dict (category, dtm, dtz, precise_dtz, dtw, dtc,
+        checkmate, stalemate, moves[]) or None if unavailable.
     """
-    tier_before = before.tier
-    tier_after = after.tier
+    board = chess.Board(fen)
+    if len(board.piece_map()) > MAX_PIECES:
+        return None
 
-    # Flip perspective for Black (API always returns from side-to-move perspective)
-    if side_to_move == chess.BLACK:
-        tier_before = _FLIP[tier_before]
-        tier_after = _FLIP[tier_after]
+    try:
+        resp = requests.get(_API_URL, params={"fen": fen}, timeout=_TIMEOUT)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+    except (requests.RequestException, ValueError):
+        return None
 
-    return _TRANSITION_CP_LOSS.get((tier_before, tier_after), 0)
+    category = data.get("category")
+    if not category or category not in _CATEGORY_TIERS:
+        return None
+
+    # Add computed tier for convenience
+    data["tier"] = _CATEGORY_TIERS[category]
+
+    return data
 
 
 def tablebase_context(

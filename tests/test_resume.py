@@ -1,25 +1,40 @@
-"""E2E tests for interrupt/resume: game ID tracking and incremental analysis."""
+"""Tests for interrupt/resume and incremental behavior of analyze_games()."""
 
 from __future__ import annotations
 
 import io
-import json
 import threading
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+import chess
+import chess.engine
 import chess.pgn
 import pytest
 
-from chess_self_coach.trainer import TrainingInterrupted, prepare_training_data
+from chess_self_coach.analysis import AnalysisInterrupted, AnalysisSettings, analyze_games
 
 
 # --- Helpers ---
 
 
-def _make_pgn_game(game_id: str, white: str, black: str) -> chess.pgn.Game:
-    """Create a minimal PGN game with Link header for tracking."""
+MINI_PGN_TEXT = """\
+[Event "Test"]
+[White "TestPlayer"]
+[Black "Opponent"]
+[Result "1-0"]
+[Link "https://lichess.org/test123"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 1-0
+"""
+
+
+def _make_game(
+    game_id: str = "https://lichess.org/test123",
+    white: str = "TestPlayer",
+    black: str = "Opponent",
+) -> chess.pgn.Game:
+    """Create a minimal PGN game with Link header."""
     pgn = (
         f'[Event "Test"]\n'
         f'[Site "{game_id}"]\n'
@@ -33,486 +48,197 @@ def _make_pgn_game(game_id: str, white: str, black: str) -> chess.pgn.Game:
     return chess.pgn.read_game(io.StringIO(pgn))
 
 
-def _extract_game_id(pgn_str: str) -> str:
-    """Extract game ID from PGN string, matching real worker behavior."""
-    game = chess.pgn.read_game(io.StringIO(pgn_str))
-    if game is None:
-        return ""
-    return game.headers.get("Link", game.headers.get("Site", ""))
+def _mock_engine():
+    """Create a mock Stockfish engine."""
+    engine = MagicMock(spec=chess.engine.SimpleEngine)
+    call_count = {"n": 0}
 
-
-def _fake_worker_with_mistakes(
-    pgn_str, sf_path_str, depth, player_color, idx, total, label,
-):
-    """Mock worker returning one fake mistake position."""
-    game_id = _extract_game_id(pgn_str)
-    position_id = f"pos_{label.replace(' ', '_')}"
-    mistakes = [
-        {
-            "id": position_id,
-            "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-            "player_color": "white",
-            "player_move": "a3",
-            "best_move": "d4",
-            "cp_loss": 150,
-            "category": "mistake",
-            "context": "test",
-            "explanation": "test",
-            "acceptable_moves": ["d4"],
-            "pv": ["d4"],
-            "score_before": "+0.50",
-            "score_after": "-1.00",
-            "score_after_best": "+0.50",
-            "game": {
-                "id": game_id,
-                "source": "lichess",
-                "opponent": "opp",
-                "date": "2026-01-01",
-                "result": "1-0",
-                "opening": "Test",
-            },
+    def mock_analyse(board, limit, **kwargs):
+        call_count["n"] += 1
+        pv = list(board.legal_moves)[:2]
+        return {
+            "score": chess.engine.PovScore(chess.engine.Cp(20 + call_count["n"]), chess.WHITE),
+            "pv": pv,
+            "depth": 5,
+            "seldepth": 8,
+            "nodes": 10000,
+            "nps": 100000,
+            "time": 0.05,
+            "tbhits": 0,
+            "hashfull": 10,
         }
-    ]
-    return idx, total, label, mistakes, 0.01
+
+    engine.analyse = mock_analyse
+    engine.configure = MagicMock()
+    engine.quit = MagicMock()
+    return engine
 
 
-def _fake_worker_no_mistakes(
-    pgn_str, sf_path_str, depth, player_color, idx, total, label,
-):
-    """Mock worker returning zero mistakes."""
-    return idx, total, label, [], 0.01
-
-
-@pytest.fixture()
-def project_dir(tmp_path):
-    """Create a minimal project dir with config.json."""
-    config = {
-        "players": {"lichess": "testplayer", "chesscom": ""},
-        "stockfish": {"path": "/fake/stockfish"},
-    }
-    (tmp_path / "config.json").write_text(json.dumps(config))
-    return tmp_path
-
-
-def _common_patches(project_dir, fetch_games, worker_fn):
-    """Return a dict of patches shared by all resume tests.
-
-    Keys are attribute names on chess_self_coach.trainer (for patch.multiple).
-    """
-    return {
-        "ProcessPoolExecutor": ThreadPoolExecutor,
-        "_analyze_game_worker": worker_fn,
-        "load_config": lambda: json.loads(
-            (project_dir / "config.json").read_text()
-        ),
-        "find_stockfish": lambda _: Path("/fake/stockfish"),
-        "check_stockfish_version": lambda *a: "Stockfish 18",
-        "_find_project_root": lambda: project_dir,
-        "fetch_lichess_games": lambda *a: fetch_games,
-        "fetch_chesscom_games": lambda *a: [],
-    }
-
-
-def _read_output(project_dir: Path) -> dict:
-    """Read the training_data.json from project dir."""
-    return json.loads((project_dir / "training_data.json").read_text())
+SETTINGS = AnalysisSettings(threads=1, hash_mb=64, limits={"default": {"depth": 5}})
 
 
 # --- Tests ---
 
 
-def test_resume_skips_tracked_games(project_dir):
-    """Games already in analyzed_game_ids are not re-analyzed."""
-    # Pre-populate with 2 tracked games
-    initial = {
-        "version": "1.0",
-        "generated": "2026-01-01T00:00:00Z",
-        "player": {"lichess": "testplayer", "chesscom": ""},
-        "positions": [],
-        "analyzed_game_ids": ["https://lichess.org/game1", "https://lichess.org/game2"],
-    }
-    (project_dir / "training_data.json").write_text(json.dumps(initial))
-
-    games = [
-        _make_pgn_game("https://lichess.org/game1", "testplayer", "opp1"),
-        _make_pgn_game("https://lichess.org/game2", "testplayer", "opp2"),
-        _make_pgn_game("https://lichess.org/game3", "testplayer", "opp3"),
-    ]
-
-    call_log = []
-
-    def tracking_worker(*args):
-        call_log.append(args[6])  # label
-        return _fake_worker_with_mistakes(*args)
-
-    patches = _common_patches(project_dir, games, tracking_worker)
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    # Only game3 should have been analyzed
-    assert len(call_log) == 1
-    assert "opp3" in call_log[0]
-
-    # All 3 games tracked
-    output = _read_output(project_dir)
-    assert "https://lichess.org/game1" in output["analyzed_game_ids"]
-    assert "https://lichess.org/game2" in output["analyzed_game_ids"]
-    assert "https://lichess.org/game3" in output["analyzed_game_ids"]
-
-
-def test_zero_mistake_games_tracked(project_dir):
-    """Games with 0 mistakes are tracked and not re-analyzed on next run."""
-    games = [_make_pgn_game("https://lichess.org/clean1", "testplayer", "opp1")]
-
-    call_count = []
-
-    def counting_worker(*args):
-        call_count.append(1)
-        return _fake_worker_no_mistakes(*args)
-
-    patches = _common_patches(project_dir, games, counting_worker)
-
-    # First run: game analyzed, 0 mistakes
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    assert len(call_count) == 1
-    output = _read_output(project_dir)
-    assert "https://lichess.org/clean1" in output["analyzed_game_ids"]
-    assert output["positions"] == []
-
-    # Second run: game should be skipped
-    call_count.clear()
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    assert len(call_count) == 0  # Worker not called
-
-
-def test_player_not_found_logged_and_tracked(project_dir, capsys):
-    """Games where player is not found are logged and tracked."""
-    games = [
-        _make_pgn_game("https://lichess.org/unknown1", "stranger", "alien"),
-    ]
-
-    call_count = []
-
-    def counting_worker(*args):
-        call_count.append(1)
-        return _fake_worker_no_mistakes(*args)
-
-    patches = _common_patches(project_dir, games, counting_worker)
-
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    # Worker should NOT have been called
-    assert len(call_count) == 0
-
-    # Log should mention the skip
-    captured = capsys.readouterr()
-    assert "player not found in game headers" in captured.out
-
-    # Game ID should be tracked
-    output = _read_output(project_dir)
-    assert "https://lichess.org/unknown1" in output["analyzed_game_ids"]
-
-    # Second run: game skipped entirely (not even fetched as "new")
-    call_count.clear()
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    assert len(call_count) == 0
-
-
-def test_interrupt_resume_continues(project_dir):
-    """After interrupt, resume analyzes only remaining games."""
-    games = [
-        _make_pgn_game("https://lichess.org/g1", "testplayer", "opp1"),
-        _make_pgn_game("https://lichess.org/g2", "testplayer", "opp2"),
-        _make_pgn_game("https://lichess.org/g3", "testplayer", "opp3"),
-    ]
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
+@patch("chess_self_coach.analysis.probe_position_full", return_value=None)
+@patch("chess.engine.SimpleEngine.popen_uci")
+def test_cancel_interrupts_analysis(mock_popen, mock_tb, mock_syz):
+    """Setting the cancel event raises AnalysisInterrupted."""
+    mock_popen.return_value = _mock_engine()
 
     cancel = threading.Event()
     games_done = []
 
-    def interruptible_worker(*args):
-        games_done.append(args[6])  # label
-        return _fake_worker_with_mistakes(*args)
+    original_collect = None
 
-    patches = _common_patches(project_dir, games, interruptible_worker)
+    def tracking_collect(game, engine, player_color, settings, lichess_token=None, game_id=""):
+        games_done.append(1)
+        cancel.set()  # Cancel after first game
+        return original_collect(game, engine, player_color, settings, lichess_token, game_id=game_id)
 
-    # First run: interrupt after 1st game via cancel event
-    # We need to set cancel AFTER at least one game finishes.
-    # Since ThreadPoolExecutor may process all 3 quickly, we use a worker
-    # that sets cancel on the 2nd call.
-    call_count = [0]
-
-    def worker_with_interrupt(*args):
-        call_count[0] += 1
-        result = _fake_worker_with_mistakes(*args)
-        if call_count[0] == 1:
-            cancel.set()
-        return result
-
-    patches_run1 = _common_patches(project_dir, games, worker_with_interrupt)
-
-    with pytest.raises(TrainingInterrupted):
-        with patch.multiple("chess_self_coach.trainer", **patches_run1):
-            prepare_training_data(cancel=cancel)
-
-    # Partial data should be saved
-    output1 = _read_output(project_dir)
-    assert len(output1["analyzed_game_ids"]) >= 1
-    assert len(output1["positions"]) >= 1
-
-    # Second run: remaining games analyzed
-    call_log_run2 = []
-
-    def tracking_worker_run2(*args):
-        call_log_run2.append(args[6])
-        return _fake_worker_with_mistakes(*args)
-
-    patches_run2 = _common_patches(project_dir, games, tracking_worker_run2)
-    with patch.multiple("chess_self_coach.trainer", **patches_run2):
-        prepare_training_data()
-
-    output2 = _read_output(project_dir)
-    # All 3 games should now be tracked
-    assert set(output2["analyzed_game_ids"]) == {
-        "https://lichess.org/g1",
-        "https://lichess.org/g2",
-        "https://lichess.org/g3",
-    }
-    # Only remaining games should have been analyzed in run 2
-    assert len(call_log_run2) < 3
-
-
-def test_backward_compat_no_analyzed_game_ids(project_dir):
-    """Old JSON without analyzed_game_ids still works via position fallback."""
-    # Old-format JSON: no analyzed_game_ids field
-    old_data = {
-        "version": "1.0",
-        "generated": "2026-01-01T00:00:00Z",
-        "player": {"lichess": "testplayer", "chesscom": ""},
-        "positions": [
-            {
-                "id": "existing_pos_1",
-                "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-                "player_color": "white",
-                "player_move": "a3",
-                "best_move": "d4",
-                "cp_loss": 200,
-                "category": "mistake",
-                "context": "test",
-                "explanation": "test",
-                "acceptable_moves": ["d4"],
-                "pv": ["d4"],
-                "score_before": "+0.50",
-                "score_after": "-1.50",
-                "score_after_best": "+0.50",
-                "game": {
-                    "id": "https://lichess.org/old1",
-                    "source": "lichess",
-                    "opponent": "opp",
-                    "date": "2025-12-01",
-                    "result": "1-0",
-                    "opening": "Test",
-                },
-                "srs": {"interval": 3, "ease": 2.5, "next_review": "2026-01-04", "history": []},
-            }
-        ],
-    }
-    (project_dir / "training_data.json").write_text(json.dumps(old_data))
+    # We need the real collect_game_data for the mock to work
+    from chess_self_coach.analysis import collect_game_data as real_collect
+    original_collect = real_collect
 
     games = [
-        _make_pgn_game("https://lichess.org/old1", "testplayer", "opp_old"),
-        _make_pgn_game("https://lichess.org/new1", "testplayer", "opp_new"),
+        _make_game("https://lichess.org/g1", "testplayer", "opp1"),
+        _make_game("https://lichess.org/g2", "testplayer", "opp2"),
     ]
 
-    call_log = []
+    with patch("chess_self_coach.config.load_config", return_value={"players": {"lichess": "testplayer"}, "stockfish": {}}), \
+         patch("chess_self_coach.config.find_stockfish", return_value=Path("/usr/games/stockfish")), \
+         patch("chess_self_coach.config.check_stockfish_version", return_value="Stockfish 18"), \
+         patch("chess_self_coach.config.load_lichess_token", return_value=None), \
+         patch("chess_self_coach.importer.fetch_lichess_games", return_value=games), \
+         patch("chess_self_coach.importer.fetch_chesscom_games", return_value=[]), \
+         patch("chess_self_coach.analysis.load_analysis_data", return_value={"version": "1.0", "player": {}, "games": {}}), \
+         patch("chess_self_coach.analysis.save_analysis_data"), \
+         patch("chess_self_coach.analysis.collect_game_data", side_effect=tracking_collect):
 
-    def tracking_worker(*args):
-        call_log.append(args[6])
-        return _fake_worker_with_mistakes(*args)
+        with pytest.raises(AnalysisInterrupted):
+            analyze_games(max_games=5, settings=SETTINGS, cancel=cancel)
 
-    patches = _common_patches(project_dir, games, tracking_worker)
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    # old1 should be skipped (position-based fallback), only new1 analyzed
-    assert len(call_log) == 1
-    assert "opp_new" in call_log[0]
-
-    # Output should now have analyzed_game_ids
-    output = _read_output(project_dir)
-    assert "https://lichess.org/old1" in output["analyzed_game_ids"]
-    assert "https://lichess.org/new1" in output["analyzed_game_ids"]
-
-    # SRS from old position should be preserved
-    old_pos = [p for p in output["positions"] if p["id"] == "existing_pos_1"]
-    assert len(old_pos) == 1
-    assert old_pos[0]["srs"]["interval"] == 3
+    # At least one game should have been analyzed before interrupt
+    assert len(games_done) >= 1
 
 
-def test_worker_crash_does_not_track_game(project_dir):
-    """A worker exception should not mark that game as analyzed."""
-    games = [
-        _make_pgn_game("https://lichess.org/ok1", "testplayer", "opp1"),
-        _make_pgn_game("https://lichess.org/crash1", "testplayer", "opp2"),
-        _make_pgn_game("https://lichess.org/ok2", "testplayer", "opp3"),
-    ]
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
+@patch("chess_self_coach.analysis.probe_position_full", return_value=None)
+@patch("chess.engine.SimpleEngine.popen_uci")
+def test_malformed_games_filtered(mock_popen, mock_tb, mock_syz):
+    """Games with White:'?' and Black:'?' are silently filtered."""
+    mock_popen.return_value = _mock_engine()
 
-    def crashing_worker(*args):
-        label = args[6]
-        if "opp2" in label:
-            raise RuntimeError("Stockfish engine terminated")
-        return _fake_worker_with_mistakes(*args)
-
-    patches = _common_patches(project_dir, games, crashing_worker)
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
-
-    output = _read_output(project_dir)
-    tracked = set(output["analyzed_game_ids"])
-    assert "https://lichess.org/ok1" in tracked
-    assert "https://lichess.org/ok2" in tracked
-    assert "https://lichess.org/crash1" not in tracked
-
-    # Run again: crashed game should be retried
-    call_log = []
-
-    def tracking_worker(*args):
-        call_log.append(args[6])
-        return _fake_worker_with_mistakes(*args)
-
-    patches2 = _common_patches(project_dir, games, tracking_worker)
-    with patch.multiple("chess_self_coach.trainer", **patches2):
-        prepare_training_data()
-
-    # Only crash1 should have been re-analyzed
-    assert len(call_log) == 1
-    assert "opp2" in call_log[0]
-
-    output2 = _read_output(project_dir)
-    assert "https://lichess.org/crash1" in set(output2["analyzed_game_ids"])
-
-
-def test_resume_with_existing_data_and_bogus_ids(project_dir):
-    """Simulate production data: positions + tracked IDs + bogus '?' entry."""
-    # Pre-populate with data mimicking the production bug
-    initial = {
-        "version": "1.0",
-        "generated": "2026-01-01T00:00:00Z",
-        "player": {"lichess": "testplayer", "chesscom": ""},
-        "positions": [
-            {
-                "id": "pos_game1",
-                "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-                "player_color": "white",
-                "player_move": "a3",
-                "best_move": "d4",
-                "cp_loss": 150,
-                "category": "mistake",
-                "context": "test",
-                "explanation": "test",
-                "acceptable_moves": ["d4"],
-                "pv": ["d4"],
-                "score_before": "+0.50",
-                "score_after": "-1.00",
-                "score_after_best": "+0.50",
-                "game": {
-                    "id": "https://lichess.org/done1",
-                    "source": "lichess",
-                    "opponent": "opp",
-                    "date": "2026-01-01",
-                    "result": "1-0",
-                    "opening": "Test",
-                },
-                "srs": {"interval": 5, "ease": 2.5, "next_review": "2026-02-01", "history": []},
-            }
-        ],
-        "analyzed_game_ids": [
-            "https://lichess.org/done1",
-            "https://lichess.org/done2",
-            "?",  # Bogus entry from PGN default
-        ],
-    }
-    (project_dir / "training_data.json").write_text(json.dumps(initial))
+    # Malformed game (no player headers)
+    malformed = chess.pgn.read_game(io.StringIO("1. e4 e5 2. Nf3 Nc6 1-0"))
 
     games = [
-        _make_pgn_game("https://lichess.org/done1", "testplayer", "opp1"),
-        _make_pgn_game("https://lichess.org/done2", "testplayer", "opp2"),
-        _make_pgn_game("https://lichess.org/new1", "testplayer", "opp3"),
+        _make_game("https://lichess.org/good1", "testplayer", "opp1"),
+        malformed,
     ]
 
-    call_log = []
+    saved_data = {}
 
-    def tracking_worker(*args):
-        call_log.append(args[6])
-        return _fake_worker_with_mistakes(*args)
+    def mock_save(data, path=None):
+        saved_data.update(data)
 
-    patches = _common_patches(project_dir, games, tracking_worker)
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
+    with patch("chess_self_coach.config.load_config", return_value={"players": {"lichess": "testplayer"}, "stockfish": {}}), \
+         patch("chess_self_coach.config.find_stockfish", return_value=Path("/usr/games/stockfish")), \
+         patch("chess_self_coach.config.check_stockfish_version", return_value="Stockfish 18"), \
+         patch("chess_self_coach.config.load_lichess_token", return_value=None), \
+         patch("chess_self_coach.importer.fetch_lichess_games", return_value=games), \
+         patch("chess_self_coach.importer.fetch_chesscom_games", return_value=[]), \
+         patch("chess_self_coach.analysis.load_analysis_data", return_value={"version": "1.0", "player": {}, "games": {}}), \
+         patch("chess_self_coach.analysis.save_analysis_data", side_effect=mock_save):
 
-    # Only new1 should be analyzed (done1/done2 skipped, "?" filtered)
-    assert len(call_log) == 1
-    assert "opp3" in call_log[0]
+        analyze_games(max_games=5, settings=SETTINGS)
 
-    output = _read_output(project_dir)
-    tracked = set(output["analyzed_game_ids"])
-    assert "https://lichess.org/new1" in tracked
-    assert "https://lichess.org/done1" in tracked
-    assert "https://lichess.org/done2" in tracked
-    assert "?" not in tracked
-
-    # SRS from existing position should be preserved
-    pos = [p for p in output["positions"] if p["id"] == "pos_game1"]
-    assert len(pos) == 1
-    assert pos[0]["srs"]["interval"] == 5
+    # Only good1 should have been analyzed
+    assert "games" in saved_data
+    assert len(saved_data["games"]) == 1
+    assert "https://lichess.org/good1" in saved_data["games"]
 
 
-def _make_malformed_game() -> chess.pgn.Game:
-    """Create a game with default '?' headers (malformed PGN)."""
-    # Minimal PGN with no player headers — simulates chess.com API returning
-    # games with missing/broken metadata (ongoing daily games, deleted games)
-    pgn = "1. e4 e5 2. Nf3 Nc6 1-0"
-    return chess.pgn.read_game(io.StringIO(pgn))
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
+@patch("chess_self_coach.analysis.probe_position_full", return_value=None)
+@patch("chess.engine.SimpleEngine.popen_uci")
+def test_player_not_found_skipped(mock_popen, mock_tb, mock_syz):
+    """Games where player is not found in headers are skipped."""
+    mock_popen.return_value = _mock_engine()
 
-
-def test_malformed_games_skipped(project_dir, capsys):
-    """Games with White:'?' and Black:'?' are filtered out, not cycled."""
     games = [
-        _make_pgn_game("https://lichess.org/good1", "testplayer", "opp1"),
-        _make_malformed_game(),
-        _make_malformed_game(),
+        _make_game("https://lichess.org/unknown1", "stranger", "alien"),
+        _make_game("https://lichess.org/good1", "testplayer", "opp1"),
     ]
 
-    call_log = []
+    saved_data = {}
 
-    def tracking_worker(*args):
-        call_log.append(args[6])
-        return _fake_worker_with_mistakes(*args)
+    def mock_save(data, path=None):
+        saved_data.update(data)
 
-    patches = _common_patches(project_dir, games, tracking_worker)
+    with patch("chess_self_coach.config.load_config", return_value={"players": {"lichess": "testplayer"}, "stockfish": {}}), \
+         patch("chess_self_coach.config.find_stockfish", return_value=Path("/usr/games/stockfish")), \
+         patch("chess_self_coach.config.check_stockfish_version", return_value="Stockfish 18"), \
+         patch("chess_self_coach.config.load_lichess_token", return_value=None), \
+         patch("chess_self_coach.importer.fetch_lichess_games", return_value=games), \
+         patch("chess_self_coach.importer.fetch_chesscom_games", return_value=[]), \
+         patch("chess_self_coach.analysis.load_analysis_data", return_value={"version": "1.0", "player": {}, "games": {}}), \
+         patch("chess_self_coach.analysis.save_analysis_data", side_effect=mock_save):
 
-    # First run: malformed games should be filtered, good1 analyzed
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
+        analyze_games(max_games=5, settings=SETTINGS)
 
-    assert len(call_log) == 1
-    assert "opp1" in call_log[0]
+    # Only good1 should have been analyzed (unknown1 skipped)
+    assert len(saved_data["games"]) == 1
+    assert "https://lichess.org/good1" in saved_data["games"]
 
-    captured = capsys.readouterr()
-    assert "2 game(s) with missing player headers" in captured.out
 
-    output = _read_output(project_dir)
-    assert "https://lichess.org/good1" in output["analyzed_game_ids"]
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
+@patch("chess_self_coach.analysis.probe_position_full", return_value=None)
+@patch("chess.engine.SimpleEngine.popen_uci")
+def test_error_in_game_continues(mock_popen, mock_tb, mock_syz):
+    """An error in one game doesn't stop analysis of remaining games."""
+    mock_popen.return_value = _mock_engine()
 
-    # Second run: malformed games still filtered, good1 skipped — no cycling
-    call_log.clear()
-    with patch.multiple("chess_self_coach.trainer", **patches):
-        prepare_training_data()
+    games = [
+        _make_game("https://lichess.org/err1", "testplayer", "opp1"),
+        _make_game("https://lichess.org/ok1", "testplayer", "opp2"),
+    ]
 
-    assert len(call_log) == 0  # No worker calls — good1 skipped, malformed filtered
+    saved_data = {}
+    call_count = {"n": 0}
+
+    def mock_save(data, path=None):
+        saved_data.update(data)
+
+    def mock_collect(game, engine, player_color, settings, lichess_token=None, game_id=""):
+        call_count["n"] += 1
+        if call_count["n"] == 1:
+            raise RuntimeError("Engine crashed")
+        # Return minimal valid game data for the second call
+        return {
+            "headers": {"white": "testplayer", "black": "opp2", "date": "?",
+                        "result": "*", "opening": "?", "source": "lichess",
+                        "link": "https://lichess.org/ok1"},
+            "player_color": "white",
+            "analyzed_at": "2026-03-23T00:00:00Z",
+            "settings": settings.to_dict(),
+            "moves": [],
+        }
+
+    with patch("chess_self_coach.config.load_config", return_value={"players": {"lichess": "testplayer"}, "stockfish": {}}), \
+         patch("chess_self_coach.config.find_stockfish", return_value=Path("/usr/games/stockfish")), \
+         patch("chess_self_coach.config.check_stockfish_version", return_value="Stockfish 18"), \
+         patch("chess_self_coach.config.load_lichess_token", return_value=None), \
+         patch("chess_self_coach.importer.fetch_lichess_games", return_value=games), \
+         patch("chess_self_coach.importer.fetch_chesscom_games", return_value=[]), \
+         patch("chess_self_coach.analysis.load_analysis_data", return_value={"version": "1.0", "player": {}, "games": {}}), \
+         patch("chess_self_coach.analysis.save_analysis_data", side_effect=mock_save), \
+         patch("chess_self_coach.analysis.collect_game_data", side_effect=mock_collect):
+
+        analyze_games(max_games=5, settings=SETTINGS)
+
+    # ok1 should be saved despite err1 failing
+    assert "https://lichess.org/ok1" in saved_data.get("games", {})
+    # err1 should NOT be in the data (will be retried next run)
+    assert "https://lichess.org/err1" not in saved_data.get("games", {})

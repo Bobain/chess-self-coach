@@ -15,18 +15,22 @@ from __future__ import annotations
 
 import asyncio
 import json
+import shutil
 import socket
+import subprocess
 import threading
 import time
+import traceback
 import uuid
 import webbrowser
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import TypedDict, cast
 
 import chess
 import chess.engine
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
@@ -82,6 +86,58 @@ app = FastAPI(
 )
 
 
+# --- Crash reporter ---
+
+
+def _gh_create_issue(title: str, body: str) -> None:
+    """Create a GitHub issue for an unhandled server error.
+
+    Only runs when `gh` CLI is available and authenticated with write access.
+    Deduplicates by checking if an open issue with the same title exists.
+    No explicit permission check — if the user lacks write access, `gh` fails
+    silently (caught by the except).
+    """
+    if not shutil.which("gh"):
+        return
+
+    try:
+        existing = subprocess.run(
+            ["gh", "issue", "list", "--state", "open", "--search", title,
+             "--json", "title", "-q", ".[].title"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if existing.returncode == 0 and title in existing.stdout:
+            return
+
+        subprocess.run(
+            ["gh", "issue", "create", "--title", title, "--body", body,
+             "--label", "bug"],
+            capture_output=True, timeout=10,
+        )
+    except Exception:
+        pass
+
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch unhandled exceptions, log them, and create a GitHub issue."""
+    tb = traceback.format_exception(type(exc), exc, exc.__traceback__)
+    tb_text = "".join(tb)
+
+    error_type = type(exc).__name__
+    title = f"[crash] {error_type}: {str(exc)[:80]}"
+    body = (
+        f"## Server crash\n\n"
+        f"**Endpoint:** `{request.method} {request.url.path}`\n"
+        f"**Version:** {__version__}\n\n"
+        f"```\n{tb_text}\n```"
+    )
+
+    threading.Thread(target=_gh_create_issue, args=(title, body), daemon=True).start()
+
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
 # --- Pydantic models ---
 
 
@@ -106,75 +162,62 @@ class StatusResponse(BaseModel):
     stockfish_version: str
 
 
-class StatsResponse(BaseModel):
-    """Response body for /api/train/stats."""
+class ConfigResponse(BaseModel):
+    """Response body for GET /api/config."""
 
-    generated: str
-    total: int
-    by_category: dict[str, int]
-    by_source: dict[str, int]
+    players: dict[str, str]
+    analysis: dict[str, float | int]
 
 
-class ChapterResult(BaseModel):
-    """Validation result for one PGN chapter."""
+class ConfigUpdateRequest(BaseModel):
+    """Request body for POST /api/config."""
 
-    name: str
-    errors: list[str]
-    warnings: list[str]
-    infos: list[str]
+    players: dict[str, str] | None = None
+    analysis: dict[str, float | int] | None = None
 
 
-class FileValidation(BaseModel):
-    """Validation result for one PGN file."""
+class GameSummaryResponse(BaseModel):
+    """One game in the game list."""
 
-    file: str
-    chapters: list[ChapterResult]
-
-
-class ValidateResponse(BaseModel):
-    """Response body for /api/pgn/validate."""
-
-    files: list[FileValidation]
-
-
-class PgnFileStatus(BaseModel):
-    """Status of one PGN file."""
-
-    file: str
-    modified: str
-    chapters: int
-    study_configured: bool
+    game_id: str
+    white: str
+    black: str
+    player_color: str
+    result: str
+    date: str
+    opening: str
+    move_count: int
+    source: str
+    analyzed: bool
 
 
-class StockfishInfo(BaseModel):
-    """Stockfish availability info."""
+class GameListResponse(BaseModel):
+    """Response body for GET /api/games."""
 
-    available: bool
-    version: str
-
-
-class ProjectStatusResponse(BaseModel):
-    """Response body for /api/pgn/status."""
-
-    config_ok: bool
-    stockfish: StockfishInfo
-    has_token: bool
-    files: list[PgnFileStatus]
-    suggestions: list[str]
+    games: list[GameSummaryResponse]
+    fetched_at: str | None = None
 
 
-class StudyCleanup(BaseModel):
-    """Cleanup result for one study."""
+class AnalysisSettingsResponse(BaseModel):
+    """Response body for GET /api/analysis/settings."""
 
-    study: str
-    deleted: int
+    threads: int
+    hash_mb: int
+    limits: dict[str, dict[str, float | int]]
 
 
-class CleanupResponse(BaseModel):
-    """Response body for /api/pgn/cleanup."""
+class AnalysisStartRequest(BaseModel):
+    """Request body for POST /api/analysis/start."""
 
-    results: list[StudyCleanup]
-    total_deleted: int
+    game_ids: list[str] = Field(default_factory=list)
+    max_games: int = 10
+    reanalyze_all: bool = False
+
+
+class JobStartResponse(BaseModel):
+    """Response body for job start endpoints."""
+
+    job_id: str
 
 
 # --- API routes ---
@@ -219,100 +262,7 @@ async def bestmove(req: BestMoveRequest) -> BestMoveResponse:
     return BestMoveResponse(bestmove=str(result.move))
 
 
-@app.get("/api/train/stats")
-async def train_stats() -> StatsResponse:
-    """Return training data statistics."""
-    from chess_self_coach.trainer import get_stats_data
-
-    try:
-        stats = get_stats_data(_project_root)
-    except FileNotFoundError:
-        raise HTTPException(
-            status_code=404,
-            detail="No training data. Run: chess-self-coach train --prepare",
-        )
-    return StatsResponse(**stats)
-
-
-@app.post("/api/pgn/validate")
-async def pgn_validate() -> ValidateResponse:
-    """Validate all PGN files in the project root."""
-    from chess_self_coach.validate import validate_pgn
-
-    pgn_files = sorted(_project_root.glob("*.pgn"))
-    if not pgn_files:
-        raise HTTPException(status_code=404, detail="No PGN files found")
-
-    results = []
-    for pgn_path in pgn_files:
-        chapters = validate_pgn(pgn_path)
-        results.append(FileValidation(
-            file=pgn_path.name,
-            chapters=[ChapterResult(**ch) for ch in chapters],
-        ))
-    return ValidateResponse(files=results)
-
-
-@app.get("/api/pgn/status")
-async def pgn_status() -> ProjectStatusResponse:
-    """Return project status: config, files, suggestions."""
-    from chess_self_coach.status import get_status_data
-
-    data = get_status_data(_project_root)
-    return ProjectStatusResponse(**data)
-
-
-@app.post("/api/pgn/cleanup")
-async def pgn_cleanup() -> CleanupResponse:
-    """Clean up empty default chapters from all configured Lichess studies."""
-    import json
-
-    from chess_self_coach.config import load_lichess_token
-    from chess_self_coach.lichess import cleanup_study
-
-    # Check token
-    token = load_lichess_token(required=False)
-    if not token:
-        raise HTTPException(status_code=401, detail="Lichess token not configured")
-
-    # Load config
-    config_path = _project_root / "config.json"
-    if not config_path.exists():
-        raise HTTPException(status_code=404, detail="config.json not found")
-
-    with open(config_path) as f:
-        config = json.load(f)
-
-    studies = config.get("studies", {})
-    results = []
-    total = 0
-
-    for pgn_file, info in studies.items():
-        study_id = info.get("study_id", "")
-        if study_id.startswith("STUDY_ID"):
-            continue
-        deleted = cleanup_study(study_id, info.get("study_name", pgn_file))
-        results.append(StudyCleanup(study=pgn_file, deleted=deleted))
-        total += deleted
-
-    return CleanupResponse(results=results, total_deleted=total)
-
-
 # --- Config API ---
-
-
-class ConfigResponse(BaseModel):
-    """Response body for GET /api/config."""
-
-    players: dict[str, str]
-    analysis: dict[str, float | int]
-
-
-class ConfigUpdateRequest(BaseModel):
-    """Request body for POST /api/config."""
-
-    players: dict[str, str] | None = None
-    analysis: dict[str, float | int] | None = None
 
 
 @app.get("/api/config")
@@ -356,134 +306,96 @@ async def update_config(req: ConfigUpdateRequest) -> ConfigResponse:
     )
 
 
-# --- Coaching journal ---
+# --- Game list endpoints ---
 
 
-class TopicSummary(BaseModel):
-    """Summary of one coaching topic."""
+@app.post("/api/games/fetch")
+async def games_fetch() -> GameListResponse:
+    """Fetch games from Lichess/chess.com and cache locally."""
+    from chess_self_coach.config import load_config
+    from chess_self_coach.game_cache import fetch_and_cache_games, load_game_cache
 
-    slug: str
-    date: str
-    topic: str
-    status: str
+    config = load_config()
+    players = config.get("players", {})
+    lichess_user = players.get("lichess", "")
+    chesscom_user = players.get("chesscom")
 
+    if not lichess_user and not chesscom_user:
+        raise HTTPException(
+            status_code=400,
+            detail="No player configured. Run 'chess-self-coach setup'.",
+        )
 
-class TopicsResponse(BaseModel):
-    """Response body for GET /api/coaching/topics."""
+    summaries = await asyncio.to_thread(
+        fetch_and_cache_games, lichess_user, chesscom_user
+    )
+    cache = load_game_cache()
 
-    topics: list[TopicSummary]
-
-
-class TopicDetailResponse(BaseModel):
-    """Response body for GET /api/coaching/topics/{slug}."""
-
-    slug: str
-    content: str
-
-
-def _parse_frontmatter(text: str) -> tuple[dict, str]:
-    """Parse YAML front matter from a markdown file.
-
-    Returns (metadata_dict, body_text). If no front matter, returns ({}, full_text).
-    """
-    if not text.startswith("---"):
-        return {}, text
-    end = text.find("---", 3)
-    if end == -1:
-        return {}, text
-    import yaml
-
-    meta = yaml.safe_load(text[3:end]) or {}
-    body = text[end + 3:].lstrip("\n")
-    return meta, body
+    return GameListResponse(
+        games=[GameSummaryResponse(**s.to_dict()) for s in summaries],
+        fetched_at=cache.get("fetched_at"),
+    )
 
 
-@app.get("/api/coaching/topics")
-async def coaching_topics() -> TopicsResponse:
-    """List all coaching journal topics."""
-    topics_dir = _project_root / "coaching" / "topics"
-    if not topics_dir.exists():
-        return TopicsResponse(topics=[])
+@app.get("/api/games")
+async def games_list(limit: int = 20) -> GameListResponse:
+    """Return unified game list (cached + analyzed), sorted by date."""
+    from chess_self_coach.game_cache import get_unified_game_list, load_game_cache
 
-    topics = []
-    for path in sorted(topics_dir.glob("*.md"), reverse=True):
-        meta, _ = _parse_frontmatter(path.read_text())
-        topics.append(TopicSummary(
-            slug=path.stem,
-            date=str(meta.get("date", "")),
-            topic=meta.get("topic", path.stem),
-            status=meta.get("status", ""),
-        ))
-    return TopicsResponse(topics=topics)
+    summaries = get_unified_game_list(limit=limit)
+    cache = load_game_cache()
+
+    return GameListResponse(
+        games=[GameSummaryResponse(**s.to_dict()) for s in summaries],
+        fetched_at=cache.get("fetched_at"),
+    )
 
 
-@app.get("/api/coaching/topics/{slug}")
-async def coaching_topic_detail(slug: str) -> TopicDetailResponse:
-    """Read one coaching topic by slug."""
-    topics_dir = _project_root / "coaching" / "topics"
-    path = topics_dir / f"{slug}.md"
-    if not path.resolve().is_relative_to(topics_dir.resolve()):
-        raise HTTPException(status_code=400, detail="Invalid topic slug")
-    if not path.exists():
-        raise HTTPException(status_code=404, detail=f"Topic not found: {slug}")
-    return TopicDetailResponse(slug=slug, content=path.read_text())
+# --- Analysis settings endpoints ---
 
 
-# --- Job runner ---
+@app.get("/api/analysis/settings")
+async def get_analysis_settings() -> AnalysisSettingsResponse:
+    """Return current analysis engine settings (with 'auto' resolved)."""
+    from chess_self_coach.analysis import AnalysisSettings
+    from chess_self_coach.config import load_config
 
-_current_job: dict | None = None
-_job_lock = threading.Lock()
-
-
-def _run_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
-    """Run prepare_training_data in a background thread.
-
-    Pushes progress events to the job's asyncio.Queue via the event loop.
-
-    Args:
-        job_id: ID of the current job.
-        loop: The main asyncio event loop (for call_soon_threadsafe).
-    """
-    global _current_job
-
-    from chess_self_coach.trainer import TrainingInterrupted, prepare_training_data
-
-    queue = _current_job["queue"]
-    cancel = _current_job["cancel"]
-
-    def _push(item: dict | None) -> None:
-        try:
-            loop.call_soon_threadsafe(queue.put_nowait, item)
-        except RuntimeError:
-            pass  # Event loop closed (server shutdown / test teardown)
-
-    def on_progress(event: dict) -> None:
-        _push(event)
-
-    try:
-        prepare_training_data(on_progress=on_progress, cancel=cancel)
-        _current_job["status"] = "done"
-    except TrainingInterrupted as exc:
-        _push({"phase": "interrupted", "message": str(exc), "percent": 100})
-        _current_job["status"] = "interrupted"
-    except (Exception, SystemExit) as exc:
-        error_event = {"phase": "error", "message": str(exc), "percent": 0}
-        _push(error_event)
-        _current_job["status"] = "error"
-    finally:
-        # Sentinel to signal end of stream
-        _push(None)
+    config = load_config()
+    settings = AnalysisSettings.from_config(config)
+    d = settings.to_dict()
+    return AnalysisSettingsResponse(
+        threads=d["threads"],
+        hash_mb=d["hash_mb"],
+        limits=d["limits"],
+    )
 
 
-class JobStartResponse(BaseModel):
-    """Response body for POST /api/train/prepare."""
+@app.post("/api/analysis/settings")
+async def update_analysis_settings(req: AnalysisSettingsResponse) -> AnalysisSettingsResponse:
+    """Save analysis engine settings to config.json."""
+    config_path = _project_root / "config.json"
+    if not config_path.exists():
+        raise HTTPException(status_code=404, detail="config.json not found")
 
-    job_id: str
+    with open(config_path) as f:
+        config = json.load(f)
+
+    config["analysis_engine"] = {
+        "threads": req.threads,
+        "hash_mb": req.hash_mb,
+        "limits": req.limits,
+    }
+
+    with open(config_path, "w") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+    return req
 
 
-@app.post("/api/train/prepare", status_code=202)
-async def train_prepare() -> JobStartResponse:
-    """Start a background training preparation job."""
+@app.post("/api/analysis/start", status_code=202)
+async def analysis_start(req: AnalysisStartRequest) -> JobStartResponse:
+    """Start a background full game analysis job."""
     global _current_job
 
     with _job_lock:
@@ -496,13 +408,89 @@ async def train_prepare() -> JobStartResponse:
             "status": "running",
             "queue": asyncio.Queue(),
             "cancel": threading.Event(),
+            "params": {
+                "game_ids": req.game_ids,
+                "max_games": req.max_games,
+                "reanalyze_all": req.reanalyze_all,
+            },
         }
 
     loop = asyncio.get_event_loop()
-    thread = threading.Thread(target=_run_job, args=(job_id, loop), daemon=True)
+    thread = threading.Thread(target=_run_analysis_job, args=(job_id, loop), daemon=True)
     thread.start()
 
     return JobStartResponse(job_id=job_id)
+
+
+# --- Job runner ---
+
+class _JobState(TypedDict):
+    """Internal state for a running analysis job."""
+
+    id: str
+    status: str
+    queue: asyncio.Queue[dict[str, object] | None]
+    cancel: threading.Event
+    params: dict[str, object]
+
+
+_current_job: _JobState | None = None
+_job_lock = threading.Lock()
+
+
+def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
+    """Run analyze_games in a background thread.
+
+    Pushes progress events to the job's asyncio.Queue via the event loop.
+
+    Args:
+        job_id: ID of the current job.
+        loop: The main asyncio event loop (for call_soon_threadsafe).
+    """
+    global _current_job
+
+    from chess_self_coach.analysis import (
+        AnalysisInterrupted,
+        analyze_games,
+        annotate_and_derive,
+    )
+
+    assert _current_job is not None
+    job = _current_job
+    queue = job["queue"]
+    cancel = job["cancel"]
+    params = job.get("params", {})
+
+    def _push(item: dict[str, object] | None) -> None:
+        try:
+            loop.call_soon_threadsafe(queue.put_nowait, item)
+        except RuntimeError:
+            pass
+
+    def on_progress(event: dict[str, object]) -> None:
+        _push(event)
+
+    try:
+        raw_ids = params.get("game_ids")
+        game_ids = cast(list[str] | None, raw_ids) if raw_ids else None
+        analyze_games(
+            game_ids=game_ids,
+            max_games=cast(int, params.get("max_games", 10)),
+            reanalyze_all=cast(bool, params.get("reanalyze_all", False)),
+            on_progress=on_progress,
+            cancel=cancel,
+        )
+        _push({"phase": "derive", "message": "Generating training data...", "percent": 92})
+        annotate_and_derive()
+        job["status"] = "done"
+    except AnalysisInterrupted as exc:
+        _push({"phase": "interrupted", "message": str(exc), "percent": 100})
+        job["status"] = "interrupted"
+    except Exception as exc:
+        _push({"phase": "error", "message": str(exc), "percent": 100})
+        job["status"] = "error"
+    finally:
+        _push(None)  # Signal end of stream
 
 
 @app.get("/api/jobs/{job_id}/events")
@@ -543,6 +531,15 @@ async def training_data():
     path = _project_root / "training_data.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="No training data. Run: chess-self-coach train --prepare")
+    return FileResponse(path, media_type="application/json")
+
+
+@app.get("/analysis_data.json")
+async def analysis_data():
+    """Serve analysis data directly from project root (always fresh)."""
+    path = _project_root / "analysis_data.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="No analysis data. Run: chess-self-coach train --analyze")
     return FileResponse(path, media_type="application/json")
 
 

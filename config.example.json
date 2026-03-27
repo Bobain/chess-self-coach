@@ -8,22 +8,18 @@
     "default_depth": 18,
     "blunder_threshold": 1.0
   },
+  "analysis_engine": {
+    "threads": "auto",
+    "hash_mb": 1024,
+    "limits": {
+      "kings_pawns_le7": {"time": 6.0, "depth": 60},
+      "pieces_le7": {"time": 5.0, "depth": 50},
+      "pieces_le12": {"time": 4.0, "depth": 40},
+      "default": {"depth": 18}
+    }
+  },
   "players": {
     "lichess": "YOUR_LICHESS_USERNAME",
     "chesscom": "YOUR_CHESSCOM_USERNAME"
-  },
-  "studies": {
-    "repertoire_blancs_gambit_dame_annote.pgn": {
-      "study_id": "STUDY_ID_HERE",
-      "study_name": "Whites - Queen's Gambit"
-    },
-    "repertoire_noirs_vs_e4_scandinave_annote.pgn": {
-      "study_id": "STUDY_ID_HERE",
-      "study_name": "Black vs e4 - Scandinavian"
-    },
-    "repertoire_noirs_vs_d4_slave_annote.pgn": {
-      "study_id": "STUDY_ID_HERE",
-      "study_name": "Black vs d4 - Slav"
-    }
   }
 }

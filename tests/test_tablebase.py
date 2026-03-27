@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import chess
-
 from chess_self_coach.tablebase import (
     TablebaseResult,
     tablebase_context,
-    tablebase_cp_loss,
     tablebase_explanation,
 )
 
@@ -15,64 +12,6 @@ from chess_self_coach.tablebase import (
 def _tb(category: str, dtz: int | None = None, dtm: int | None = None) -> TablebaseResult:
     """Shortcut to create a TablebaseResult."""
     return TablebaseResult(category=category, dtz=dtz, dtm=dtm, best_move=None)
-
-
-# --- tablebase_cp_loss ---
-
-
-def test_classify_win_to_draw():
-    """Win -> Draw is a blunder (300cp)."""
-    assert tablebase_cp_loss(_tb("win"), _tb("draw"), chess.WHITE) == 300
-
-
-def test_classify_win_to_loss():
-    """Win -> Loss is a severe blunder (600cp)."""
-    assert tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE) == 600
-
-
-def test_classify_draw_to_loss():
-    """Draw -> Loss is a blunder (300cp)."""
-    assert tablebase_cp_loss(_tb("draw"), _tb("loss"), chess.WHITE) == 300
-
-
-def test_classify_win_to_win():
-    """Win -> Win is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("win", dtz=5), _tb("win", dtz=40), chess.WHITE) == 0
-
-
-def test_classify_draw_to_draw():
-    """Draw -> Draw is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("draw"), _tb("draw"), chess.WHITE) == 0
-
-
-def test_classify_loss_to_loss():
-    """Loss -> Loss is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("loss"), _tb("loss"), chess.WHITE) == 0
-
-
-def test_classify_loss_to_draw():
-    """Loss -> Draw (opponent blundered) is acceptable (0cp)."""
-    assert tablebase_cp_loss(_tb("loss"), _tb("draw"), chess.WHITE) == 0
-
-
-def test_classify_cursed_win_treated_as_draw():
-    """cursed-win is grouped with DRAW tier."""
-    assert tablebase_cp_loss(_tb("win"), _tb("cursed-win"), chess.WHITE) == 300
-
-
-def test_classify_blessed_loss_treated_as_draw():
-    """blessed-loss is grouped with DRAW tier."""
-    assert tablebase_cp_loss(_tb("blessed-loss"), _tb("loss"), chess.WHITE) == 300
-
-
-def test_classify_black_perspective():
-    """Black's perspective is flipped: API 'loss' for Black means side-to-move loses."""
-    # From API: before=loss (Black is losing), after=draw
-    # From Black's perspective: before=WIN (opponent losing), after=DRAW
-    # This is a blunder for Black? No — the API categories are already from
-    # side-to-move perspective. We flip to normalize.
-    # before=loss -> flipped to WIN, after=draw -> stays DRAW -> WIN->DRAW = 300
-    assert tablebase_cp_loss(_tb("loss"), _tb("draw"), chess.BLACK) == 300
 
 
 # --- format_verdict ---
@@ -181,13 +120,46 @@ def test_context_black_winning_says_winning():
     assert "winning" in ctx, f"Black is winning but context says: {ctx}"
 
 
-def test_cp_loss_black_loss_to_win_is_blunder():
-    """Black LOSS→WIN (side-to-move): after flip = WIN→LOSS = 600cp blunder."""
-    cp = tablebase_cp_loss(_tb("loss"), _tb("win"), chess.BLACK)
-    assert cp == 600, f"Expected 600 cp_loss for flipped WIN→LOSS, got {cp}"
+# --- probe_position_full ---
 
 
-def test_cp_loss_white_win_to_loss_is_blunder():
-    """White WIN→LOSS (no flip needed): 600cp blunder."""
-    cp = tablebase_cp_loss(_tb("win"), _tb("loss"), chess.WHITE)
-    assert cp == 600, f"Expected 600 cp_loss for WIN→LOSS, got {cp}"
+from unittest.mock import MagicMock, patch
+
+from chess_self_coach.tablebase import probe_position_full
+
+
+@patch("chess_self_coach.tablebase.requests.get")
+def test_probe_position_full_returns_complete_data(mock_get: MagicMock):
+    """Returns full API response including all moves."""
+    api_data = {
+        "category": "win",
+        "dtz": -20,
+        "dtm": -20,
+        "precise_dtz": -20,
+        "dtw": None,
+        "dtc": None,
+        "checkmate": False,
+        "stalemate": False,
+        "moves": [
+            {"uci": "h1h7", "san": "Rh7", "category": "loss", "dtz": -20, "dtm": -20},
+        ],
+    }
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = api_data
+    mock_get.return_value = mock_resp
+
+    result = probe_position_full("4k3/8/8/8/8/8/8/4K2R w K - 0 1")
+    assert result is not None
+    assert result["category"] == "win"
+    assert result["tier"] == "WIN"
+    assert len(result["moves"]) == 1
+    assert result["moves"][0]["san"] == "Rh7"
+
+
+@patch("chess_self_coach.tablebase.requests.get")
+def test_probe_position_full_too_many_pieces(mock_get: MagicMock):
+    """Returns None for positions with more than 7 pieces."""
+    result = probe_position_full("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
+    assert result is None
+    mock_get.assert_not_called()

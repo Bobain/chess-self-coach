@@ -45,9 +45,57 @@ sequenceDiagram
 
 ---
 
-## Analyse latest games (app mode)
+## Game review (Analysis mode, PWA)
 
-Fetches recent games, runs Stockfish analysis, and generates training positions.
+The player reviews full games move-by-move with eval visualization. Available in both [demo] and [app] modes.
+
+![Game review flow](images/game-review.svg)
+
+```mermaid
+sequenceDiagram
+    participant U as Player
+    participant PWA as Browser (PWA)
+
+    Note over PWA: Game list is the default view
+    PWA->>PWA: Fetch analysis_data.json
+    PWA->>U: Show game list (analyzed + cached games)
+
+    U->>PWA: Click a game card
+    PWA->>PWA: classifyAllMoves() — win probability model
+    PWA->>PWA: computeAccuracy() — per player
+    PWA->>U: Show review: board + eval bar + move list + score chart
+
+    loop Navigate moves
+        alt Click move / Arrow key / Auto-play
+            U->>PWA: Navigate to ply N
+            PWA->>PWA: goToMove(N)
+            PWA->>U: Update board (FEN + lastMove)
+            PWA->>U: Update eval bar (sigmoid)
+            PWA->>U: Update arrows (green=best, red=mistake)
+            PWA->>U: Update PV line + score chart cursor
+        end
+    end
+
+    U->>PWA: Click "Back"
+    PWA->>U: Return to game selector
+```
+
+### Key details
+
+- **Game list**: default view, shows all games (analyzed + cached). Cards showing opponent, date, result (W/D/L badge), opening name, move count. Analyzed games also show accuracy % and classification badges. All games have checkboxes for (re-)analysis; selecting an already-analyzed game auto-sets `reanalyze_all`.
+- **Training**: accessible via hamburger menu → "Training" (all positions) or per-game "Train" button in review.
+- **Move classifications**: win probability model — `winProb(cp) = 1/(1+10^(-cp/400))`, thresholds: Best ≤0, Excellent ≤0.02, Good ≤0.05, Inaccuracy ≤0.10, Mistake ≤0.20, Blunder >0.20. Special: Brilliant (piece sacrifice value >2 + EPL ≤0.02 + wpBefore >0.05 and <0.95 + not opening theory + PV ≥3 moves).
+- **Eval bar**: sigmoid mapping, 50% at equal, smooth CSS transition. For book moves (no Stockfish eval), derives approximate cp from opening explorer win/draw/loss stats. Shows "M3" for mate.
+- **Score chart**: Canvas, click to jump to any move, colored dots at brilliant/mistakes/blunders.
+- **Board arrows**: `reviewCg.set({drawable: {autoShapes: [...]}})` — green for best move, red for played mistake.
+- **Keyboard**: ArrowLeft/Right, Home/End. Active only in analysis view.
+- **Flip board**: toggles `reviewOrientation` on the second Chessground instance.
+
+---
+
+## Analyze selected games (app mode)
+
+User selects games from the game list, triggers Stockfish analysis on selected games, and generates training positions.
 
 ![Analyse latest games flow](images/analyse-games.svg)
 
@@ -56,47 +104,64 @@ sequenceDiagram
     participant U as Player
     participant PWA as Browser
     participant API as FastAPI server
-    participant W as Worker threads
     participant SF as Stockfish (native)
+    participant TB as Lichess Tablebase
+    participant OE as Lichess Opening Explorer
     participant L as Lichess API
     participant C as Chess.com API
 
-    U->>PWA: Click "Analyse latest games"
-    PWA->>API: POST /api/train/prepare
+    U->>PWA: Select games (checkboxes) + click "Analyze selected"
+    PWA->>API: POST /api/analysis/start {game_ids, reanalyze_all}
     API-->>PWA: 202 + job_id
     PWA->>API: GET /api/jobs/{id}/events (SSE)
 
-    API->>API: Load existing training_data.json<br/>(preserve SRS + analyzed_game_ids)
+    API->>API: Load existing analysis_data.json
 
     par Fetch games
-        API->>L: Fetch ≤20 recent rated games
-        API->>C: Fetch ≤20 recent rated games
+        API->>L: Fetch recent rated games
+        API->>C: Fetch recent rated games
     end
 
-    API->>API: Filter: skip already-analyzed games
+    API->>API: Filter: skip already-analyzed<br/>(or same-settings if reanalyze_all)
 
-    loop Each new game (parallel workers)
-        API->>W: Analyze game
-        W->>SF: depth-18 analysis per position
-        SF-->>W: eval scores
-        W-->>API: Positions with cp_loss > threshold
+    Note over API,SF: Phase 1 — Collection (1 SF, N-1 threads)
+
+    loop Each new game (sequential)
+        API->>OE: Query opening positions<br/>(stop at theory departure)
+        OE-->>API: Opening name + move popularity
+
+        loop Each position in game
+            alt ≤7 pieces
+                API->>TB: Tablebase probe
+                TB-->>API: WDL + all moves + DTM/DTZ
+            end
+            API->>SF: engine.analyse() (adaptive depth)
+            SF-->>API: Full eval (score, PV, depth, nodes, time...)
+        end
+
+        API->>API: Atomic write analysis_data.json
         API-->>PWA: SSE: analyze phase (X/Y, percent)
-        API->>API: Atomic write to training_data.json
     end
+
+    Note over API: Phase 2 — Derivation (no Stockfish)
+    API->>API: annotate_and_derive()<br/>Filter mistakes → training_data.json
 
     API-->>PWA: SSE: done (summary)
     PWA->>PWA: Reload training_data.json
     PWA->>PWA: Restart session
+    Note over PWA: analysis_data.json also updated<br/>(available for Analysis mode)
 ```
 
 ### Key details
 
-- **Incremental merge**: only new games are analyzed. Existing positions keep their SRS state.
+- **Settings modal**: unified modal with Training, Accounts, Analysis (presets: Quick/Balanced/Deep + Advanced toggle), and Danger zone sections.
+- **Two-phase pipeline**: Phase 1 collects raw data (expensive), Phase 2 derives training data (cheap, re-runnable via `chess-self-coach train --derive`).
+- **Engine model**: one Stockfish with N-1 threads + 1GB hash (configurable), sequential game-by-game.
+- **Opening Explorer**: queries Lichess API position by position until theory departure (move not in database).
+- **Incremental**: only unanalyzed games are processed. `reanalyze_all` skips only same-settings games.
+- **Crash safety**: atomic write of `analysis_data.json` after each game. Resumable on interruption.
 - **Thresholds**: blunder ≥ 200cp, mistake ≥ 100cp, inaccuracy ≥ 50cp.
-- **Parallelism**: N-1 CPU cores (ProcessPoolExecutor).
-- **Crash safety**: atomic write after each game — if interrupted, partial results are saved.
-- **Interrupt**: user can click the interrupt button → `POST /api/jobs/{id}/cancel` → saves progress so far.
-- **Hardcoded defaults** (v0.3.8): 20 games per source, depth 18, no UI to customize.
+- **Interrupt**: user can click interrupt → `POST /api/jobs/{id}/cancel` → saves progress so far.
 
 ---
 
@@ -114,48 +179,41 @@ flowchart TD
     SF_CHECK -->|Yes| SF_VER[Check version]
     SF_VER --> SF_WARN{Matches expected?}
     SF_WARN -->|No| WARN[Warning: version mismatch]
-    SF_WARN -->|Yes| PLAT
-    WARN --> PLAT
+    SF_WARN -->|Yes| SYZ
+    WARN --> SYZ
+
+    subgraph "Syzygy tablebases"
+        SYZ[Check Syzygy tables]
+        SYZ --> SYZ_FOUND{Found?}
+        SYZ_FOUND -->|Yes| PLAT
+        SYZ_FOUND -->|No| SYZ_DL{Download ~1 GB?}
+        SYZ_DL -->|Yes| SYZ_OK[Download tables]
+        SYZ_DL -->|No| PLAT
+        SYZ_OK --> PLAT
+    end
 
     subgraph "Game platforms (need ≥ 1)"
         PLAT[Configure platforms]
-        PLAT --> LI{Lichess?}
-        LI -->|Yes| LI_TOK{Token in .env?}
-        LI_TOK -->|Yes| LI_VAL[Validate token via API]
-        LI_TOK -->|No| LI_GUIDE[Guided token creation<br/>Open browser → save .env]
-        LI_GUIDE --> LI_VAL
-        LI_VAL -->|Valid| LI_OK[Store Lichess username]
-        LI_VAL -->|Invalid| LI_REGEN[Exit: regeneration link]
-        LI -->|No| CC
-        LI_OK --> CC
+        PLAT --> LI_USER[Prompt Lichess username]
+        LI_USER --> LI_HAS{Username provided?}
+        LI_HAS -->|Yes| LI_TOK[Prompt API token]
+        LI_HAS -->|No| CC
+        LI_TOK --> CC
 
-        CC{Chess.com?}
-        CC -->|Yes| CC_USER[Prompt username → store]
-        CC -->|No| PLAT_CHECK
-        CC_USER --> PLAT_CHECK
-
-        PLAT_CHECK{At least 1 platform?}
+        CC[Prompt Chess.com username]
+        CC --> PLAT_CHECK{At least 1 platform?}
         PLAT_CHECK -->|No| PLAT_ERR[Exit: need at least one]
     end
 
-    PLAT_CHECK -->|Yes| STUDIES{Lichess configured?}
-    STUDIES -->|No| SAVE
-    STUDIES -->|Yes| STUDY_FETCH[Fetch user's studies]
-    STUDY_FETCH --> STUDY_MAP[Auto-match studies by name]
-    STUDY_MAP --> STUDY_MISS{Unmatched studies?}
-    STUDY_MISS -->|Yes| STUDY_CREATE[Open browser → create studies]
-    STUDY_MISS -->|No| SAVE
-    STUDY_CREATE --> SAVE
-
-    SAVE[Write config.json] --> DONE[Setup complete]
+    PLAT_CHECK -->|Yes| SAVE[Write config.json + .env]
+    SAVE --> DONE[Setup complete]
 ```
 
 ### Key details
 
 - **Stockfish search order**: config path → fallback path → En-Croissant default → `/usr/games/stockfish` → `$PATH`.
-- **Token validation**: must start with `lip_` prefix, verified against Lichess API.
-- **Study mapping**: auto-matches local PGN filenames against Lichess study names (case-insensitive substring).
-- **Idempotent**: re-running setup merges with existing config (preserves studies, updates players/analysis).
+- **Token handling**: prompted via CLI input, saved to `.env` file. No API validation during setup.
+- **Idempotent**: re-running setup merges with existing config (updates players/analysis).
 
 ---
 
@@ -172,14 +230,15 @@ flowchart LR
     end
 
     subgraph "config.json"
-        CFG["stockfish: {path, version}<br/>analysis: {depth, threshold}<br/>players: {lichess, chesscom}<br/>studies: {pgn → study_id}"]
+        CFG["stockfish: {path, version}<br/>analysis: {depth, threshold}<br/>analysis_engine: {threads, hash_mb, limits}<br/>players: {lichess, chesscom}"]
     end
 
     subgraph "PWA (app mode only)"
-        SHOW[GET /api/config] --> MODAL[Config modal]
+        SHOW["Open Settings modal"] --> FETCH["GET /api/config<br/>GET /api/analysis/settings"]
+        FETCH --> MODAL["Unified Settings modal<br/>(Training, Accounts, Analysis, Danger zone)"]
         MODAL --> SAVE_BTN[Save]
-        SAVE_BTN --> POST[POST /api/config]
-        POST --> MERGE[Merge players + analysis<br/>Preserve stockfish + studies]
+        SAVE_BTN --> POST["POST /api/config<br/>POST /api/analysis/settings"]
+        POST --> MERGE["Merge players + analysis<br/>Update analysis_engine<br/>Preserve stockfish"]
     end
 
     WRITE --> CFG
@@ -189,7 +248,7 @@ flowchart LR
 
 ### Key details
 
-- **CLI creates** the full config: stockfish, analysis, players, studies.
-- **PWA edits** only `players` and `analysis` fields (stockfish and studies are CLI-managed).
+- **CLI creates** the full config: stockfish, analysis, players.
+- **PWA edits** only `players` and `analysis` fields (stockfish is CLI-managed).
 - **Merge strategy**: server loads full config, overwrites only the editable fields, writes back.
 - **Format**: JSON with 2-space indent, `ensure_ascii=False`.

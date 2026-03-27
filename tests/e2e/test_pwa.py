@@ -25,8 +25,14 @@ BOARD_TIMEOUT = 20000
 
 
 def _wait_for_board(page, pwa_url):
-    """Navigate to PWA and wait for the board to render."""
+    """Navigate to PWA, switch to training via menu, and wait for the board."""
     page.goto(pwa_url)
+    # Default view is game list; switch to training via nav menu
+    page.wait_for_selector("#menu-btn", timeout=5000)
+    page.wait_for_timeout(500)  # ensure JS event listeners are attached
+    page.click("#menu-btn")
+    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=10000)
+    page.click("#nav-training")
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
 
 
@@ -295,6 +301,12 @@ def test_see_moves_works_after_reload(page, pwa_url):
 
     # Reload — SW serves from cache (network-first should still fetch fresh)
     page.reload()
+    # After reload, default view is game list; switch to training again
+    page.wait_for_selector("#menu-btn", timeout=5000)
+    page.wait_for_timeout(500)
+    page.click("#menu-btn")
+    page.wait_for_selector("#nav-menu.nav-open", state="attached", timeout=10000)
+    page.click("#nav-training")
     page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
     _wait_for_animation(page)
 
@@ -515,9 +527,9 @@ def test_clock_hidden_when_absent(page, pwa_url):
 
 
 def test_app_mode_smoke(page, app_url):
-    """[App] mode: board loads via FastAPI and /api/status returns mode='app'."""
+    """[App] mode: page loads via FastAPI and /api/status returns mode='app'."""
     page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
     status = page.evaluate("() => fetch('/api/status').then(r => r.json())")
     assert status["mode"] == "app"
@@ -529,111 +541,10 @@ def test_app_mode_smoke(page, app_url):
     assert "SF" in version_text, f"Expected SF version in nav header, got: {version_text}"
 
 
-def test_raw_data_summary_modal(page, app_url, console_errors):
-    """[App] mode: Raw data summary shows game list with position counts."""
+def test_app_mode_refresh_games(page, app_url, console_errors):
+    """[App] mode: Refresh menu item triggers game fetch."""
     page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
-
-    # Open menu
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    # Stats item should be visible (both modes, no disabled check needed)
-    stats_item = page.locator("#nav-stats")
-    expect(stats_item).to_be_visible()
-
-    # Click stats
-    stats_item.click()
-    page.wait_for_timeout(500)
-
-    # Modal should appear with game list from fixture data (4 positions)
-    expect(page.locator("#stats-modal")).to_be_visible()
-    expect(page.locator("#stats-content")).to_contain_text("4 positions")
-    expect(page.locator("#stats-content")).to_contain_text("game")
-
-    # Table with opponent names should be present (4 games in fixture)
-    expect(page.locator(".raw-data-table")).to_be_visible()
-    expect(page.locator(".raw-data-table tbody tr")).to_have_count(4)
-
-    # Close modal
-    page.locator("#close-stats").click()
-    expect(page.locator("#stats-modal")).not_to_be_visible()
-
-    # Verify console logs
-    log_text = "\n".join(console_errors["messages"])
-    assert "[showRawDataSummary]" in log_text
-
-
-def test_raw_data_summary_in_demo_mode(page, pwa_url):
-    """[Demo] mode: Raw data summary works without backend."""
-    _wait_for_board(page, pwa_url)
-
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    stats_item = page.locator("#nav-stats")
-    expect(stats_item).to_be_visible()
-
-    stats_item.click()
-    page.wait_for_timeout(500)
-
-    expect(page.locator("#stats-modal")).to_be_visible()
-    expect(page.locator("#stats-content")).to_contain_text("positions")
-    expect(page.locator(".raw-data-table")).to_be_visible()
-
-    page.locator("#close-stats").click()
-    expect(page.locator("#stats-modal")).not_to_be_visible()
-
-
-def test_coming_soon_submenu_toggle(page, app_url, console_errors):
-    """[App] mode: Coming soon submenu expands/collapses and items are not clickable."""
-    page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
-
-    # Open menu
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-
-    # Coming soon toggle should be visible
-    toggle_label = page.locator("#nav-coming-soon .nav-submenu-label")
-    expect(toggle_label).to_be_visible()
-
-    # Sub-items should be hidden initially
-    submenu = page.locator("#nav-coming-soon-items")
-    expect(submenu).not_to_be_visible()
-
-    # Click label to expand
-    toggle_label.click()
-    page.wait_for_timeout(300)
-    expect(submenu).to_be_visible()
-
-    # Verify sub-items are visible with workflow headers
-    expect(page.locator("#nav-validate")).to_be_visible()
-    expect(page.locator("#nav-cleanup")).to_be_visible()
-    expect(page.locator("#nav-import")).to_be_visible()
-    expect(page.locator("#nav-journal")).to_be_visible()
-    expect(page.locator("#nav-status")).to_be_visible()
-
-    # Click a sub-item — no modal should open, menu stays open
-    page.locator("#nav-validate").click()
-    page.wait_for_timeout(300)
-    expect(page.locator("#validate-modal")).not_to_be_visible()
-    expect(submenu).to_be_visible()
-
-    # Click label again to collapse
-    toggle_label.click()
-    page.wait_for_timeout(300)
-    expect(submenu).not_to_be_visible()
-
-    log_text = "\n".join(console_errors["messages"])
-    assert "[nav] Coming soon expanded" in log_text
-    assert "[nav] Coming soon collapsed" in log_text
-
-
-def test_app_mode_refresh_modal(page, app_url, console_errors):
-    """[App] mode: Refresh training menu item opens modal with progress bar."""
-    page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
     # Open menu
     page.locator("#menu-btn").click()
@@ -644,94 +555,62 @@ def test_app_mode_refresh_modal(page, app_url, console_errors):
     expect(refresh_item).to_be_visible()
     expect(refresh_item).not_to_have_class("disabled")
 
-    # Click refresh (will likely error — no config in test env, but modal should open)
+    # Click refresh → triggers game fetch (console should show it)
     refresh_item.click()
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(2000)
 
-    # Modal should appear with step checklist
-    expect(page.locator("#refresh-modal")).to_be_visible()
-    expect(page.locator("#refresh-steps")).to_be_visible()
-    expect(page.locator("#refresh-steps .refresh-step")).to_have_count(4)
+    # Game list should still be visible (refreshed)
+    expect(page.locator("#game-selector")).to_be_visible()
 
-    # Wait for close button to appear (job finishes or errors quickly)
-    page.locator("#close-refresh").wait_for(state="visible", timeout=10000)
-    page.locator("#close-refresh").click()
-    expect(page.locator("#refresh-modal")).not_to_be_visible()
-
-    # Verify console logs
+    # Check console for fetch log
     log_text = "\n".join(console_errors["messages"])
-    assert "[refreshTraining]" in log_text
+    assert "[nav-refresh] Refreshing game list" in log_text
 
 
-def test_app_mode_config_modal(page, app_url, console_errors):
-    """[App] mode: Edit config modal opens, loads values, and saves."""
+def test_app_mode_unified_settings(page, app_url, console_errors):
+    """[App] mode: Unified settings modal shows all sections, loads and saves."""
     page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
-    # Open menu
+    # Open settings via menu
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
-
-    # Config item should be visible and enabled
-    config_item = page.locator("#nav-config")
-    expect(config_item).to_be_visible()
-    expect(config_item).not_to_have_class("disabled")
-
-    # Click config
-    config_item.click()
+    page.locator("#nav-settings").click()
     page.wait_for_timeout(500)
 
-    # Modal should appear with values from test config.json
-    expect(page.locator("#config-modal")).to_be_visible()
+    # Modal should appear with app-only sections visible
+    expect(page.locator("#settings-modal")).to_be_visible()
+    expect(page.locator("#config-lichess")).to_be_visible()
     expect(page.locator("#config-lichess")).to_have_value("testuser")
     expect(page.locator("#config-chesscom")).to_have_value("testcom")
     expect(page.locator("#config-depth")).to_have_value("18")
 
+    # Training fields are also visible
+    expect(page.locator("#session-size")).to_be_visible()
+    expect(page.locator("#difficulty")).to_be_visible()
+
     # Edit a value and save
     page.locator("#config-lichess").fill("newuser")
-    page.locator("#save-config").click()
-    page.wait_for_timeout(500)
+    page.locator("#save-settings").click()
+    page.wait_for_timeout(800)
 
-    expect(page.locator("#config-status")).to_contain_text("Saved")
+    # Modal should close after save
+    expect(page.locator("#settings-modal")).not_to_be_visible()
 
-    # Close and reopen to verify persistence
-    page.locator("#close-config").click()
-    expect(page.locator("#config-modal")).not_to_be_visible()
-
+    # Reopen to verify persistence
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
-    page.locator("#nav-config").click()
+    page.locator("#nav-settings").click()
     page.wait_for_timeout(500)
 
     expect(page.locator("#config-lichess")).to_have_value("newuser")
 
-    page.locator("#close-config").click()
+    page.locator("#close-settings").click()
 
     # Verify console logs
     log_text = "\n".join(console_errors["messages"])
-    assert "[showConfig]" in log_text
-    assert "[saveConfig]" in log_text
-
-
-def test_coming_soon_journal_not_clickable(page, app_url, console_errors):
-    """[App] mode: Journal is in Coming soon submenu and not clickable."""
-    page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
-
-    # Open menu and expand Coming soon
-    page.locator("#menu-btn").click()
-    page.wait_for_timeout(300)
-    page.locator("#nav-coming-soon .nav-submenu-label").click()
-    page.wait_for_timeout(300)
-
-    # Journal should be visible in submenu
-    journal_item = page.locator("#nav-journal")
-    expect(journal_item).to_be_visible()
-
-    # Click journal — no modal should open
-    journal_item.click()
-    page.wait_for_timeout(300)
-    expect(page.locator("#journal-modal")).not_to_be_visible()
+    assert "[openSettings]" in log_text
+    assert "[saveAllSettings]" in log_text
 
 
 def test_about_modal_opens_and_closes(page, pwa_url):
@@ -754,7 +633,7 @@ def test_about_modal_opens_and_closes(page, pwa_url):
 def test_about_modal_shows_version_in_app_mode(page, app_url, console_errors):
     """[App] mode: About modal shows version and Stockfish version."""
     page.goto(app_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
@@ -774,18 +653,70 @@ def test_about_modal_shows_version_in_app_mode(page, app_url, console_errors):
 def test_app_mode_menu_hidden_in_demo(page, pwa_url):
     """[Demo] mode: App-only menu items are hidden, shared items are visible."""
     page.goto(pwa_url)
-    page.wait_for_selector("cg-board piece", timeout=BOARD_TIMEOUT)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
 
     page.locator("#menu-btn").click()
     page.wait_for_timeout(300)
 
     expect(page.locator("#nav-refresh")).not_to_be_visible()
-    expect(page.locator("#nav-config")).not_to_be_visible()
-    expect(page.locator("#nav-coming-soon")).not_to_be_visible()
 
     # Both-mode items are visible in demo mode
-    expect(page.locator("#nav-stats")).to_be_visible()
     expect(page.locator("#nav-settings")).to_be_visible()
 
     # Version is empty in demo mode (no backend)
     expect(page.locator("#nav-version")).to_have_text("")
+
+
+def test_settings_app_only_hidden_in_demo(page, pwa_url):
+    """[Demo] mode: Settings modal hides app-only sections."""
+    page.goto(pwa_url)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
+
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+    page.locator("#nav-settings").click()
+    page.wait_for_timeout(300)
+
+    expect(page.locator("#settings-modal")).to_be_visible()
+
+    # Training section visible
+    expect(page.locator("#session-size")).to_be_visible()
+
+    # App-only sections hidden in demo mode
+    expect(page.locator("#config-lichess")).not_to_be_visible()
+    expect(page.locator("#config-depth")).not_to_be_visible()
+
+    page.locator("#close-settings").click()
+
+
+def test_settings_presets(page, app_url, console_errors):
+    """[App] mode: Clicking a preset updates the limit fields."""
+    page.goto(app_url)
+    page.wait_for_selector("#game-selector", timeout=BOARD_TIMEOUT)
+
+    page.locator("#menu-btn").click()
+    page.wait_for_timeout(300)
+    page.locator("#nav-settings").click()
+    page.wait_for_timeout(500)
+
+    # Click "Quick" preset
+    page.locator('.preset-btn[data-preset="quick"]').click()
+    page.wait_for_timeout(200)
+
+    # Verify Quick preset values applied
+    expect(page.locator("#limit-kp-depth")).to_have_value("40")
+    expect(page.locator("#limit-kp-time")).to_have_value("2")
+    expect(page.locator("#limit-default-depth")).to_have_value("14")
+
+    # Quick button should be active, balanced should not
+    expect(page.locator('.preset-btn[data-preset="quick"]')).to_have_class(
+        "preset-btn active"
+    )
+    expect(page.locator('.preset-btn[data-preset="balanced"]')).to_have_class(
+        "preset-btn"
+    )
+
+    page.locator("#close-settings").click()
+
+    log_text = "\n".join(console_errors["messages"])
+    assert "[wirePresets] Applying preset: quick" in log_text

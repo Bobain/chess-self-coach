@@ -26,19 +26,3 @@ def test_cli_no_command(mocker):
     mock_launch = mocker.patch("chess_self_coach.cli._launch_server")
     main([])
     mock_launch.assert_called_once()
-
-
-def test_cli_validate_present(capsys):
-    """'validate' appears in help output."""
-    with pytest.raises(SystemExit):
-        main(["--help"])
-    captured = capsys.readouterr()
-    assert "validate" in captured.out
-
-
-def test_cli_import_present(capsys):
-    """'import' appears in help output."""
-    with pytest.raises(SystemExit):
-        main(["--help"])
-    captured = capsys.readouterr()
-    assert "import" in captured.out

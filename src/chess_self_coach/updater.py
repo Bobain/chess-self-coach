@@ -70,22 +70,24 @@ def check_stockfish_update() -> tuple[bool, str | None, str | None]:
 
 
 def update() -> None:
-    """Update chess-self-coach to the latest version via pipx or pip."""
-    if shutil.which("pipx"):
-        print("Updating via pipx...")
-        result = subprocess.run(
-            ["pipx", "upgrade", "chess-self-coach"],
-            capture_output=True,
-            text=True,
-        )
-        print(result.stdout.strip())
-        if result.returncode != 0:
-            print(f"Update failed: {result.stderr.strip()}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        print("Updating via pip...")
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", "chess-self-coach"],
-            check=True,
-        )
-    print("\n✓ Update complete!")
+    """Update chess-self-coach to the latest version via uv, pipx, or pip."""
+    tools = [
+        ("uv", ["uv", "tool", "upgrade", "chess-self-coach"]),
+        ("pipx", ["pipx", "upgrade", "chess-self-coach"]),
+        ("pip", [sys.executable, "-m", "pip", "install", "--upgrade", "chess-self-coach"]),
+    ]
+    for name, cmd in tools:
+        if not shutil.which(cmd[0]):
+            continue
+        print(f"Updating via {name}...")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            if result.stdout.strip():
+                print(result.stdout.strip())
+            print("\n✓ Update complete!")
+            return
+        # Tool found but failed — try next one
+        print(f"{name} failed, trying next method...")
+
+    print("Update failed: no working package manager found.", file=sys.stderr)
+    sys.exit(1)

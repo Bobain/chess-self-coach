@@ -9,9 +9,10 @@ This section documents how data and actions flow through the system — from the
 Interactive workflows visible to the player.
 
 - **Training session** — PWA quiz loop with spaced repetition
-- **Analyse latest games** — Fetch, analyze, generate training positions
+- **Game review** — Chess.com-style game review with eval bar, score chart, move classifications
+- **Analyze selected games** — Fetch games, select for analysis, generate training positions
 - **Setup wizard** — CLI interactive configuration
-- **Config management** — CLI setup + PWA edit config
+- **Config management** — CLI setup + PWA unified settings
 
 ### [Data flows](data-flows.md)
 
@@ -28,12 +29,7 @@ Infrastructure and runtime internals.
 - **PWA mode detection** — Demo vs application mode
 - **Service worker & caching** — Offline access and updates
 - **Stockfish lifecycle** — Detection, crash recovery, WASM fallback
-
-### [Coming soon flows](coming-soon-flows.md)
-
-Planned features not yet fully implemented.
-
-- **PGN sync** — Push/pull/cleanup Lichess studies
+- **Bug reporting and autocorrection** — Crash reporter → GitHub issues → `/fix-issues` command
 
 ### [Meta flows](meta-flows.md)
 

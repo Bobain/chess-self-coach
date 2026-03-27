@@ -19,5 +19,5 @@ if [ ! -f "$MARKER" ]; then
 fi
 
 cat <<'EOF'
-{"decision": "block", "reason": "README SYNC — Du code a été modifié pendant cette session. Vérifie si README.md et CONTRIBUTING.md (section Architecture) doivent être mis à jour (nouvelles commandes, options modifiées, workflow changé, sections CI/CD, distinction static demo / application). Pense aussi à docs/flows/ si des flux ont changé. Si la doc est déjà à jour, supprime le marker avec : rm .claude/.pending-readme-check"}
+{"decision": "block", "reason": "README SYNC — Du code a été modifié pendant cette session. Vérifie si README.md et CONTRIBUTING.md (section Architecture) doivent être mis à jour (nouvelles commandes, options modifiées, workflow changé, sections CI/CD, distinction static demo / application). Pense aussi à docs/flows/ si des flux ont changé. Si la doc est déjà à jour, supprime le marker avec : rm -f .claude/.pending-readme-check"}
 EOF
