@@ -1,6 +1,6 @@
 [project]
 name = "chess-self-coach"
-version = "0.4.3"
+version = "0.4.4"
 description = "Learn from your own chess mistakes: Stockfish analysis + spaced repetition training"
 readme = "README.md"
 license = "MIT"
