@@ -121,7 +121,7 @@ Uses a win probability model (chess.com-style): `winProb(cp) = 1 / (1 + 10^(-cp/
 
 | Category   | Expected points lost | Color   | Symbol |
 |------------|---------------------|---------|--------|
-| Brilliant  | ≤ 0.02 + sacrifice  | #1baca6 | !!     |
+| Brilliant  | ≤ 0.02 + sacrifice + not opening  | #1baca6 | !!     |
 | Best       | ≤ 0.00              | #96bc4b | ★      |
 | Excellent  | ≤ 0.02              | #96bc4b | !      |
 | Good       | ≤ 0.05              | #95b776 |        |
