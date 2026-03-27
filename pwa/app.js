@@ -63,7 +63,7 @@ async function getBestMove(fen, depth = 12) {
   return new Promise(resolve => {
     sfResolve = resolve;
     sfWorker.postMessage('position fen ' + fen);
-    sfWorker.postMessage('go depth ' + depth);
+    sfWorker.postMessage('go depth ' + depth + ' movetime 1000');
   });
 }
 /** @type {?Object} Parsed training_data.json */
