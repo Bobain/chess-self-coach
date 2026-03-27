@@ -88,9 +88,10 @@ def _apply_patches(extra: dict | None = None):
     return stack, mocks
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_analyze_games_writes_analysis_data(mock_popen, mock_tb, tmp_path):
+def test_analyze_games_writes_analysis_data(mock_popen, mock_tb, mock_syz, tmp_path):
     """analyze_games produces analysis_data.json with per-game entries."""
     mock_popen.return_value = _mock_engine()
 
@@ -119,9 +120,10 @@ def test_analyze_games_writes_analysis_data(mock_popen, mock_tb, tmp_path):
     assert "analysis_duration_s" in game_data
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_analyze_games_incremental_skips_analyzed(mock_popen, mock_tb, tmp_path):
+def test_analyze_games_incremental_skips_analyzed(mock_popen, mock_tb, mock_syz, tmp_path):
     """Second run skips games already in analysis_data.json."""
     mock_popen.return_value = _mock_engine()
 
@@ -157,9 +159,10 @@ def test_analyze_games_incremental_skips_analyzed(mock_popen, mock_tb, tmp_path)
     assert save_called["count"] == 0
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_analyze_games_reanalyze_different_settings(mock_popen, mock_tb, tmp_path):
+def test_analyze_games_reanalyze_different_settings(mock_popen, mock_tb, mock_syz, tmp_path):
     """reanalyze_all=True re-analyzes games with different settings."""
     mock_popen.return_value = _mock_engine()
 

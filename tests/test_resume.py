@@ -80,9 +80,10 @@ SETTINGS = AnalysisSettings(threads=1, hash_mb=64, limits={"default": {"depth": 
 # --- Tests ---
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_cancel_interrupts_analysis(mock_popen, mock_tb):
+def test_cancel_interrupts_analysis(mock_popen, mock_tb, mock_syz):
     """Setting the cancel event raises AnalysisInterrupted."""
     mock_popen.return_value = _mock_engine()
 
@@ -122,9 +123,10 @@ def test_cancel_interrupts_analysis(mock_popen, mock_tb):
     assert len(games_done) >= 1
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_malformed_games_filtered(mock_popen, mock_tb):
+def test_malformed_games_filtered(mock_popen, mock_tb, mock_syz):
     """Games with White:'?' and Black:'?' are silently filtered."""
     mock_popen.return_value = _mock_engine()
 
@@ -158,9 +160,10 @@ def test_malformed_games_filtered(mock_popen, mock_tb):
     assert "https://lichess.org/good1" in saved_data["games"]
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_player_not_found_skipped(mock_popen, mock_tb):
+def test_player_not_found_skipped(mock_popen, mock_tb, mock_syz):
     """Games where player is not found in headers are skipped."""
     mock_popen.return_value = _mock_engine()
 
@@ -190,9 +193,10 @@ def test_player_not_found_skipped(mock_popen, mock_tb):
     assert "https://lichess.org/good1" in saved_data["games"]
 
 
+@patch("chess_self_coach.syzygy.find_syzygy", return_value=Path("/fake/syzygy"))
 @patch("chess_self_coach.analysis.probe_position_full", return_value=None)
 @patch("chess.engine.SimpleEngine.popen_uci")
-def test_error_in_game_continues(mock_popen, mock_tb):
+def test_error_in_game_continues(mock_popen, mock_tb, mock_syz):
     """An error in one game doesn't stop analysis of remaining games."""
     mock_popen.return_value = _mock_engine()
 
