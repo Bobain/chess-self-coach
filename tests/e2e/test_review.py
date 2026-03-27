@@ -558,39 +558,146 @@ def test_sacrifice_in_dominating_position_not_brilliant(page, pwa_url):
     )
 
 
-# --- Parametrized brilliant test cases from real games ---
+# --- Game-level brilliant classification with F1 scoring ---
 
-from tests.e2e.brilliant_cases import CASES as BRILLIANT_CASES
+import pathlib
+from datetime import datetime, timezone
+
+from tests.e2e.brilliant_cases import GAMES as BRILLIANT_GAMES
+
+FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
+F1_LOG = pathlib.Path(__file__).parent / "brilliant_f1_log.md"
+
+
+def _load_game_moves(game_id: str) -> list[dict]:
+    """Load moves for a game from the ground truth fixture."""
+    gt_path = FIXTURES_DIR / "brilliant_ground_truth.json"
+    with open(gt_path) as f:
+        data = json.load(f)
+    for game in data["games"]:
+        if game["game_id"] == game_id:
+            return game["moves"]
+    msg = f"Game {game_id} not found in {gt_path}"
+    raise ValueError(msg)
+
+
+def _compute_f1(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
+    """Return (precision, recall, f1)."""
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+    return precision, recall, f1
 
 
 @pytest.mark.parametrize(
-    "case",
-    BRILLIANT_CASES,
-    ids=[c["id"] for c in BRILLIANT_CASES],
+    "game_gt",
+    BRILLIANT_GAMES,
+    ids=[g["game_id"] for g in BRILLIANT_GAMES],
 )
-def test_brilliant_classification(page, pwa_url, case):
-    """Verify brilliant move classification against real game data."""
+def test_brilliant_f1(page, pwa_url, game_gt):
+    """Classify all moves in a game and compute F1 for brilliant detection."""
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
-    move_json = json.dumps(case["move_data"])
-    player_color = case["player_color"]
+    moves = _load_game_moves(game_gt["game_id"])
+    brilliant_set = set(game_gt["brilliant_indices"])
+    notes = game_gt.get("notes", {})
 
-    result = page.evaluate(
+    # Classify all moves in browser
+    moves_json = json.dumps(moves)
+    results = page.evaluate(
         f"""() => {{
-        return window._classifyMove({move_json}, '{player_color}');
+        const moves = {moves_json};
+        return moves.map(m => window._classifyMove(m, m.side));
     }}"""
     )
 
-    assert result is not None, f"classifyMove returned null for {case['id']}"
+    # Compute metrics
+    tp, fp, fn, tn = 0, 0, 0, 0
+    errors = []
+    for i, (move, result) in enumerate(zip(moves, results)):
+        is_brilliant = result is not None and result.get("category") == "brilliant"
+        should_be = i in brilliant_set
+        move_num = (i // 2) + 1
+        side = "w" if i % 2 == 0 else "b"
+        label = f"{move_num}.{side} {move['move_san']}"
 
-    if case["expected"] == "brilliant":
-        assert result["category"] == "brilliant", (
-            f"{case['id']}: expected brilliant, got '{result['category']}'. "
-            f"{case['description']}"
+        if should_be and is_brilliant:
+            tp += 1
+        elif should_be and not is_brilliant:
+            fn += 1
+            cat = result["category"] if result else "null"
+            note = notes.get(i, "")
+            errors.append(f"  FN: {label} — expected brilliant, got {cat}. {note}")
+        elif not should_be and is_brilliant:
+            fp += 1
+            note = notes.get(i, "")
+            errors.append(f"  FP: {label} — wrongly classified as brilliant. {note}")
+        else:
+            tn += 1
+
+    precision, recall, f1 = _compute_f1(tp, fp, fn)
+
+    # Print detailed report
+    print(f"\n{'='*60}")
+    print(f"Brilliant F1 — {game_gt['game_id']}")
+    print(f"  TP={tp} FP={fp} FN={fn} TN={tn}")
+    print(f"  Precision={precision:.3f} Recall={recall:.3f} F1={f1:.3f}")
+    if errors:
+        print("  Errors:")
+        for e in errors:
+            print(e)
+    print(f"{'='*60}")
+
+    # Update F1 log
+    _update_f1_log(game_gt["game_id"], tp, fp, fn, tn, precision, recall, f1)
+
+    # Assert no errors (FP or FN)
+    assert not errors, (
+        f"F1={f1:.3f} — {len(errors)} classification error(s):\n" + "\n".join(errors)
+    )
+
+
+def _update_f1_log(
+    game_id: str, tp: int, fp: int, fn: int, tn: int,
+    precision: float, recall: float, f1: float,
+) -> None:
+    """Append or update the F1 performance log."""
+    today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+    row = f"| {today} | {game_id} | {tp} | {fp} | {fn} | {tn} | {precision:.3f} | {recall:.3f} | {f1:.3f} |"
+
+    if F1_LOG.exists():
+        content = F1_LOG.read_text()
+        # Replace existing row for this game (keep latest only)
+        lines = content.split("\n")
+        lines = [l for l in lines if f"| {game_id} |" not in l]
+        # Find the table end (line before "## Global")
+        insert_idx = next(
+            (i for i, l in enumerate(lines) if l.startswith("## Global")),
+            len(lines),
         )
+        lines.insert(insert_idx, row)
+        # Recompute global F1 from all game rows
+        total_tp = total_fp = total_fn = 0
+        for l in lines:
+            if l.startswith("|") and "TP" not in l and "---" not in l and "Date" not in l:
+                parts = [p.strip() for p in l.split("|")]
+                if len(parts) >= 9:
+                    try:
+                        total_tp += int(parts[3])
+                        total_fp += int(parts[4])
+                        total_fn += int(parts[5])
+                    except ValueError:
+                        pass
+        _, _, global_f1 = _compute_f1(total_tp, total_fp, total_fn)
+        # Update global line
+        lines = [l for l in lines if not l.startswith("## Global")]
+        lines.append(f"## Global: F1 = {global_f1:.3f}")
+        F1_LOG.write_text("\n".join(lines) + "\n")
     else:
-        assert result["category"] != "brilliant", (
-            f"{case['id']}: should NOT be brilliant, got '{result['category']}'. "
-            f"{case['description']}"
+        header = (
+            "# Brilliant Classification — F1 Performance Log\n\n"
+            "| Date | Game | TP | FP | FN | TN | Precision | Recall | F1 |\n"
+            "|------|------|----|----|----|----|-----------| -------|-----|\n"
         )
+        F1_LOG.write_text(header + row + f"\n\n## Global: F1 = {f1:.3f}\n")
