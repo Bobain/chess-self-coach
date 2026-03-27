@@ -27,4 +27,11 @@ GAMES: list[dict] = [
         "brilliant_indices": [],  # no brilliant moves in this game
         "notes": {},
     },
+    {
+        "game_id": "PerritoLoco12_166446936234",
+        "brilliant_indices": [],  # no brilliant moves in this game
+        "notes": {
+            2: "c4 Queen's Gambit — same FP pattern as DDDestryer",
+        },
+    },
 ]
