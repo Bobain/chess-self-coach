@@ -1391,11 +1391,14 @@ function winProb(cp) {
 const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
 /**
- * Detect whether a move is a material sacrifice.
- * Uses the engine's principal variation (PV) to simulate the full recapture
- * chain on the destination square and check if net material is negative.
+ * Detect whether a move is a sacrifice or tactical trap.
+ * Simulates the full PV recapture chain on the destination square.
+ * Returns true for:
+ *   - Genuine sacrifice: full chain loses material (e.g. Nxf7, Rxf7 → net -2)
+ *   - Tactical trap: first move appears to sacrifice, but full chain gains more
+ *     than the apparent sacrifice (e.g. Rxe3 chain → apparent -2, net +3)
  * @param {Object} move - Move data with fen_before, move_san, move_uci, eval_before.
- * @returns {boolean} True if the move is a sacrifice.
+ * @returns {boolean} True if the move is a sacrifice or tactical trap.
  */
 function isSacrifice(move) {
   if (!move.fen_before || !move.move_san || !move.move_uci) return false;
@@ -1414,6 +1417,8 @@ function isSacrifice(move) {
   // Simulate full recapture chain on destination square
   const chess = new Chess(move.fen_before);
   let materialBalance = 0;
+  let firstCapturedValue = 0;
+  let firstPieceValue = 0;
 
   for (let k = 0; k < eb.pv_uci.length; k++) {
     const pvDest = eb.pv_uci[k].slice(2, 4);
@@ -1429,9 +1434,23 @@ function isSacrifice(move) {
       const sign = (k % 2 === 0) ? 1 : -1;
       materialBalance += sign * PIECE_VALUES[result.captured];
     }
+
+    if (k === 0) {
+      firstCapturedValue = result.captured ? PIECE_VALUES[result.captured] : 0;
+      firstPieceValue = PIECE_VALUES[result.piece];
+    }
   }
 
-  return materialBalance < -0.5;
+  const firstMoveNet = firstCapturedValue - firstPieceValue;
+
+  // Genuine sacrifice: full chain loses material
+  if (materialBalance < -0.5) return true;
+
+  // Tactical trap: first move appears to sacrifice, but full chain gains
+  // more than the apparent sacrifice (exploiting mate threats, forks, etc.)
+  if (firstMoveNet < -0.5 && materialBalance > Math.abs(firstMoveNet)) return true;
+
+  return false;
 }
 
 /**

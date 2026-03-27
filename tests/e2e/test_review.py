@@ -391,12 +391,13 @@ def test_checkmate_move_classified_as_best(page, pwa_url):
 # --- Brilliant move classification ---
 
 
-def test_favorable_exchange_not_brilliant(page, pwa_url):
-    """A favorable exchange (Rxe3, Rxe3, Rxe3) is not a sacrifice.
+def test_tactical_trap_is_brilliant(page, pwa_url):
+    """A tactical trap (apparent sacrifice that wins more) is brilliant.
 
     Real data: Rxe3 in DDDestryer game (ply 65, move 33).
-    Full PV recapture chain: Rook captures Knight (+3), opponent Rook recaptures (-5),
-    our Rook recaptures (+5) → net balance +3 for White. Not a sacrifice.
+    First move appears as sacrifice: Rook(5) captures Knight(3), net -2.
+    But full chain Rxe3, Rxe3, Rxe3 nets +3 (wins a knight through mate threat).
+    Net gain (+3) exceeds apparent sacrifice (|-2|=2) → tactical trap → brilliant.
     """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
@@ -418,11 +419,12 @@ def test_favorable_exchange_not_brilliant(page, pwa_url):
         );
     }""")
 
-    assert result is not None, "classifyMove returned null for exchange move"
-    assert result["category"] == "best", (
-        f"Favorable exchange Rxe3 classified as '{result['category']}' instead of 'best'"
+    assert result is not None, "classifyMove returned null for tactical trap move"
+    assert result["category"] == "brilliant", (
+        f"Tactical trap Rxe3 classified as '{result['category']}' instead of 'brilliant'"
     )
-    assert result["symbol"] == "\u2605"
+    assert result["symbol"] == "!!"
+    assert result["color"] == "#1baca6"
 
 
 def test_genuine_sacrifice_is_brilliant(page, pwa_url):
