@@ -12,6 +12,9 @@ Requirements:
 
 from __future__ import annotations
 
+import json
+
+import pytest
 from playwright.sync_api import expect
 
 # Timeout for CDN-loaded chessground to render (needs internet)
@@ -553,3 +556,41 @@ def test_sacrifice_in_dominating_position_not_brilliant(page, pwa_url):
     assert result["category"] == "best", (
         f"Sacrifice in dominating position classified as '{result['category']}' instead of 'best'"
     )
+
+
+# --- Parametrized brilliant test cases from real games ---
+
+from tests.e2e.brilliant_cases import CASES as BRILLIANT_CASES
+
+
+@pytest.mark.parametrize(
+    "case",
+    BRILLIANT_CASES,
+    ids=[c["id"] for c in BRILLIANT_CASES],
+)
+def test_brilliant_classification(page, pwa_url, case):
+    """Verify brilliant move classification against real game data."""
+    page.goto(pwa_url)
+    page.wait_for_selector(".game-card", timeout=10000)
+
+    move_json = json.dumps(case["move_data"])
+    player_color = case["player_color"]
+
+    result = page.evaluate(
+        f"""() => {{
+        return window._classifyMove({move_json}, '{player_color}');
+    }}"""
+    )
+
+    assert result is not None, f"classifyMove returned null for {case['id']}"
+
+    if case["expected"] == "brilliant":
+        assert result["category"] == "brilliant", (
+            f"{case['id']}: expected brilliant, got '{result['category']}'. "
+            f"{case['description']}"
+        )
+    else:
+        assert result["category"] != "brilliant", (
+            f"{case['id']}: should NOT be brilliant, got '{result['category']}'. "
+            f"{case['description']}"
+        )
