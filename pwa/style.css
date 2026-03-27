@@ -65,33 +65,17 @@ header h1 {
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  flex-wrap: wrap;
 }
 
-#result-filters {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.result-filter {
-  background: transparent;
+#game-list-toolbar select {
+  background: var(--surface);
+  color: var(--text);
   border: 1px solid rgba(255,255,255,0.2);
-  color: var(--text-dim);
-  padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  opacity: 0.4;
-  transition: opacity 0.15s, border-color 0.15s;
-}
-
-.result-filter.active {
-  opacity: 1;
-}
-
-.result-filter[data-result="win"].active { color: var(--success); border-color: var(--success); }
-.result-filter[data-result="loss"].active { color: var(--accent); border-color: var(--accent); }
-.result-filter[data-result="draw"].active { color: var(--text-dim); border-color: var(--text-dim);
 }
 
 #select-all-label {

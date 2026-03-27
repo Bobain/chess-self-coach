@@ -106,8 +106,10 @@ let analysisOffset = 0;
 let analysisTotalAll = 0;
 /** @type {number} How many games to show in the list */
 let gameListLimit = 20;
-/** @type {Set<string>} Active result filters ('win', 'loss', 'draw') */
-let resultFilters = new Set(['win', 'loss', 'draw']);
+/** @type {string} Active result filter: 'all', 'win', 'loss', 'draw' */
+let resultFilter = 'all';
+/** @type {string} Active status filter: 'all', 'analyzed', 'not-analyzed' */
+let statusFilter = 'all';
 /** @type {?string} When training on a specific game, its ID; null = all positions */
 let trainingGameFilter = null;
 /** @type {?Object} Parsed analysis_data.json */
@@ -1673,15 +1675,22 @@ async function showGameSelector() {
     }
   }
 
-  // Filter by result
+  // Filter by result and analysis status
   const filteredList = unifiedList.filter((entry) => {
-    const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
-    const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
-    const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
-    const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
-    if (isWin) return resultFilters.has('win');
-    if (isLoss) return resultFilters.has('loss');
-    return resultFilters.has('draw');
+    // Result filter
+    if (resultFilter !== 'all') {
+      const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
+      const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
+      const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
+      const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
+      if (resultFilter === 'win' && !isWin) return false;
+      if (resultFilter === 'loss' && !isLoss) return false;
+      if (resultFilter === 'draw' && (isWin || isLoss)) return false;
+    }
+    // Status filter
+    if (statusFilter === 'analyzed' && !entry.analyzed) return false;
+    if (statusFilter === 'not-analyzed' && entry.analyzed) return false;
+    return true;
   });
 
   const limitedEntries = filteredList.slice(0, gameListLimit);
@@ -2666,17 +2675,23 @@ async function init() {
     });
   }
 
-  // Wire result filter toggles
-  document.querySelectorAll('.result-filter').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const result = btn.dataset.result;
-      if (resultFilters.has(result)) resultFilters.delete(result);
-      else resultFilters.add(result);
-      btn.classList.toggle('active');
-      console.log('[init] Result filter toggled:', result, resultFilters);
+  // Wire filter dropdowns
+  const resultFilterSelect = document.getElementById('result-filter-select');
+  if (resultFilterSelect) {
+    resultFilterSelect.addEventListener('change', () => {
+      resultFilter = resultFilterSelect.value;
+      console.log('[init] Result filter:', resultFilter);
       showGameSelector();
     });
-  });
+  }
+  const statusFilterSelect = document.getElementById('status-filter-select');
+  if (statusFilterSelect) {
+    statusFilterSelect.addEventListener('change', () => {
+      statusFilter = statusFilterSelect.value;
+      console.log('[init] Status filter:', statusFilter);
+      showGameSelector();
+    });
+  }
 
   const analyzeSelBtn = document.getElementById('analyze-selected-btn');
   if (analyzeSelBtn) {
