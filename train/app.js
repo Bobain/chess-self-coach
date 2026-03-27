@@ -63,7 +63,7 @@ async function getBestMove(fen, depth = 12) {
   return new Promise(resolve => {
     sfResolve = resolve;
     sfWorker.postMessage('position fen ' + fen);
-    sfWorker.postMessage('go depth ' + depth);
+    sfWorker.postMessage('go depth ' + depth + ' movetime 1000');
   });
 }
 /** @type {?Object} Parsed training_data.json */
@@ -88,6 +88,8 @@ let completedCount = 0;
 let sessionOriginalSize = 0;
 /** @type {?number} Timer ID for the wrong-move animation sequence */
 let animationTimer = null;
+/** @type {?number} Interval ID for the play-best-line animation */
+let playLineInterval = null;
 
 // --- Analysis mode state ---
 /** @type {string} Current view: 'games' (game list), 'review', or 'training' */
@@ -104,8 +106,10 @@ let analysisOffset = 0;
 let analysisTotalAll = 0;
 /** @type {number} How many games to show in the list */
 let gameListLimit = 20;
-/** @type {Set<string>} Active result filters ('win', 'loss', 'draw') */
-let resultFilters = new Set(['win', 'loss', 'draw']);
+/** @type {string} Active result filter: 'all', 'win', 'loss', 'draw' */
+let resultFilter = 'all';
+/** @type {string} Active status filter: 'all', 'analyzed', 'not-analyzed' */
+let statusFilter = 'all';
 /** @type {?string} When training on a specific game, its ID; null = all positions */
 let trainingGameFilter = null;
 /** @type {?Object} Parsed analysis_data.json */
@@ -814,17 +818,17 @@ async function handleMove(orig, dest) {
         console.log(`[handleMove] Opponent response: ${from}→${to}`);
         // Show the player's wrong move, then animate the opponent's response
         cg.set({ fen: chessAfter.fen(), lastMove: [orig, dest], movable: { dests: new Map() } });
-        setTimeout(() => {
+        animationTimer = setTimeout(() => {
           cg.move(from, to);
-          setTimeout(() => showRetryButton(position), 1000);
+          animationTimer = setTimeout(() => showRetryButton(position), 1000);
         }, 800);
       } else {
-        setTimeout(() => setupBoard(position), 400);
+        animationTimer = setTimeout(() => setupBoard(position), 400);
       }
     } catch (err) {
       hideThinking();
       console.log('[handleMove] Stockfish unavailable, fallback:', err.message);
-      setTimeout(() => setupBoard(position), 400);
+      animationTimer = setTimeout(() => setupBoard(position), 400);
     }
   }
 }
@@ -882,6 +886,9 @@ function showFeedback(correct, position, gaveUp = false) {
   nextBtn.classList.remove('hidden');
   showPosBtn.classList.remove('hidden');
   dismissBtn.classList.remove('hidden');
+  document.getElementById('retry-btn').classList.add('hidden');
+  document.getElementById('skip-btn').classList.add('hidden');
+  document.getElementById('show-answer-btn').classList.add('hidden');
 
   // Compute the FEN after best move for toggle
   let bestMoveFen = null;
@@ -1001,15 +1008,17 @@ function showFeedback(correct, position, gaveUp = false) {
     playLineBtn.disabled = true;
     const chess = new Chess(position.fen);
     let step = 0;
-    const interval = setInterval(() => {
+    playLineInterval = setInterval(() => {
       if (step >= pvMoves.length) {
-        clearInterval(interval);
+        clearInterval(playLineInterval);
+        playLineInterval = null;
         playLineBtn.disabled = false;
         return;
       }
       const move = chess.move(pvMoves[step]);
       if (!move) {
-        clearInterval(interval);
+        clearInterval(playLineInterval);
+        playLineInterval = null;
         playLineBtn.disabled = false;
         return;
       }
@@ -1031,12 +1040,18 @@ function showTryAgain() {
   feedbackText.textContent = 'Not quite. Try again.';
   feedbackText.className = 'try-again';
   document.getElementById('dismiss-btn').classList.remove('hidden');
+  document.getElementById('skip-btn').classList.remove('hidden');
   document.getElementById('explanation').textContent = '';
 
   // Show "See moves" after 2 wrong attempts (helps understand the position)
   if (attempts >= 2) {
     const position = session[currentIndex];
     _showSeeMovesLink(position);
+  }
+
+  // Show "Show answer" after 3 wrong attempts
+  if (attempts >= 3) {
+    document.getElementById('show-answer-btn').classList.remove('hidden');
   }
 }
 
@@ -1120,6 +1135,30 @@ function dismissPosition() {
   showPosition(currentIndex + 1);
 }
 
+/**
+ * Skip a position — reinsert it later in the session for another try.
+ * Does not affect SRS state.
+ */
+function skipPosition() {
+  console.log(`[skipPosition] id=${session[currentIndex].id}`);
+  const position = session[currentIndex];
+  // Reinsert 3 positions later (or at the end)
+  const insertAt = Math.min(currentIndex + 4, session.length);
+  session.splice(insertAt, 0, position);
+  showPosition(currentIndex + 1);
+}
+
+/**
+ * Show the answer after 3+ failed attempts.
+ * Displays the same feedback as a correct answer but records a failure in SRS.
+ */
+function showAnswer() {
+  console.log(`[showAnswer] id=${session[currentIndex].id}`);
+  const position = session[currentIndex];
+  recordResult(false);
+  showFeedback(false, position, true);
+}
+
 // --- Session flow ---
 
 /**
@@ -1137,6 +1176,10 @@ function showPosition(index) {
   if (animationTimer) {
     clearTimeout(animationTimer);
     animationTimer = null;
+  }
+  if (playLineInterval) {
+    clearInterval(playLineInterval);
+    playLineInterval = null;
   }
 
   currentIndex = index;
@@ -1160,6 +1203,8 @@ function showPosition(index) {
   document.getElementById('eval-summary').classList.add('hidden');
   document.getElementById('dismiss-btn').classList.add('hidden');
   document.getElementById('retry-btn').classList.add('hidden');
+  document.getElementById('show-answer-btn').classList.add('hidden');
+  document.getElementById('skip-btn').classList.add('hidden');
   const seeMoves = document.getElementById('see-moves');
   if (seeMoves) seeMoves.classList.add('hidden');
 
@@ -1630,15 +1675,22 @@ async function showGameSelector() {
     }
   }
 
-  // Filter by result
+  // Filter by result and analysis status
   const filteredList = unifiedList.filter((entry) => {
-    const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
-    const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
-    const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
-    const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
-    if (isWin) return resultFilters.has('win');
-    if (isLoss) return resultFilters.has('loss');
-    return resultFilters.has('draw');
+    // Result filter
+    if (resultFilter !== 'all') {
+      const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
+      const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
+      const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
+      const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
+      if (resultFilter === 'win' && !isWin) return false;
+      if (resultFilter === 'loss' && !isLoss) return false;
+      if (resultFilter === 'draw' && (isWin || isLoss)) return false;
+    }
+    // Status filter
+    if (statusFilter === 'analyzed' && !entry.analyzed) return false;
+    if (statusFilter === 'not-analyzed' && entry.analyzed) return false;
+    return true;
   });
 
   const limitedEntries = filteredList.slice(0, gameListLimit);
@@ -2195,7 +2247,7 @@ function renderScoreChart() {
   const moves = reviewGame.moves;
   if (moves.length === 0) return;
 
-  const maxCp = 1000; // clamp
+  const maxCp = 800; // clamp at ±8 pawns to avoid overflow
   const midY = h / 2;
 
   /**
@@ -2420,7 +2472,7 @@ async function init() {
       });
 
       // Enable ready endpoints
-      const refreshItem = document.getElementById('nav-refresh');
+      const refreshItem = document.getElementById('nav-fetch');
       if (refreshItem) refreshItem.classList.remove('disabled');
 
       // Set version in menu
@@ -2463,6 +2515,14 @@ async function init() {
 
   document.getElementById('dismiss-btn').addEventListener('click', () => {
     dismissPosition();
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', () => {
+    skipPosition();
+  });
+
+  document.getElementById('show-answer-btn').addEventListener('click', () => {
+    showAnswer();
   });
 
   document.getElementById('nav-settings').addEventListener('click', () => {
@@ -2536,9 +2596,21 @@ async function init() {
     }
   }
 
-  wireNavItem('nav-refresh', async () => {
-    console.log('[nav-refresh] Refreshing game list...');
-    await autoFetchGames();
+  wireNavItem('nav-fetch', () => {
+    document.getElementById('fetch-modal').classList.remove('hidden');
+  });
+
+  document.getElementById('close-fetch')?.addEventListener('click', () => {
+    document.getElementById('fetch-modal').classList.add('hidden');
+  });
+
+  document.getElementById('fetch-latest-btn')?.addEventListener('click', async () => {
+    await doFetchGames(200);
+  });
+
+  document.getElementById('fetch-count-btn')?.addEventListener('click', async () => {
+    const count = parseInt(document.getElementById('fetch-count-input').value, 10) || 50;
+    await doFetchGames(count);
   });
 
 
@@ -2615,17 +2687,23 @@ async function init() {
     });
   }
 
-  // Wire result filter toggles
-  document.querySelectorAll('.result-filter').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const result = btn.dataset.result;
-      if (resultFilters.has(result)) resultFilters.delete(result);
-      else resultFilters.add(result);
-      btn.classList.toggle('active');
-      console.log('[init] Result filter toggled:', result, resultFilters);
+  // Wire filter dropdowns
+  const resultFilterSelect = document.getElementById('result-filter-select');
+  if (resultFilterSelect) {
+    resultFilterSelect.addEventListener('change', () => {
+      resultFilter = resultFilterSelect.value;
+      console.log('[init] Result filter:', resultFilter);
       showGameSelector();
     });
-  });
+  }
+  const statusFilterSelect = document.getElementById('status-filter-select');
+  if (statusFilterSelect) {
+    statusFilterSelect.addEventListener('change', () => {
+      statusFilter = statusFilterSelect.value;
+      console.log('[init] Status filter:', statusFilter);
+      showGameSelector();
+    });
+  }
 
   const analyzeSelBtn = document.getElementById('analyze-selected-btn');
   if (analyzeSelBtn) {
@@ -2734,11 +2812,32 @@ async function autoFetchGames() {
   if (selector) selector.textContent = 'Fetching your games...';
   try {
     await fetch('/api/games/fetch', { method: 'POST' });
-    // Refresh game list to show newly fetched games
     await showGameSelector();
   } catch (err) {
     console.error('[autoFetchGames] Failed:', err);
-    // Fallback: game list was already shown by showGameList
+  }
+}
+
+/**
+ * Fetch games with a specific max_games parameter. Updates the modal status.
+ * @param {number} maxGames - Maximum number of games to fetch per source.
+ */
+async function doFetchGames(maxGames) {
+  const statusEl = document.getElementById('fetch-status');
+  const btns = document.querySelectorAll('.fetch-option');
+  btns.forEach(b => { b.disabled = true; });
+  if (statusEl) statusEl.textContent = 'Fetching...';
+  try {
+    await fetch(`/api/games/fetch?max_games=${maxGames}`, { method: 'POST' });
+    if (statusEl) statusEl.textContent = 'Done!';
+    document.getElementById('fetch-modal').classList.add('hidden');
+    if (statusEl) statusEl.textContent = '';
+    await showGameSelector();
+  } catch (err) {
+    console.error('[doFetchGames] Failed:', err);
+    if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btns.forEach(b => { b.disabled = false; });
   }
 }
 

@@ -1057,7 +1057,7 @@
             PWA-&gt;&gt;SF: getStockfishBestMove(fen)
             SF--&gt;&gt;PWA: Opponent response (UCI)
             PWA-&gt;&gt;U: Animate opponent move + Retry button
-            Note over U,PWA: Player can retry&lt;br/&gt;unlimited times or&lt;br/&gt;click "Give up"
+            Note over U,PWA: Player can retry, skip,&lt;br/&gt;show answer (after 3 attempts),&lt;br/&gt;or give up
         end
         U-&gt;&gt;PWA: Click Next
     end
@@ -1066,6 +1066,8 @@
 <ul>
 <li><strong>Position selection</strong> uses SM-2 spaced repetition: overdue positions first, then new (blunders prioritized), then learning (interval &lt; 7 days). Mastered positions are skipped.</li>
 <li><strong>Intra-session repetition</strong>: a correct first attempt reinserts the position 5 slots later for confirmation. A wrong answer reinserts 3 slots later.</li>
+<li><strong>Skip</strong> reinserts the position 3 slots later without affecting SRS state.</li>
+<li><strong>Show answer</strong> (after 3 wrong attempts) reveals the correct move with explanation and PV, but records a failure in SRS.</li>
 <li><strong>Dismiss</strong> ("Give up on this lesson") sets interval to 99999 days — the position never appears again.</li>
 <li><strong>SRS state</strong> is stored per position ID in <code>localStorage</code> key <code>train_srs</code>.</li>
 </ul>
@@ -1101,7 +1103,7 @@
     PWA-&gt;&gt;U: Return to game selector</code></pre>
 <h3 id="key-details_1">Key details</h3>
 <ul>
-<li><strong>Game list</strong>: default view, shows all games (analyzed + cached). Cards showing opponent, date, result (W/D/L badge), opening name, move count. Analyzed games also show accuracy % and classification badges. All games have checkboxes for (re-)analysis; selecting an already-analyzed game auto-sets <code>reanalyze_all</code>.</li>
+<li><strong>Game list</strong>: default view, shows all games (analyzed + cached). Cards showing opponent, date, result (W/D/L badge), opening name, move count. Analyzed games also show accuracy % and classification badges. All games have checkboxes for (re-)analysis; selecting an already-analyzed game auto-sets <code>reanalyze_all</code>. Toolbar filters: result dropdown (All/Wins/Losses/Draws), status dropdown (All/Analyzed/Not analyzed), game limit (20/50/100).</li>
 <li><strong>Training</strong>: accessible via hamburger menu → "Training" (all positions) or per-game "Train" button in review.</li>
 <li><strong>Move classifications</strong>: win probability model — <code>winProb(cp) = 1/(1+10^(-cp/400))</code>, thresholds: Best ≤0, Excellent ≤0.02, Good ≤0.05, Inaccuracy ≤0.10, Mistake ≤0.20, Blunder &gt;0.20. Special: Brilliant (piece sacrifice value &gt;2 + EPL ≤0.02 + wpBefore &gt;0.05 and &lt;0.95 + not opening theory + PV ≥3 moves).</li>
 <li><strong>Eval bar</strong>: sigmoid mapping, 50% at equal, smooth CSS transition. For book moves (no Stockfish eval), derives approximate cp from opening explorer win/draw/loss stats. Shows "M3" for mate.</li>
@@ -1174,6 +1176,7 @@
 <li><strong>Crash safety</strong>: atomic write of <code>analysis_data.json</code> after each game. Resumable on interruption.</li>
 <li><strong>Thresholds</strong>: blunder ≥ 200cp, mistake ≥ 100cp, inaccuracy ≥ 50cp.</li>
 <li><strong>Interrupt</strong>: user can click interrupt → <code>POST /api/jobs/{id}/cancel</code> → saves progress so far.</li>
+<li><strong>Fetch games</strong>: menu → "Fetch games" opens modal with "Fetch latest" (200 recent) or "Fetch N games" (configurable count, includes older games). Backend: <code>POST /api/games/fetch?max_games=N</code>.</li>
 </ul>
 <hr />
 <h2 id="setup-wizard-cli">Setup wizard (CLI)</h2>

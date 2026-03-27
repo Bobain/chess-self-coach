@@ -9059,7 +9059,7 @@ Replaces the old static-file-only serve_pwa() from trainer.py.</p>
 
 
 <h2 id="chess_self_coach.server.games_fetch" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">games_fetch</span><span class="p">()</span></code>
+            <code class="highlight language-python"><span class="n">games_fetch</span><span class="p">(</span><span class="n">max_games</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -9101,7 +9101,7 @@ Replaces the old static-file-only serve_pwa() from trainer.py.</p>
 <span class="normal">335</span>
 <span class="normal">336</span>
 <span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/games/fetch&quot;</span><span class="p">)</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">games_fetch</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">GameListResponse</span><span class="p">:</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">games_fetch</span><span class="p">(</span><span class="n">max_games</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GameListResponse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch games from Lichess/chess.com and cache locally.&quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">chess_self_coach.game_cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_and_cache_games</span><span class="p">,</span> <span class="n">load_game_cache</span>
@@ -9118,7 +9118,7 @@ Replaces the old static-file-only serve_pwa() from trainer.py.</p>
         <span class="p">)</span>
 
     <span class="n">summaries</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span>
-        <span class="n">fetch_and_cache_games</span><span class="p">,</span> <span class="n">lichess_user</span><span class="p">,</span> <span class="n">chesscom_user</span>
+        <span class="n">fetch_and_cache_games</span><span class="p">,</span> <span class="n">lichess_user</span><span class="p">,</span> <span class="n">chesscom_user</span><span class="p">,</span> <span class="n">max_games</span>
     <span class="p">)</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">load_game_cache</span><span class="p">()</span>
 

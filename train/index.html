@@ -34,7 +34,7 @@
     <ul id="nav-items">
       <li id="nav-games" class="nav-item">Games</li>
       <li id="nav-training" class="nav-item">Training</li>
-      <li id="nav-refresh" class="nav-item nav-app-only hidden">Refresh games</li>
+      <li id="nav-fetch" class="nav-item nav-app-only hidden">Fetch games</li>
       <li class="nav-separator"></li>
       <li id="nav-settings" class="nav-item">Settings</li>
       <li id="nav-about" class="nav-item">About</li>
@@ -77,6 +77,8 @@
         <button id="play-line-btn" class="hidden">Play best line</button>
         <button id="next-btn" class="hidden">Next</button>
         <button id="retry-btn" class="hidden">Retry</button>
+        <button id="show-answer-btn" class="hidden">Show answer</button>
+        <button id="skip-btn" class="hidden">Skip</button>
         <button id="dismiss-btn" class="hidden" title="This position will be permanently removed from your training. You will never see it again.">Give up on this lesson</button>
       </div>
     </div>
@@ -84,11 +86,17 @@
 
   <main id="analysis-view">
     <div id="game-list-toolbar" class="hidden">
-      <div id="result-filters">
-        <button class="result-filter active" data-result="win" title="Show wins">W</button>
-        <button class="result-filter active" data-result="loss" title="Show losses">L</button>
-        <button class="result-filter active" data-result="draw" title="Show draws">D</button>
-      </div>
+      <select id="result-filter-select">
+        <option value="all">All results</option>
+        <option value="win">Wins</option>
+        <option value="loss">Losses</option>
+        <option value="draw">Draws</option>
+      </select>
+      <select id="status-filter-select">
+        <option value="all">All games</option>
+        <option value="analyzed">Analyzed</option>
+        <option value="not-analyzed">Not analyzed</option>
+      </select>
       <label id="select-all-label">
         <input type="checkbox" id="select-all-checkbox">
         <span>Select all</span>
@@ -124,14 +132,16 @@
           <div id="review-pv"></div>
         </div>
       </div>
-      <canvas id="score-chart"></canvas>
-      <div id="review-controls">
-        <button id="review-first" title="First move">|&lt;</button>
-        <button id="review-prev" title="Previous move">&lt;</button>
-        <button id="review-play" title="Auto-play">&#9654;</button>
-        <button id="review-next" title="Next move">&gt;</button>
+      <div id="review-board-footer">
+        <canvas id="score-chart"></canvas>
+        <div id="review-controls">
+          <button id="review-first" title="First move">|&lt;</button>
+          <button id="review-prev" title="Previous move">&lt;</button>
+          <button id="review-play" title="Auto-play">&#9654;</button>
+          <button id="review-next" title="Next move">&gt;</button>
         <button id="review-last" title="Last move">&gt;|</button>
         <button id="review-flip" title="Flip board">&#8645;</button>
+        </div>
       </div>
     </div>
   </main>
@@ -241,6 +251,25 @@
       <div class="modal-actions">
         <span></span>
         <button id="close-about" class="modal-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fetch Games Modal -->
+  <div id="fetch-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Fetch games</h2>
+      <div class="modal-body">
+        <button id="fetch-latest-btn" class="fetch-option">Fetch latest games</button>
+        <div class="fetch-count-row">
+          <button id="fetch-count-btn" class="fetch-option">Fetch</button>
+          <input type="number" id="fetch-count-input" value="50" min="10" max="500" step="10">
+          <span>games</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <span id="fetch-status"></span>
+        <button id="close-fetch" class="modal-close">Close</button>
       </div>
     </div>
   </div>
