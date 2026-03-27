@@ -186,8 +186,11 @@ def fetch_and_cache_games(
     root = _find_project_root()
     cache_path = root / CACHE_FILENAME
 
-    # Build cache entries
-    cache_games: dict[str, dict] = {}
+    # Load existing cache and merge (preserve previously fetched games)
+    existing_cache = load_game_cache()
+    cache_games: dict[str, dict] = dict(existing_cache.get("games", {}))
+    new_count = 0
+
     summaries: list[GameSummary] = []
 
     for game in all_games:
@@ -210,8 +213,25 @@ def fetch_and_cache_games(
             "source": summary.source,
         }
         summaries.append(summary)
+        new_count += 1
 
-    # Write cache
+    # Also build summaries for existing cached games (so API returns all)
+    for game_id, entry in existing_cache.get("games", {}).items():
+        if any(s.game_id == game_id for s in summaries):
+            continue
+        summaries.append(GameSummary(
+            game_id=game_id,
+            white=entry.get("headers", {}).get("White", "?"),
+            black=entry.get("headers", {}).get("Black", "?"),
+            date=entry.get("headers", {}).get("Date", ""),
+            result=entry.get("headers", {}).get("Result", "*"),
+            player_color=entry.get("player_color", "white"),
+            opening=entry.get("headers", {}).get("Opening", ""),
+            move_count=entry.get("move_count", 0),
+            source=entry.get("source", ""),
+        ))
+
+    # Write merged cache
     cache_data = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "games": cache_games,
@@ -220,7 +240,7 @@ def fetch_and_cache_games(
         json.dump(cache_data, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
-    _log.info("Cached %d games to %s", len(cache_games), cache_path)
+    _log.info("Cached %d games (%d new) to %s", len(cache_games), new_count, cache_path)
     return summaries
 
 
