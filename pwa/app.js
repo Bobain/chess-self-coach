@@ -1573,8 +1573,10 @@ function classifyMove(move, playerColor) {
   if (eplLost <= 0) {
     return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
   } else if (eplLost <= 0.02) {
-    return { category: 'excellent', symbol: '!', color: '#96bc4b' };
+    return { category: 'excellent', symbol: '\u2191', color: '#96bc4b' };
   } else if (eplLost <= 0.05) {
+    return { category: 'good', symbol: '', color: '#95b776' };
+  } else if (eplLost <= 0.10) {
     return { category: 'good', symbol: '', color: '#95b776' };
   } else if (eplLost <= 0.10) {
     return { category: 'inaccuracy', symbol: '?!', color: '#f7c631' };

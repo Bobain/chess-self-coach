@@ -497,7 +497,7 @@ def test_recapture_chain_not_sacrifice(page, pwa_url):
     assert result["category"] == "excellent", (
         f"Recapture chain Bxe6 classified as '{result['category']}' instead of 'excellent'"
     )
-    assert result["symbol"] == "!"
+    assert result["symbol"] == "\u2191"
 
 
 def test_non_sacrifice_best_move_not_brilliant(page, pwa_url):
