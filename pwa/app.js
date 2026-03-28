@@ -1550,10 +1550,10 @@ function classifyMove(move, playerColor, prevMove) {
         }
         const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
         if (!stillMate) {
-          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
+          return { category: 'miss', symbol: '\u00d7', color: '#e06666' };
         }
       } else {
-        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
+        return { category: 'miss', symbol: '\u00d7', color: '#e06666' };
       }
     }
   }
@@ -2379,7 +2379,7 @@ function updateBoardArrows(ply) {
 
   // Played move arrow (red) if it's a mistake/blunder/inaccuracy
   const cls = classifiedMoves ? classifiedMoves[ply - 1] : null;
-  if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+  if (cls && ['miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
     const playedUci = move.move_uci;
     const bestUci = evalBefore ? evalBefore.best_move_uci : null;
     if (bestUci && playedUci !== bestUci) {
@@ -2501,7 +2501,7 @@ function renderScoreChart() {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const cp = getEval(moves[i]);
         const y = cpToY(cp);
@@ -2633,7 +2633,7 @@ function renderScoreChartBase(ctx, w, h) {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const y = cpToY(getEval(moves[i]));
         ctx.beginPath();

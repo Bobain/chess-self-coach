@@ -131,7 +131,6 @@ Uses a win probability model (chess.com-style): `winProb(cp) = 1 / (1 + 10^(-cp/
 | Inaccuracy | ≤ 0.10              | #f7c631 | ?!     |
 | Mistake    | ≤ 0.20              | #e6912a | ?      |
 | Blunder    | > 0.20              | #ca3431 | ??     |
-| Missed Win | (had mate)          | #ca3431 | ×      |
 
 ### Data source
 
