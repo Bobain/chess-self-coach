@@ -118,6 +118,35 @@ header h1 {
   flex-shrink: 0;
 }
 
+.game-list-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.game-list-pagination button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.game-list-pagination button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.game-list-pagination button:hover:not(:disabled) {
+  background: var(--primary);
+}
+
 #review-train-btn {
   background: #1baca6;
   color: var(--text);
@@ -136,10 +165,14 @@ header h1 {
 }
 
 #analysis-progress {
-  font-size: 0.75rem;
-  color: var(--text-dim);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #menu-btn {
@@ -855,6 +888,15 @@ cg-container {
   padding: 0.25rem 0;
 }
 
+#review-game-info a {
+  color: var(--success);
+  text-decoration: none;
+}
+
+#review-game-info a:hover {
+  text-decoration: underline;
+}
+
 #review-layout {
   display: flex;
   flex-direction: column;
@@ -1113,6 +1155,10 @@ cg-container {
   }
 
   #review-board-footer {
+    width: min(50vw, 480px);
+  }
+
+  #review-game-info {
     width: min(50vw, 480px);
   }
 }

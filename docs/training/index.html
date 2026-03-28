@@ -1192,7 +1192,7 @@ chess-self-coach<span class="w"> </span>train<span class="w"> </span>--stats
 <thead>
 <tr>
 <th>Category</th>
-<th>Expected points lost</th>
+<th>Criteria</th>
 <th>Color</th>
 <th>Symbol</th>
 </tr>
@@ -1200,9 +1200,21 @@ chess-self-coach<span class="w"> </span>train<span class="w"> </span>--stats
 <tbody>
 <tr>
 <td>Brilliant</td>
-<td>≤ 0.02 + sacrifice + not opening</td>
+<td>EPL &lt; -0.005 + sacrifice (piece &gt; pawn) + wp 0.20–0.95 + not opening</td>
 <td>#1baca6</td>
 <td>!!</td>
+</tr>
+<tr>
+<td>Great</td>
+<td>EPL ≤ 0.02 + opponent blundered (≥15% wp loss) + EPL ≤ 0 + not recapture + not opening</td>
+<td>#5c9ced</td>
+<td>!</td>
+</tr>
+<tr>
+<td>Miss</td>
+<td>Opponent blundered (≥15% wp loss) + player EPL &gt; 0.05 + not opening</td>
+<td>#e06666</td>
+<td>×</td>
 </tr>
 <tr>
 <td>Best</td>
@@ -1214,13 +1226,13 @@ chess-self-coach<span class="w"> </span>train<span class="w"> </span>--stats
 <td>Excellent</td>
 <td>≤ 0.02</td>
 <td>#96bc4b</td>
-<td>!</td>
+<td>↑</td>
 </tr>
 <tr>
 <td>Good</td>
 <td>≤ 0.05</td>
 <td>#95b776</td>
-<td></td>
+<td>✓</td>
 </tr>
 <tr>
 <td>Book</td>
@@ -1245,12 +1257,6 @@ chess-self-coach<span class="w"> </span>train<span class="w"> </span>--stats
 <td>&gt; 0.20</td>
 <td>#ca3431</td>
 <td>??</td>
-</tr>
-<tr>
-<td>Missed Win</td>
-<td>(had mate)</td>
-<td>#ca3431</td>
-<td>×</td>
 </tr>
 </tbody>
 </table>

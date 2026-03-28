@@ -104,10 +104,16 @@ let pendingGameIds = new Set();
 let analysisOffset = 0;
 /** @type {number} Total games across all batches */
 let analysisTotalAll = 0;
-/** @type {number} How many games to show in the list */
+/** @type {number} How many games to show per page */
 let gameListLimit = 20;
+/** @type {number} Current page (0-based) */
+let gameListPage = 0;
 /** @type {string} Active result filter: 'all', 'win', 'loss', 'draw' */
 let resultFilter = 'all';
+/** @type {string} Active color filter: 'all', 'white', 'black' */
+let colorFilter = 'all';
+/** @type {string} Active opening filter: 'all' or opening name */
+let openingFilter = 'all';
 /** @type {string} Active status filter: 'all', 'analyzed', 'not-analyzed' */
 let statusFilter = 'all';
 /** @type {?string} When training on a specific game, its ID; null = all positions */
@@ -1303,7 +1309,9 @@ function showAnalysisProgress(jobId) {
     } else if (event.current != null && event.total != null) {
       el.textContent = `Analyzing ${analysisOffset + event.current}/${analysisTotalAll}`;
     } else if (event.phase === 'derive') {
-      el.textContent = 'Finalizing...';
+      // Per-game derivation done — reload data so badges + review + train are available
+      loadAnalysisData();
+      loadTrainingData();
     } else if (event.phase === 'analyze') {
       el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
     }
@@ -1326,10 +1334,11 @@ function showAnalysisProgress(jobId) {
         analysisTotalAll = 0;
         setTimeout(() => el.classList.add('hidden'), 2000);
         if (event.phase === 'done') {
-          loadAnalysisData();
+          loadAnalysisData();  // reloads analysisData then calls showGameSelector
           loadTrainingData();
+        } else {
+          showGameSelector();
         }
-        showGameSelector();
       }
     }
   };
@@ -1509,7 +1518,7 @@ function isSacrifice(move) {
  * @param {string} playerColor - 'white' or 'black'.
  * @returns {{category: string, symbol: string, color: string}}
  */
-function classifyMove(move, playerColor) {
+function classifyMove(move, playerColor, prevMove) {
   // Book moves: only classify as book if no eval data is available
   const isBook = move.in_opening !== undefined ? move.in_opening : (move.eval_source === 'opening_explorer');
   if (isBook) {
@@ -1541,10 +1550,10 @@ function classifyMove(move, playerColor) {
         }
         const stillMate = (playerColor === 'white') ? evalAfter.mate_in > 0 : evalAfter.mate_in < 0;
         if (!stillMate) {
-          return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
+          return { category: 'miss', symbol: '\u00d7', color: '#e06666' };
         }
       } else {
-        return { category: 'missed_win', symbol: '\u00d7', color: '#ca3431' };
+        return { category: 'miss', symbol: '\u00d7', color: '#e06666' };
       }
     }
   }
@@ -1554,19 +1563,71 @@ function classifyMove(move, playerColor) {
   const wpBefore = winProb(evalBefore.score_cp * sign);
   const wpAfter = winProb(evalAfter.score_cp * sign);
   const eplLost = wpBefore - wpAfter;
-
-  // Brilliant detection: sacrifice + best/near-best + not dominating + not hopeless + not opening theory
   const isOpening = move.in_opening !== undefined ? move.in_opening : false;
-  if (eplLost <= 0.02 && wpBefore > 0.05 && wpBefore < 0.95 && !isOpening && isSacrifice(move)) {
+
+  // Brilliant detection: sacrifice that improves the position
+  // - Must measurably improve position (eplLost < -0.005, not just maintain)
+  // - Not in a hopeless position (wpBefore > 0.20) or already dominating (< 0.95)
+  // - Not opening theory
+  // - Must be a genuine sacrifice (piece given up for non-obvious compensation)
+  if (eplLost < -0.005 && wpBefore > 0.20 && wpBefore < 0.95 && !isOpening && isSacrifice(move)) {
     return { category: 'brilliant', symbol: '!!', color: '#1baca6' };
+  }
+
+  // Great detection: best/near-best move in a critical moment
+  // Two paths:
+  // (A) Punish opponent's mistake — opponent lost significant win probability,
+  //     player finds a non-trivial correct response that maintains or improves position
+  // (B) Big swing — the move itself creates a large evaluation gain
+  const wpGain = wpAfter - wpBefore;
+  if (eplLost <= 0.02 && !isOpening) {
+    // (A) Opponent blundered on previous move and player finds correct response
+    if (prevMove && prevMove.eval_before && prevMove.eval_after
+        && prevMove.eval_before.score_cp != null && prevMove.eval_after.score_cp != null
+        && !prevMove.eval_before.is_mate && !prevMove.eval_after.is_mate) {
+      const oppSign = -sign;
+      const oppWpBefore = winProb(prevMove.eval_before.score_cp * oppSign);
+      const oppWpAfter = winProb(prevMove.eval_after.score_cp * oppSign);
+      const oppEpl = oppWpBefore - oppWpAfter;
+      // Opponent lost >= 15% win probability AND:
+      // - Player's response maintains or improves position (eplLost <= 0)
+      // - Not a trivial recapture on the same square
+      if (oppEpl >= 0.15 && eplLost <= 0) {
+        const isRecapture = prevMove.move_uci && move.move_uci
+          && prevMove.move_uci.slice(2, 4) === move.move_uci.slice(2, 4);
+        if (!isRecapture) {
+          return { category: 'great', symbol: '!', color: '#5c9ced' };
+        }
+      }
+    }
+    // (B) Big win-probability swing (e.g. turning a losing position into equal)
+    if (wpGain >= 0.20 && wpBefore > 0.10 && wpBefore < 0.80) {
+      return { category: 'great', symbol: '!', color: '#5c9ced' };
+    }
+  }
+
+  // Miss detection: opponent blundered but player failed to capitalize
+  // The opponent created an opportunity (lost ≥15% wp) but the player's response
+  // was significantly suboptimal (lost >5% wp compared to best move)
+  if (!isOpening && eplLost > 0.05 && prevMove
+      && prevMove.eval_before && prevMove.eval_after
+      && prevMove.eval_before.score_cp != null && prevMove.eval_after.score_cp != null
+      && !prevMove.eval_before.is_mate && !prevMove.eval_after.is_mate) {
+    const oppSign = -sign;
+    const oppWpBefore = winProb(prevMove.eval_before.score_cp * oppSign);
+    const oppWpAfter = winProb(prevMove.eval_after.score_cp * oppSign);
+    const oppEpl = oppWpBefore - oppWpAfter;
+    if (oppEpl >= 0.15) {
+      return { category: 'miss', symbol: '\u00d7', color: '#e06666' };
+    }
   }
 
   if (eplLost <= 0) {
     return { category: 'best', symbol: '\u2605', color: '#96bc4b' };
   } else if (eplLost <= 0.02) {
-    return { category: 'excellent', symbol: '!', color: '#96bc4b' };
+    return { category: 'excellent', symbol: '\u2191', color: '#96bc4b' };
   } else if (eplLost <= 0.05) {
-    return { category: 'good', symbol: '', color: '#95b776' };
+    return { category: 'good', symbol: '\u2713', color: '#95b776' };
   } else if (eplLost <= 0.10) {
     return { category: 'inaccuracy', symbol: '?!', color: '#f7c631' };
   } else if (eplLost <= 0.20) {
@@ -1587,9 +1648,10 @@ window._isSacrifice = isSacrifice;
  * @returns {Array} Array of classification objects (one per move, null if unclassifiable).
  */
 function classifyAllMoves(moves, playerColor) {
-  return moves.map(move => {
+  return moves.map((move, i) => {
     const color = move.side;
-    return classifyMove(move, color);
+    const prevMove = i > 0 ? moves[i - 1] : null;
+    return classifyMove(move, color, prevMove);
   });
 }
 
@@ -1634,6 +1696,31 @@ function updateAnalyzeButton() {
 }
 
 /**
+ * Build pagination controls element.
+ * @param {number} totalPages - Total number of pages.
+ * @param {number} totalGames - Total number of filtered games.
+ * @returns {HTMLDivElement}
+ */
+function _buildPagination(totalPages, totalGames) {
+  const el = document.createElement('div');
+  el.className = 'game-list-pagination';
+  const prevBtn = document.createElement('button');
+  prevBtn.textContent = '\u2190 Previous';
+  prevBtn.disabled = gameListPage === 0;
+  prevBtn.addEventListener('click', () => { gameListPage--; showGameSelector(); });
+  const info = document.createElement('span');
+  info.textContent = `Page ${gameListPage + 1} / ${totalPages} (${totalGames} games)`;
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next \u2192';
+  nextBtn.disabled = gameListPage >= totalPages - 1;
+  nextBtn.addEventListener('click', () => { gameListPage++; showGameSelector(); });
+  el.appendChild(prevBtn);
+  el.appendChild(info);
+  el.appendChild(nextBtn);
+  return el;
+}
+
+/**
  * Render the game selector list with checkboxes and analysis status.
  */
 async function showGameSelector() {
@@ -1652,7 +1739,7 @@ async function showGameSelector() {
 
   if (appMode === 'app') {
     try {
-      const resp = await fetch('/api/games?limit=' + gameListLimit);
+      const resp = await fetch('/api/games?limit=9999');
       if (resp.ok) {
         const data = await resp.json();
         for (const g of data.games) {
@@ -1675,17 +1762,65 @@ async function showGameSelector() {
     }
   }
 
-  // Filter by result and analysis status
+  // Helper: extract opening name from game moves (last known opening = most specific)
+  function getEntryOpening(entry) {
+    const game = entry.richData;
+    if (!game || !game.moves) return '';
+    let name = '';
+    for (const m of game.moves) {
+      if (m.opening_explorer && m.opening_explorer.moves) {
+        for (const om of m.opening_explorer.moves) {
+          if (om.opening && om.opening.name && om.uci === m.move_uci) {
+            name = om.opening.name;
+          }
+        }
+      }
+    }
+    return name;
+  }
+
+  // Cache opening names for all entries (used for filter + dropdown)
+  const entryOpenings = new Map();
+  const openingCounts = new Map();
+  for (const entry of unifiedList) {
+    const opening = getEntryOpening(entry);
+    entryOpenings.set(entry.gameId, opening);
+    if (opening) openingCounts.set(opening, (openingCounts.get(opening) || 0) + 1);
+  }
+
+  // Populate opening dropdown from ALL games (not just current page)
+  const openingSelect = document.getElementById('opening-filter-select');
+  if (openingSelect) {
+    const currentVal = openingFilter;
+    while (openingSelect.options.length > 1) openingSelect.remove(1);
+    const sorted = [...openingCounts.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [name, count] of sorted) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = `${name} (${count})`;
+      openingSelect.appendChild(opt);
+    }
+    openingSelect.value = currentVal;
+    if (openingSelect.value !== currentVal) openingFilter = 'all';
+  }
+
+  // Filter by result, color, opening, and analysis status
   const filteredList = unifiedList.filter((entry) => {
+    const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
+    const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
     // Result filter
     if (resultFilter !== 'all') {
-      const result = entry.richData ? entry.richData.headers.result : entry.apiData?.result;
-      const pc = entry.richData ? entry.richData.player_color : entry.apiData?.player_color;
       const isWin = (result === '1-0' && pc === 'white') || (result === '0-1' && pc === 'black');
       const isLoss = (result === '1-0' && pc === 'black') || (result === '0-1' && pc === 'white');
       if (resultFilter === 'win' && !isWin) return false;
       if (resultFilter === 'loss' && !isLoss) return false;
       if (resultFilter === 'draw' && (isWin || isLoss)) return false;
+    }
+    // Color filter
+    if (colorFilter !== 'all' && pc !== colorFilter) return false;
+    // Opening filter
+    if (openingFilter !== 'all') {
+      if (entryOpenings.get(entry.gameId) !== openingFilter) return false;
     }
     // Status filter
     if (statusFilter === 'analyzed' && !entry.analyzed) return false;
@@ -1693,11 +1828,15 @@ async function showGameSelector() {
     return true;
   });
 
-  const limitedEntries = filteredList.slice(0, gameListLimit);
+  const totalPages = Math.max(1, Math.ceil(filteredList.length / gameListLimit));
+  if (gameListPage >= totalPages) gameListPage = totalPages - 1;
+  if (gameListPage < 0) gameListPage = 0;
+  const start = gameListPage * gameListLimit;
+  const limitedEntries = filteredList.slice(start, start + gameListLimit);
 
-  if (limitedEntries.length === 0) {
+  if (filteredList.length === 0) {
     selector.textContent = appMode === 'app'
-      ? 'No games yet. Use menu \u2630 \u2192 Refresh games to fetch your games.'
+      ? 'No games yet. Use menu \u2630 \u2192 Fetch games to fetch your games.'
       : 'No analyzed games available.';
     if (toolbar) toolbar.classList.add('hidden');
     return;
@@ -1715,6 +1854,11 @@ async function showGameSelector() {
       if (selectAllLabel) selectAllLabel.classList.add('hidden');
       if (analyzeBtn) analyzeBtn.classList.add('hidden');
     }
+  }
+
+  // Top pagination
+  if (totalPages > 1) {
+    selector.appendChild(_buildPagination(totalPages, filteredList.length));
   }
 
   for (const entry of limitedEntries) {
@@ -1799,7 +1943,7 @@ async function showGameSelector() {
 
     const meta = document.createElement('div');
     meta.className = 'game-card-meta';
-    meta.textContent = `${dateStr} \u00b7 ${moveCountText}`;
+    meta.textContent = moveCountText;
     infoEl.appendChild(meta);
     card.appendChild(infoEl);
 
@@ -1825,12 +1969,21 @@ async function showGameSelector() {
     const classified = classifyAllMoves(game.moves, game.player_color);
     const playerAcc = computeAccuracy(game.moves, classified, game.player_color);
     const opponentAcc = computeAccuracy(game.moves, classified, opponentColor);
-    const categories = [
+    // Priority order for badges (max 5 shown per row)
+    const priorityCategories = [
       { key: 'brilliant', label: '!!', color: '#1baca6', title: 'brilliant moves' },
-      { key: 'inaccuracy', label: '?!', color: '#f7c631', title: 'inaccuracies' },
-      { key: 'mistake', label: '?', color: '#e6912a', title: 'mistakes' },
+      { key: 'great', label: '!', color: '#5c9ced', title: 'great moves' },
+      { key: 'best', label: '\u2605', color: '#96bc4b', title: 'best moves' },
+      { key: 'miss', label: '\u00d7', color: '#e06666', title: 'missed opportunities' },
       { key: 'blunder', label: '??', color: '#ca3431', title: 'blunders' },
     ];
+    const fillCategories = [
+      { key: 'mistake', label: '?', color: '#e6912a', title: 'mistakes' },
+      { key: 'inaccuracy', label: '?!', color: '#f7c631', title: 'inaccuracies' },
+      { key: 'excellent', label: '\u2191', color: '#96bc4b', title: 'excellent moves' },
+      { key: 'good', label: '\u2713', color: '#95b776', title: 'good moves' },
+    ];
+    const MAX_BADGES = 5;
 
     function buildAccuracyRow(color, acc, isOpponent) {
       const row = document.createElement('div');
@@ -1852,7 +2005,23 @@ async function showGameSelector() {
           counts[cls.category] = (counts[cls.category] || 0) + 1;
         }
       }
-      for (const cat of categories) {
+      // Show priority badges first, then fill with secondary if room
+      let shown = 0;
+      for (const cat of priorityCategories) {
+        const c = counts[cat.key] || 0;
+        if (c > 0 && shown < MAX_BADGES) {
+          const badge = document.createElement('span');
+          badge.className = 'class-badge';
+          badge.style.color = cat.color;
+          badge.style.border = `1px solid ${cat.color}`;
+          badge.textContent = `${c}${cat.label}`;
+          badge.title = `${c} ${cat.title}`;
+          row.appendChild(badge);
+          shown++;
+        }
+      }
+      for (const cat of fillCategories) {
+        if (shown >= MAX_BADGES) break;
         const c = counts[cat.key] || 0;
         if (c > 0) {
           const badge = document.createElement('span');
@@ -1862,6 +2031,7 @@ async function showGameSelector() {
           badge.textContent = `${c}${cat.label}`;
           badge.title = `${c} ${cat.title}`;
           row.appendChild(badge);
+          shown++;
         }
       }
       return row;
@@ -1874,6 +2044,11 @@ async function showGameSelector() {
     card.appendChild(accEl);
 
     selector.appendChild(card);
+  }
+
+  // Pagination controls (bottom)
+  if (totalPages > 1) {
+    selector.appendChild(_buildPagination(totalPages, filteredList.length));
   }
 
   updateAnalyzeButton();
@@ -1898,19 +2073,32 @@ function selectGame(gameId) {
   document.getElementById('game-list-toolbar').classList.add('hidden');
   document.getElementById('game-review').classList.remove('hidden');
 
-  // Game info bar
+  // Game info bar — link to the original game on chess.com/lichess
   const infoEl = document.getElementById('review-game-info');
   const result = reviewGame.headers.result;
-  infoEl.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+  const gameLink = reviewGame.headers.link || reviewGame.headers.Link || gameId;
+  infoEl.textContent = '';
+  const infoAnchor = document.createElement('a');
+  infoAnchor.href = gameLink;
+  infoAnchor.target = '_blank';
+  infoAnchor.rel = 'noopener';
+  infoAnchor.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+  infoEl.appendChild(infoAnchor);
 
   // Show/hide "Train on this game" button
   const trainBtn = document.getElementById('review-train-btn');
-  if (trainBtn && trainingData) {
-    const hasPositions = trainingData.positions.some((p) => p.game && p.game.id === gameId);
-    if (hasPositions) {
-      trainBtn.classList.remove('hidden');
-      trainBtn.onclick = () => showTrainingView(gameId);
+  if (trainBtn) {
+    if (trainingData && trainingData.positions) {
+      const matchingPositions = trainingData.positions.filter((p) => p.game && p.game.id === gameId);
+      console.log(`[selectGame] Training positions for this game: ${matchingPositions.length} (gameId=${gameId})`);
+      if (matchingPositions.length > 0) {
+        trainBtn.classList.remove('hidden');
+        trainBtn.onclick = () => showTrainingView(gameId);
+      } else {
+        trainBtn.classList.add('hidden');
+      }
     } else {
+      console.log('[selectGame] trainingData not loaded, hiding train button');
       trainBtn.classList.add('hidden');
     }
   }
@@ -2192,7 +2380,7 @@ function updateBoardArrows(ply) {
 
   // Played move arrow (red) if it's a mistake/blunder/inaccuracy
   const cls = classifiedMoves ? classifiedMoves[ply - 1] : null;
-  if (cls && ['inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+  if (cls && ['miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
     const playedUci = move.move_uci;
     const bestUci = evalBefore ? evalBefore.best_move_uci : null;
     if (bestUci && playedUci !== bestUci) {
@@ -2314,7 +2502,7 @@ function renderScoreChart() {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const cp = getEval(moves[i]);
         const y = cpToY(cp);
@@ -2446,7 +2634,7 @@ function renderScoreChartBase(ctx, w, h) {
   if (classifiedMoves) {
     for (let i = 0; i < moves.length; i++) {
       const cls = classifiedMoves[i];
-      if (cls && ['brilliant', 'inaccuracy', 'mistake', 'blunder', 'missed_win'].includes(cls.category)) {
+      if (cls && ['brilliant', 'miss', 'inaccuracy', 'mistake', 'blunder'].includes(cls.category)) {
         const x = stepX * (i + 1);
         const y = cpToY(getEval(moves[i]));
         ctx.beginPath();
@@ -2700,6 +2888,7 @@ async function init() {
   if (limitSelect) {
     limitSelect.addEventListener('change', () => {
       gameListLimit = parseInt(limitSelect.value, 10);
+      gameListPage = 0;
       console.log('[init] Game list limit changed to', gameListLimit);
       showGameSelector();
     });
@@ -2710,7 +2899,24 @@ async function init() {
   if (resultFilterSelect) {
     resultFilterSelect.addEventListener('change', () => {
       resultFilter = resultFilterSelect.value;
+      gameListPage = 0;
       console.log('[init] Result filter:', resultFilter);
+      showGameSelector();
+    });
+  }
+  const colorFilterSelect = document.getElementById('color-filter-select');
+  if (colorFilterSelect) {
+    colorFilterSelect.addEventListener('change', () => {
+      colorFilter = colorFilterSelect.value;
+      gameListPage = 0;
+      showGameSelector();
+    });
+  }
+  const openingFilterSelect = document.getElementById('opening-filter-select');
+  if (openingFilterSelect) {
+    openingFilterSelect.addEventListener('change', () => {
+      openingFilter = openingFilterSelect.value;
+      gameListPage = 0;
       showGameSelector();
     });
   }
@@ -2718,6 +2924,7 @@ async function init() {
   if (statusFilterSelect) {
     statusFilterSelect.addEventListener('change', () => {
       statusFilter = statusFilterSelect.value;
+      gameListPage = 0;
       console.log('[init] Status filter:', statusFilter);
       showGameSelector();
     });
@@ -2813,9 +3020,31 @@ async function init() {
   // Default view: game list (load analysis data to populate it)
   showGameList();
 
-  // In app mode, auto-fetch games
+  // In app mode, auto-fetch games and reconnect to running analysis job
   if (appMode === 'app') {
     autoFetchGames();
+    reconnectToRunningJob();
+  }
+}
+
+/**
+ * Check for a running analysis job on the server and reconnect to its SSE stream.
+ * Called at startup so the progress counter reappears after page refresh.
+ */
+async function reconnectToRunningJob() {
+  try {
+    const resp = await fetch('/api/jobs/current');
+    if (!resp.ok) return;
+    const { job_id: jobId, status, game_ids: gameIds } = await resp.json();
+    if (jobId && status === 'running') {
+      console.log('[reconnectToRunningJob] Reconnecting to job:', jobId, 'games:', gameIds?.length);
+      analyzingGameIds = new Set(gameIds || []);
+      analysisTotalAll = analyzingGameIds.size;
+      showAnalysisProgress(jobId);
+      showGameSelector();
+    }
+  } catch (e) {
+    // Ignore — not in app mode or server unreachable
   }
 }
 
@@ -2891,9 +3120,31 @@ async function analyzeSelectedGames() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ game_ids: ids, reanalyze_all: hasAnalyzed }),
     });
+    if (resp.status === 409) {
+      // Job already running (e.g. after page refresh) — queue and reconnect
+      console.log('[analyzeSelectedGames] Job already running, queuing', ids.length, 'game(s)');
+      for (const id of ids) pendingGameIds.add(id);
+      analysisTotalAll += ids.length;
+      selectedGameIds.clear();
+      // Reconnect to the running job's SSE stream
+      try {
+        const jobResp = await fetch('/api/jobs/current');
+        if (jobResp.ok) {
+          const { job_id: runningJobId, status } = await jobResp.json();
+          if (runningJobId && status === 'running') {
+            analyzingGameIds = new Set();  // unknown which games, but job is running
+            showAnalysisProgress(runningJobId);
+          }
+        }
+      } catch (e) { /* ignore */ }
+      showGameSelector();
+      return;
+    }
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       console.error('[analyzeSelectedGames] API error:', resp.status, err.detail);
+      const el = document.getElementById('analysis-progress');
+      if (el) { el.textContent = `Error: ${err.detail || resp.status}`; el.classList.remove('hidden'); }
       return;
     }
     const { job_id: jobId } = await resp.json();
@@ -2907,6 +3158,8 @@ async function analyzeSelectedGames() {
     showAnalysisProgress(jobId);
   } catch (err) {
     console.error('[analyzeSelectedGames] Fetch failed:', err);
+    const el = document.getElementById('analysis-progress');
+    if (el) { el.textContent = `Error: ${err.message}`; el.classList.remove('hidden'); }
   }
 }
 
