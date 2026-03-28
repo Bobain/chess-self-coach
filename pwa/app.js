@@ -1332,10 +1332,11 @@ function showAnalysisProgress(jobId) {
         analysisTotalAll = 0;
         setTimeout(() => el.classList.add('hidden'), 2000);
         if (event.phase === 'done') {
-          loadAnalysisData();
+          loadAnalysisData();  // reloads analysisData then calls showGameSelector
           loadTrainingData();
+        } else {
+          showGameSelector();
         }
-        showGameSelector();
       }
     }
   };
