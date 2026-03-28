@@ -888,6 +888,15 @@ cg-container {
   padding: 0.25rem 0;
 }
 
+#review-game-info a {
+  color: var(--success);
+  text-decoration: none;
+}
+
+#review-game-info a:hover {
+  text-decoration: underline;
+}
+
 #review-layout {
   display: flex;
   flex-direction: column;

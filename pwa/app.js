@@ -1994,10 +1994,17 @@ function selectGame(gameId) {
   document.getElementById('game-list-toolbar').classList.add('hidden');
   document.getElementById('game-review').classList.remove('hidden');
 
-  // Game info bar
+  // Game info bar — link to the original game on chess.com/lichess
   const infoEl = document.getElementById('review-game-info');
   const result = reviewGame.headers.result;
-  infoEl.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+  const gameLink = reviewGame.headers.link || reviewGame.headers.Link || gameId;
+  infoEl.textContent = '';
+  const infoAnchor = document.createElement('a');
+  infoAnchor.href = gameLink;
+  infoAnchor.target = '_blank';
+  infoAnchor.rel = 'noopener';
+  infoAnchor.textContent = `${reviewGame.headers.white} vs ${reviewGame.headers.black}  ${result}`;
+  infoEl.appendChild(infoAnchor);
 
   // Show/hide "Train on this game" button
   const trainBtn = document.getElementById('review-train-btn');
