@@ -1969,19 +1969,19 @@ async function showGameSelector() {
     const classified = classifyAllMoves(game.moves, game.player_color);
     const playerAcc = computeAccuracy(game.moves, classified, game.player_color);
     const opponentAcc = computeAccuracy(game.moves, classified, opponentColor);
-    // Priority order for badges (max 5 shown per row)
-    const priorityCategories = [
-      { key: 'brilliant', label: '!!', color: '#1baca6', title: 'brilliant moves' },
-      { key: 'great', label: '!', color: '#5c9ced', title: 'great moves' },
-      { key: 'best', label: '\u2605', color: '#96bc4b', title: 'best moves' },
-      { key: 'miss', label: '\u00d7', color: '#e06666', title: 'missed opportunities' },
-      { key: 'blunder', label: '??', color: '#ca3431', title: 'blunders' },
-    ];
-    const fillCategories = [
-      { key: 'mistake', label: '?', color: '#e6912a', title: 'mistakes' },
-      { key: 'inaccuracy', label: '?!', color: '#f7c631', title: 'inaccuracies' },
-      { key: 'excellent', label: '\u2191', color: '#96bc4b', title: 'excellent moves' },
-      { key: 'good', label: '\u2713', color: '#95b776', title: 'good moves' },
+    // Badge categories in display order (positive → negative).
+    // Priority badges are always shown first; fill badges take remaining slots.
+    // Display order is always maintained regardless of priority vs fill.
+    const allCategories = [
+      { key: 'brilliant',   label: '!!',       color: '#1baca6', title: 'brilliant moves',       priority: true },
+      { key: 'great',       label: '!',        color: '#5c9ced', title: 'great moves',           priority: true },
+      { key: 'best',        label: '\u2605',   color: '#96bc4b', title: 'best moves',            priority: true },
+      { key: 'excellent',   label: '\u2191',   color: '#96bc4b', title: 'excellent moves',       priority: false },
+      { key: 'good',        label: '\u2713',   color: '#95b776', title: 'good moves',            priority: false },
+      { key: 'miss',        label: '\u00d7',   color: '#e06666', title: 'missed opportunities',  priority: true },
+      { key: 'inaccuracy',  label: '?!',       color: '#f7c631', title: 'inaccuracies',          priority: false },
+      { key: 'mistake',     label: '?',        color: '#e6912a', title: 'mistakes',              priority: false },
+      { key: 'blunder',     label: '??',       color: '#ca3431', title: 'blunders',              priority: true },
     ];
     const MAX_BADGES = 5;
 
@@ -2005,34 +2005,30 @@ async function showGameSelector() {
           counts[cls.category] = (counts[cls.category] || 0) + 1;
         }
       }
-      // Show priority badges first, then fill with secondary if room
-      let shown = 0;
-      for (const cat of priorityCategories) {
-        const c = counts[cat.key] || 0;
-        if (c > 0 && shown < MAX_BADGES) {
-          const badge = document.createElement('span');
-          badge.className = 'class-badge';
-          badge.style.color = cat.color;
-          badge.style.border = `1px solid ${cat.color}`;
-          badge.textContent = `${c}${cat.label}`;
-          badge.title = `${c} ${cat.title}`;
-          row.appendChild(badge);
-          shown++;
-        }
+      // Select which badges to show: priority first, then fill, up to MAX_BADGES.
+      // All selected badges are rendered in the global display order (allCategories).
+      const present = allCategories.filter(cat => (counts[cat.key] || 0) > 0);
+      const selected = new Set();
+      // Pass 1: pick priority badges
+      for (const cat of present) {
+        if (selected.size >= MAX_BADGES) break;
+        if (cat.priority) selected.add(cat.key);
       }
-      for (const cat of fillCategories) {
-        if (shown >= MAX_BADGES) break;
-        const c = counts[cat.key] || 0;
-        if (c > 0) {
-          const badge = document.createElement('span');
-          badge.className = 'class-badge';
-          badge.style.color = cat.color;
-          badge.style.border = `1px solid ${cat.color}`;
-          badge.textContent = `${c}${cat.label}`;
-          badge.title = `${c} ${cat.title}`;
-          row.appendChild(badge);
-          shown++;
-        }
+      // Pass 2: fill remaining slots with non-priority badges
+      for (const cat of present) {
+        if (selected.size >= MAX_BADGES) break;
+        if (!cat.priority) selected.add(cat.key);
+      }
+      // Render in display order
+      for (const cat of present) {
+        if (!selected.has(cat.key)) continue;
+        const badge = document.createElement('span');
+        badge.className = 'class-badge';
+        badge.style.color = cat.color;
+        badge.style.border = `1px solid ${cat.color}`;
+        badge.textContent = `${counts[cat.key]}${cat.label}`;
+        badge.title = `${counts[cat.key]} ${cat.title}`;
+        row.appendChild(badge);
       }
       return row;
     }
