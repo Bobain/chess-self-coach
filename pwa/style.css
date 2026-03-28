@@ -1157,4 +1157,8 @@ cg-container {
   #review-board-footer {
     width: min(50vw, 480px);
   }
+
+  #review-game-info {
+    width: min(50vw, 480px);
+  }
 }
