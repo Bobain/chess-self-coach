@@ -165,8 +165,11 @@ header h1 {
 }
 
 #analysis-progress {
-  font-size: 0.75rem;
-  color: var(--text-dim);
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
 }

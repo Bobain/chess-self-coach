@@ -2928,9 +2928,28 @@ async function init() {
   // Default view: game list (load analysis data to populate it)
   showGameList();
 
-  // In app mode, auto-fetch games
+  // In app mode, auto-fetch games and reconnect to running analysis job
   if (appMode === 'app') {
     autoFetchGames();
+    reconnectToRunningJob();
+  }
+}
+
+/**
+ * Check for a running analysis job on the server and reconnect to its SSE stream.
+ * Called at startup so the progress counter reappears after page refresh.
+ */
+async function reconnectToRunningJob() {
+  try {
+    const resp = await fetch('/api/jobs/current');
+    if (!resp.ok) return;
+    const { job_id: jobId, status } = await resp.json();
+    if (jobId && status === 'running') {
+      console.log('[reconnectToRunningJob] Reconnecting to job:', jobId);
+      showAnalysisProgress(jobId);
+    }
+  } catch (e) {
+    // Ignore — not in app mode or server unreachable
   }
 }
 
