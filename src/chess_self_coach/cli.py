@@ -305,10 +305,10 @@ def _launch_server() -> None:
     """Check for updates and start the FastAPI server."""
     from chess_self_coach.updater import check_update
 
-    available, latest = check_update()
+    available, _pypi_ver = check_update()
     if available:
         answer = input(
-            f"  Version {latest} available (current: {__version__}). "
+            f"  Update available (current: v{__version__}). "
             "Update now? [y/N] ",
         )
         if answer.strip().lower() == "y":

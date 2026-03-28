@@ -69,6 +69,18 @@ def check_stockfish_update() -> tuple[bool, str | None, str | None]:
         return False, installed, None
 
 
+def _get_installed_version() -> str:
+    """Get the currently installed version after update."""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", "from chess_self_coach import __version__; print(__version__)"],
+            capture_output=True, text=True,
+        )
+        return result.stdout.strip() if result.returncode == 0 else "unknown"
+    except Exception:
+        return "unknown"
+
+
 def update() -> None:
     """Update chess-self-coach to the latest version via uv, pipx, or pip."""
     tools = [
@@ -82,9 +94,8 @@ def update() -> None:
         print(f"Updating via {name}...")
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            if result.stdout.strip():
-                print(result.stdout.strip())
-            print("\n✓ Update complete!")
+            installed = _get_installed_version()
+            print(f"\n✓ Updated to v{installed}!")
             return
         # Tool found but failed — try next one
         print(f"{name} failed, trying next method...")
