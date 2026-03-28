@@ -476,7 +476,10 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
 
         def _on_game_done(game_id: str) -> None:
             _push({"phase": "derive", "message": "Deriving training data...", "game_id": game_id})
-            annotate_and_derive()
+            try:
+                annotate_and_derive()
+            except Exception as e:
+                _log.error("annotate_and_derive failed for %s: %s", game_id, e)
 
         analyze_games(
             game_ids=game_ids,
