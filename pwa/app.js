@@ -2943,10 +2943,13 @@ async function reconnectToRunningJob() {
   try {
     const resp = await fetch('/api/jobs/current');
     if (!resp.ok) return;
-    const { job_id: jobId, status } = await resp.json();
+    const { job_id: jobId, status, game_ids: gameIds } = await resp.json();
     if (jobId && status === 'running') {
-      console.log('[reconnectToRunningJob] Reconnecting to job:', jobId);
+      console.log('[reconnectToRunningJob] Reconnecting to job:', jobId, 'games:', gameIds?.length);
+      analyzingGameIds = new Set(gameIds || []);
+      analysisTotalAll = analyzingGameIds.size;
       showAnalysisProgress(jobId);
+      showGameSelector();
     }
   } catch (e) {
     // Ignore — not in app mode or server unreachable

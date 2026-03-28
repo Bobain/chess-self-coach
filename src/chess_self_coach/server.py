@@ -519,8 +519,9 @@ async def job_events(job_id: str):
 async def job_current():
     """Return the current job ID and status, if any."""
     if not _current_job:
-        return {"job_id": None, "status": None}
-    return {"job_id": _current_job["id"], "status": _current_job["status"]}
+        return {"job_id": None, "status": None, "game_ids": []}
+    params = _current_job.get("params", {})
+    return {"job_id": _current_job["id"], "status": _current_job["status"], "game_ids": params.get("game_ids", [])}
 
 
 @app.post("/api/jobs/{job_id}/cancel", status_code=202)
