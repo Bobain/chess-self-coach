@@ -119,11 +119,12 @@ GAME SELECTOR                          GAME REVIEW
 
 Uses a win probability model (chess.com-style): `winProb(cp) = 1 / (1 + 10^(-cp/400))`.
 
-| Category   | Expected points lost | Color   | Symbol |
-|------------|---------------------|---------|--------|
-| Brilliant  | ≤ 0.02 + sacrifice + not opening  | #1baca6 | !!     |
+| Category   | Criteria | Color   | Symbol |
+|------------|---------|---------|--------|
+| Brilliant  | EPL < -0.005 + sacrifice (piece > pawn) + wp 0.20–0.95 + not opening | #1baca6 | !!     |
+| Great      | EPL ≤ 0.02 + opponent blundered (≥15% wp loss) + EPL ≤ 0 + not recapture + not opening | #5c9ced | !      |
 | Best       | ≤ 0.00              | #96bc4b | ★      |
-| Excellent  | ≤ 0.02              | #96bc4b | !      |
+| Excellent  | ≤ 0.02              | #96bc4b | ↑      |
 | Good       | ≤ 0.05              | #95b776 |        |
 | Book       | (opening explorer)  | #a88764 | ♗      |
 | Inaccuracy | ≤ 0.10              | #f7c631 | ?!     |

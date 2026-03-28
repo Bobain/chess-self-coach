@@ -613,7 +613,8 @@ def test_move_classification(page, pwa_url, game_gt):
         const moves = {moves_json};
         return moves.map((m, i) => {{
             const side = m.side || (i % 2 === 0 ? 'white' : 'black');
-            return window._classifyMove(m, side);
+            const prevMove = i > 0 ? moves[i - 1] : null;
+            return window._classifyMove(m, side, prevMove);
         }});
     }}"""
     )

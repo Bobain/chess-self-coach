@@ -1518,7 +1518,7 @@ function isSacrifice(move) {
  * @param {string} playerColor - 'white' or 'black'.
  * @returns {{category: string, symbol: string, color: string}}
  */
-function classifyMove(move, playerColor) {
+function classifyMove(move, playerColor, prevMove) {
   // Book moves: only classify as book if no eval data is available
   const isBook = move.in_opening !== undefined ? move.in_opening : (move.eval_source === 'opening_explorer');
   if (isBook) {
@@ -1563,19 +1563,47 @@ function classifyMove(move, playerColor) {
   const wpBefore = winProb(evalBefore.score_cp * sign);
   const wpAfter = winProb(evalAfter.score_cp * sign);
   const eplLost = wpBefore - wpAfter;
-
-  // Brilliant detection: sacrifice + best/near-best + not dominating + not hopeless + not opening theory
   const isOpening = move.in_opening !== undefined ? move.in_opening : false;
-  if (eplLost <= 0.02 && wpBefore > 0.05 && wpBefore < 0.95 && !isOpening && isSacrifice(move)) {
+
+  // Brilliant detection: sacrifice that improves the position
+  // - Must measurably improve position (eplLost < -0.005, not just maintain)
+  // - Not in a hopeless position (wpBefore > 0.20) or already dominating (< 0.95)
+  // - Not opening theory
+  // - Must be a genuine sacrifice (piece given up for non-obvious compensation)
+  if (eplLost < -0.005 && wpBefore > 0.20 && wpBefore < 0.95 && !isOpening && isSacrifice(move)) {
     return { category: 'brilliant', symbol: '!!', color: '#1baca6' };
   }
 
-  // Great detection: best/near-best move that significantly improves the position
-  // (e.g. turning a losing position into equal, or equal into winning)
-  // Requires a large win-probability swing and the position wasn't already dominating
+  // Great detection: best/near-best move in a critical moment
+  // Two paths:
+  // (A) Punish opponent's mistake — opponent lost significant win probability,
+  //     player finds a non-trivial correct response that maintains or improves position
+  // (B) Big swing — the move itself creates a large evaluation gain
   const wpGain = wpAfter - wpBefore;
-  if (eplLost <= 0.02 && wpGain >= 0.20 && wpBefore > 0.10 && wpBefore < 0.80) {
-    return { category: 'great', symbol: '!', color: '#5c9ced' };
+  if (eplLost <= 0.02 && !isOpening) {
+    // (A) Opponent blundered on previous move and player finds correct response
+    if (prevMove && prevMove.eval_before && prevMove.eval_after
+        && prevMove.eval_before.score_cp != null && prevMove.eval_after.score_cp != null
+        && !prevMove.eval_before.is_mate && !prevMove.eval_after.is_mate) {
+      const oppSign = -sign;
+      const oppWpBefore = winProb(prevMove.eval_before.score_cp * oppSign);
+      const oppWpAfter = winProb(prevMove.eval_after.score_cp * oppSign);
+      const oppEpl = oppWpBefore - oppWpAfter;
+      // Opponent lost >= 15% win probability AND:
+      // - Player's response maintains or improves position (eplLost <= 0)
+      // - Not a trivial recapture on the same square
+      if (oppEpl >= 0.15 && eplLost <= 0) {
+        const isRecapture = prevMove.move_uci && move.move_uci
+          && prevMove.move_uci.slice(2, 4) === move.move_uci.slice(2, 4);
+        if (!isRecapture) {
+          return { category: 'great', symbol: '!', color: '#5c9ced' };
+        }
+      }
+    }
+    // (B) Big win-probability swing (e.g. turning a losing position into equal)
+    if (wpGain >= 0.20 && wpBefore > 0.10 && wpBefore < 0.80) {
+      return { category: 'great', symbol: '!', color: '#5c9ced' };
+    }
   }
 
   if (eplLost <= 0) {
@@ -1604,9 +1632,10 @@ window._isSacrifice = isSacrifice;
  * @returns {Array} Array of classification objects (one per move, null if unclassifiable).
  */
 function classifyAllMoves(moves, playerColor) {
-  return moves.map(move => {
+  return moves.map((move, i) => {
     const color = move.side;
-    return classifyMove(move, color);
+    const prevMove = i > 0 ? moves[i - 1] : null;
+    return classifyMove(move, color, prevMove);
   });
 }
 
