@@ -172,6 +172,7 @@ header h1 {
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #menu-btn {
