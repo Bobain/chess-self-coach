@@ -185,4 +185,16 @@ GAMES: list[dict] = [
             72: "37.w Nd3 — great",
         },
     },
+    {
+        "game_id": "jjyong_928_166354857372",
+        "brilliant_indices": [],
+        "great_indices": [51, 56, 61, 64],  # 26.b Rd1+, 29.w Ke2, 31.b Rc2+, 33.w Kg2
+        "notes": {
+            27: "14.b c5 — not great, other",
+            51: "26.b Rd1+ — great",
+            56: "29.w Ke2 — great",
+            61: "31.b Rc2+ — great",
+            64: "33.w Kg2 — great",
+        },
+    },
 ]
