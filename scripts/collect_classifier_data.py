@@ -145,6 +145,14 @@ def main() -> None:
                     if "brilliant" in (expected, predicted)
                     else "great"
                 )
+                # Classification of the previous move (opponent's move)
+                prev_classification = classified[i - 1] if i > 0 else "other"
+                if prev_classification not in (
+                    "brilliant", "great", "best", "excellent",
+                    "good", "miss", "inaccuracy", "mistake", "blunder",
+                ):
+                    prev_classification = "other"
+
                 results[cat].append(
                     {
                         "game": gid[:30],
@@ -155,6 +163,7 @@ def main() -> None:
                         "wp_before": wp_b,
                         "epl_lost": epl,
                         "opp_epl": opp_epl,
+                        "prev_classification": prev_classification,
                         "before": fmt_move(moves, i - 1),
                         "move": fmt_move(moves, i),
                         "after": fmt_move(moves, i + 1),
@@ -210,9 +219,11 @@ def main() -> None:
                 f'({e["category"]}: predicted={e["predicted"]}, '
                 f'expected={e["expected"]})'
             )
+            prev_cls = e.get("prev_classification", "?")
             lines.append(
                 f'wp={e["wp_before"]} epl={e["epl_lost"]} '
-                f'oppEPL={e["opp_epl"]} is_best={m.get("is_best","?")}'
+                f'oppEPL={e["opp_epl"]} is_best={m.get("is_best","?")} '
+                f'prev_move_class={prev_cls}'
             )
             if b:
                 best_tag = "" if b.get("is_best") else f' (best: {b.get("best","?")})'

@@ -21,6 +21,8 @@ Each agent receives the batch of moves with full context and must analyze each p
 - FP: why this is NOT really !! or ! (what makes it routine)
 - FN: why this SHOULD be !! or ! (what the algorithm misses)
 
+Each move includes `prev_move_class` — the classifier's category for the opponent's preceding move (blunder, mistake, inaccuracy, etc.). This is a key signal: exploiting a blunder (??) is different from finding a great move independently. A move that follows a blunder is a punishment (potentially !), not a discovery (!!).
+
 For each move, the agent returns: chess analysis, key principle, and quantitative signal.
 
 ## Step 3: Pattern synthesis

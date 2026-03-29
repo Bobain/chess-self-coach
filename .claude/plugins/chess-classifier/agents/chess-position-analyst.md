@@ -58,4 +58,5 @@ For each move, respond with:
 - Think like a coach: what would you tell a 1200 Elo student about this position?
 - Be honest: if a ground truth label seems wrong (the human made a mistake), say so
 - Focus on PATTERNS that generalize across positions, not position-specific details
-- Remember: we're building an algorithm. Every principle you identify must be translatable to a quantitative rule using available data (cp, mate_in, PV, oppEPL, eplLost, wpBefore, is_best, is_capture, is_check)
+- **Use prev_move_class**: each move includes the classifier's category for the opponent's preceding move (blunder, mistake, inaccuracy, best, etc.). This is crucial context — exploiting a blunder (??) may deserve ! but rarely !!. A great move found independently (prev_move_class=best or excellent) is more impressive than one that punishes an obvious error.
+- Remember: we're building an algorithm. Every principle you identify must be translatable to a quantitative rule using available data (cp, mate_in, PV, oppEPL, eplLost, wpBefore, is_best, is_capture, is_check, prev_move_class)
