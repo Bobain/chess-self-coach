@@ -369,4 +369,15 @@ GAMES: list[dict] = [
             44: "23.w Ng5 — brilliant (not detected by classifier)",
         },
     },
+    {
+        "game_id": "NTDuong0106_129903530743",
+        "brilliant_indices": [],
+        "great_indices": [67, 75],  # 34.b Qb2, 38.b Qxe1+
+        "notes": {
+            26: "14.w axb5 — not great, other",
+            33: "17.b Nd7 — not great, other",
+            67: "34.b Qb2 — great",
+            75: "38.b Qxe1+ — great (not detected by classifier)",
+        },
+    },
 ]
