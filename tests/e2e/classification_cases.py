@@ -197,4 +197,14 @@ GAMES: list[dict] = [
             64: "33.w Kg2 — great",
         },
     },
+    {
+        "game_id": "alfaromeo00_120864711832",
+        "brilliant_indices": [],
+        "great_indices": [30],  # 16.w Bxh6
+        "notes": {
+            21: "11.b Bb7 — not great, other",
+            30: "16.w Bxh6 — great",
+            44: "23.w Ng3 — not great, other",
+        },
+    },
 ]
