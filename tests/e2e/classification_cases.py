@@ -287,4 +287,18 @@ GAMES: list[dict] = [
             69: "35.b Rxb2 — great",
         },
     },
+    {
+        "game_id": "stefanmoesch_121654332362",
+        "brilliant_indices": [],
+        "great_indices": [34, 48, 59, 63, 66, 69, 75],  # 18.w Rxd5, 25.w Qxc8+, 30.b Qxg7, 32.b Kh4, 34.w Rxb5, 35.b Qa2+, 38.b Qf2#
+        "notes": {
+            34: "18.w Rxd5 — great",
+            48: "25.w Qxc8+ — great (not detected by classifier)",
+            59: "30.b Qxg7 — great (not detected by classifier)",
+            63: "32.b Kh4 — great",
+            66: "34.w Rxb5 — great",
+            69: "35.b Qa2+ — great (not detected by classifier)",
+            75: "38.b Qf2# — great (not detected by classifier)",
+        },
+    },
 ]
