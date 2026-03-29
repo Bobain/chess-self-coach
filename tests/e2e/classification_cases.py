@@ -474,4 +474,20 @@ GAMES: list[dict] = [
             103: "52.b Rg1 — great",
         },
     },
+    {
+        "game_id": "Tarek25b_166027839420",
+        "brilliant_indices": [],
+        "great_indices": [25, 86, 90, 103, 122],  # 13.b Bg4, 44.w Kg2, 46.w Kg3, 52.b e4, 62.w Rxe1
+        "notes": {
+            23: "12.b e5 — not great, other",
+            25: "13.b Bg4 — great (not detected by classifier)",
+            86: "44.w Kg2 — great (not detected by classifier)",
+            90: "46.w Kg3 — great (not detected by classifier)",
+            97: "49.b Rf4 — not great, other",
+            101: "51.b Kd4 — not great, other",
+            103: "52.b e4 — great (not detected by classifier)",
+            108: "55.w h5 — not great, other",
+            122: "62.w Rxe1 — great (not detected by classifier)",
+        },
+    },
 ]
