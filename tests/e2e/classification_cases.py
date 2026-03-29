@@ -445,4 +445,15 @@ GAMES: list[dict] = [
             54: "28.w Qf4 — great",
         },
     },
+    {
+        "game_id": "tg010176_165858096522",
+        "brilliant_indices": [],
+        "great_indices": [17, 33],  # 9.b Nxf3+, 17.b Bf4
+        "notes": {
+            17: "9.b Nxf3+ — great",
+            31: "16.b gxf6 — not great, other",
+            33: "17.b Bf4 — great (not detected by classifier)",
+            37: "19.b Kh8 — not great, other",
+        },
+    },
 ]
