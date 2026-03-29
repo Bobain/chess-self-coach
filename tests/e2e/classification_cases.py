@@ -4,12 +4,8 @@ For each game, we define which moves are brilliant (!!) or great (!).
 All other moves are implicitly 'other'. Tests classify every move and
 compute per-class precision/recall/F1 and macro F1.
 
-These games were selected because the current classifier detects at
-least one potential brilliant move in each. The user validates/corrects
-each label manually.
-
 To add a new game:
-1. Extract its moves to fixtures/brilliant_ground_truth.json
+1. Extract its moves to fixtures/classification_ground_truth.json
 2. Add an entry to GAMES with the brilliant/great move indices
 3. Run tests — the classification log will update automatically
 """

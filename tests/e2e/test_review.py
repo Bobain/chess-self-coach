@@ -631,12 +631,12 @@ def test_correct_response_to_blunder_not_miss(page, pwa_url):
     )
 
 
-# --- Game-level brilliant classification with F1 scoring ---
+# --- Game-level classification with F1 scoring ---
 
 import pathlib
 from datetime import datetime, timezone
 
-from tests.e2e.brilliant_cases import GAMES as BRILLIANT_GAMES
+from tests.e2e.classification_cases import GAMES as CLASSIFICATION_GAMES
 
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
 F1_LOG = pathlib.Path(__file__).parent / "classification_f1_log.md"
@@ -644,7 +644,7 @@ F1_LOG = pathlib.Path(__file__).parent / "classification_f1_log.md"
 
 def _load_game_moves(game_id: str) -> list[dict]:
     """Load moves for a game from the ground truth fixture."""
-    gt_path = FIXTURES_DIR / "brilliant_ground_truth.json"
+    gt_path = FIXTURES_DIR / "classification_ground_truth.json"
     with open(gt_path) as f:
         data = json.load(f)
     for game in data["games"]:
@@ -763,7 +763,7 @@ def test_classification_macro_f1_regression(page, pwa_url):
     total_brilliant = {"tp": 0, "fp": 0, "fn": 0}
     total_great = {"tp": 0, "fp": 0, "fn": 0}
 
-    for game_gt in BRILLIANT_GAMES:
+    for game_gt in CLASSIFICATION_GAMES:
         classes, class_f1, macro_f1, errors = _classify_game(page, pwa_url, game_gt)
         macro_f1_scores.append(macro_f1)
         for key in ("tp", "fp", "fn"):
@@ -775,7 +775,7 @@ def test_classification_macro_f1_regression(page, pwa_url):
     _, _, great_f1 = _compute_f1(total_great["tp"], total_great["fp"], total_great["fn"])
 
     print(f"\n{'='*60}")
-    print(f"GLOBAL CLASSIFICATION SUMMARY ({len(BRILLIANT_GAMES)} games)")
+    print(f"GLOBAL CLASSIFICATION SUMMARY ({len(CLASSIFICATION_GAMES)} games)")
     print(f"  Brilliant: TP={total_brilliant['tp']} FP={total_brilliant['fp']} FN={total_brilliant['fn']} F1={brilliant_f1:.3f}")
     print(f"  Great:     TP={total_great['tp']} FP={total_great['fp']} FN={total_great['fn']} F1={great_f1:.3f}")
     print(f"  Average macro F1={avg_macro_f1:.3f} (threshold={MIN_GLOBAL_MACRO_F1})")
