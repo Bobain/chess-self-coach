@@ -560,29 +560,33 @@ def test_sacrifice_in_dominating_position_not_brilliant(page, pwa_url):
     )
 
 
-def test_missed_opportunity_classified_as_miss(page, pwa_url):
-    """When opponent blunders and player fails to capitalize, it's a 'miss'.
+def test_missed_capture_classified_as_miss(page, pwa_url):
+    """When opponent leaves a piece hanging and player doesn't take it, it's a 'miss'.
 
-    Scenario: opponent's previous move lost ≥15% wp (big blunder),
-    but player's response lost >5% wp (didn't find the punishment).
+    Position: Black knight on e4 is undefended. White's best move is Bxe4
+    (bishop takes knight, winning 3 pts). But white plays h3 instead.
+    Opponent blundered on previous move (oppEPL ≈ 0.34).
     """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
-    # prevMove: opponent blundered (cp went from 0 to -300 from opponent's perspective)
-    # This means oppWpBefore ≈ 0.50, oppWpAfter ≈ 0.16 → oppEPL ≈ 0.34
-    # move: player responded poorly (cp 300 for white → 200 after, eplLost ≈ 0.07)
+    # FEN: white bishop on d3, black knight on e4 (undefended)
     result = page.evaluate("""() => {
         const prevMove = {
-            move_uci: 'd7d5',
+            move_uci: 'f6e4',
             eval_before: { score_cp: 0, is_mate: false, mate_in: null },
             eval_after: { score_cp: 300, is_mate: false, mate_in: null },
         };
         return window._classifyMove(
             {
-                move_san: 'Nf3',
-                move_uci: 'g1f3',
-                eval_before: { score_cp: 300, is_mate: false, mate_in: null },
+                fen_before: 'r1bqkb1r/pppp1ppp/2n5/4p3/4n3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 5',
+                move_san: 'h3',
+                move_uci: 'h2h3',
+                eval_before: {
+                    score_cp: 300, is_mate: false, mate_in: null,
+                    best_move_uci: 'd3e4',
+                    pv_uci: ['d3e4', 'd7d5', 'e4d3'],
+                },
                 eval_after: { score_cp: 200, is_mate: false, mate_in: null },
             },
             'white',
@@ -590,21 +594,23 @@ def test_missed_opportunity_classified_as_miss(page, pwa_url):
         );
     }""")
 
-    assert result is not None, "classifyMove returned null for missed opportunity"
+    assert result is not None, "classifyMove returned null for missed capture"
     assert result["category"] == "miss", (
-        f"Missed opportunity classified as '{result['category']}' instead of 'miss'"
+        f"Missed capture classified as '{result['category']}' instead of 'miss'"
     )
     assert result["symbol"] == "\u00d7"
     assert result["color"] == "#e06666"
 
 
-def test_correct_response_to_blunder_not_miss(page, pwa_url):
-    """When opponent blunders and player finds the right response, it's NOT a miss."""
+def test_missed_positional_not_miss(page, pwa_url):
+    """When the best move is positional (not a capture), it's NOT a 'miss'.
+
+    Even if opponent blundered and player responded poorly, miss only applies
+    when the best move was a material-winning capture.
+    """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
-    # prevMove: opponent blundered (oppEPL ≈ 0.34)
-    # move: player responded well (eplLost ≈ -0.01, position improved)
     result = page.evaluate("""() => {
         const prevMove = {
             move_uci: 'd7d5',
@@ -613,10 +619,15 @@ def test_correct_response_to_blunder_not_miss(page, pwa_url):
         };
         return window._classifyMove(
             {
-                move_san: 'dxe5',
-                move_uci: 'd4e5',
-                eval_before: { score_cp: 300, is_mate: false, mate_in: null },
-                eval_after: { score_cp: 310, is_mate: false, mate_in: null },
+                fen_before: 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1',
+                move_san: 'h3',
+                move_uci: 'h2h3',
+                eval_before: {
+                    score_cp: 300, is_mate: false, mate_in: null,
+                    best_move_uci: 'c2c4',
+                    pv_uci: ['c2c4', 'e7e6', 'b1c3'],
+                },
+                eval_after: { score_cp: 200, is_mate: false, mate_in: null },
             },
             'white',
             prevMove
@@ -624,10 +635,8 @@ def test_correct_response_to_blunder_not_miss(page, pwa_url):
     }""")
 
     assert result is not None
-    # Should be great (oppEPL ≈ 0.34, eplLost < 0, not recapture)
-    # or at least best/excellent — NOT miss
     assert result["category"] != "miss", (
-        f"Correct response to blunder wrongly classified as 'miss'"
+        f"Positional miss wrongly classified as 'miss' — should only flag missed captures"
     )
 
 
