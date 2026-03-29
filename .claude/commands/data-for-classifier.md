@@ -50,6 +50,7 @@ After the user labels a game:
 ## Important rules
 
 - NEVER use a Python proxy of the classifier. ALWAYS use `window._classifyMove` via Playwright.
+- **BOTH SIDES**: classify and count !! and ! for BOTH players (not just the user). A brilliant move by the opponent counts too. The ground truth covers all moves in the game regardless of which side played them.
 - Only show !! and ! moves to the user. ×, ?, ?!, ??, blunder, miss etc. are irrelevant for this labeling task.
 - Any move not explicitly labeled by the user is "other".
 - Process !! games before !-only games.
