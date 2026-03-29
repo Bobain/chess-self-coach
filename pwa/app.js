@@ -1538,7 +1538,7 @@ function isMissedCapture(move) {
 
     // Simulate recapture chain on same square (max 3 total exchanges)
     let materialBalance = PIECE_VALUES[firstResult.captured];
-    const MAX_CHAIN = 3;
+    const MAX_CHAIN = 8;
 
     for (let k = 1; k < Math.min(eb.pv_uci.length, MAX_CHAIN); k++) {
       const pvDest = eb.pv_uci[k].slice(2, 4);
