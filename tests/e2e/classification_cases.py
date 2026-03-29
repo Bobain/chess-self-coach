@@ -250,4 +250,16 @@ GAMES: list[dict] = [
             56: "29.w Qxh6+ — great",
         },
     },
+    {
+        "game_id": "lukestephenkeen1_121039204652",
+        "brilliant_indices": [],
+        "great_indices": [49, 51, 96],  # 25.b Kg7, 26.b Rfd8, 49.w Kxe2
+        "notes": {
+            25: "13.b Nc5 — not great, other",
+            38: "20.w Qxh6 — not great, other",
+            49: "25.b Kg7 — great",
+            51: "26.b Rfd8 — great",
+            96: "49.w Kxe2 — great (not detected by classifier)",
+        },
+    },
 ]
