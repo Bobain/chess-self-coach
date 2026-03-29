@@ -799,9 +799,14 @@ def _count_classifier_complexity() -> tuple[int, int, int, int]:
                 if depth == 0:
                     func_code = code[match.start() : i + 1]
                     break
-        # Count unique numeric thresholds in comparisons (e.g. >= 0.15, < -0.005)
+        # Count unique numeric thresholds in comparisons (e.g. >= 0.15, < -0.005, >= 3)
+        # Decimals
         for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", func_code):
             total_thresholds.add(t)
+        # Integers > 2 (skip 0, 1, 2 which are trivial loop/index constants)
+        for t in re.findall(r"[<>=!]=?\s*(-?\d+)(?!\.\d)", func_code):
+            if abs(int(t)) > 2:
+                total_thresholds.add(t)
         # Count conditions (if statements)
         total_conditions += len(re.findall(r"\bif\s*\(", func_code))
 
