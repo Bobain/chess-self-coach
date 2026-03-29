@@ -49,7 +49,12 @@ For each proposed rule:
 - The rule in plain language
 - Pseudocode
 - Expected FN reduction and FP change
-- **Complexity cost**: thresholds + conditions added. Complexity is computed by `_count_classifier_complexity()` in `tests/e2e/test_review.py` — it dynamically parses classifyMove and its helpers for unique numeric thresholds in comparisons, if-statements, and helper function calls in the brilliant/great code zone. Reusing an existing threshold costs 0. Removing a redundant condition REDUCES complexity.
+- **Complexity cost**: thresholds + conditions + helpers. Complexity is computed by `_count_classifier_complexity()` in `tests/e2e/test_review.py`:
+  - **Zone analyzed**: only the code from the start of `classifyMove()` up to and including the last `return { category: 'brilliant'` or `return { category: 'great'` — NOT the miss/best/excellent/etc. code after it.
+  - **Thresholds**: unique numeric constants in comparisons (e.g. `>= 0.15`, `< -0.005`). Integers ≤ 2 are excluded (loop indices). Reusing an existing threshold costs 0.
+  - **Conditions**: only RULE conditions count — `if()` statements containing numeric comparisons, function calls, or domain keywords (`isOpening`, `is_mate`, `isRecapture`, etc.). Pure null/type GUARDS (`if (!prevMove || score_cp == null)`) are NOT counted — they are defensive boilerplate, not classification logic.
+  - **Helpers**: functions called from the brilliant/great zone (e.g. `isSacrifice`, `winProb`). Discovered dynamically, not hardcoded.
+  - **Total** = thresholds + rule_conditions + helpers. Removing a redundant condition REDUCES complexity and improves the score.
 - **Expected score impact**: will regularized score improve? A rule adding 5 conditions for 0.01 F1 gain will LOWER the score.
 
 Present rules to the user for validation before implementing.
