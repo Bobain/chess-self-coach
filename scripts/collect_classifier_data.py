@@ -197,6 +197,53 @@ def main() -> None:
         json.dump(batches, f, indent=2)
     print(f"Prepared {len(batches)} batches of ~{batch_size} moves → {batches_out}")
 
+    # Format each batch as human-readable text for agent prompts
+    for batch_idx, batch in enumerate(batches):
+        lines: list[str] = []
+        for e in batch:
+            m = e.get("move") or {}
+            b = e.get("before") or {}
+            a = e.get("after") or {}
+            lines.append(
+                f'### {e["game"]} idx={e["idx"]} {m.get("label","?")} '
+                f'{m.get("san","?")} — {e["status"]} '
+                f'({e["category"]}: predicted={e["predicted"]}, '
+                f'expected={e["expected"]})'
+            )
+            lines.append(
+                f'wp={e["wp_before"]} epl={e["epl_lost"]} '
+                f'oppEPL={e["opp_epl"]} is_best={m.get("is_best","?")}'
+            )
+            if b:
+                best_tag = "" if b.get("is_best") else f' (best: {b.get("best","?")})'
+                mate_tag = f' MATE={b.get("mate_in")}' if b.get("is_mate") else ""
+                lines.append(
+                    f'  BEFORE: {b["label"]} {b["san"]} '
+                    f'cp={b["cp_b"]}→{b["cp_a"]}{mate_tag}{best_tag}'
+                )
+                lines.append(f'    PV: {b.get("pv","")}')
+            mate_tag = f' MATE={m.get("mate_in")}' if m.get("is_mate") else ""
+            lines.append(
+                f'  MOVE: {m["label"]} {m["san"]} '
+                f'cp={m["cp_b"]}→{m["cp_a"]}{mate_tag}'
+            )
+            lines.append(f'    FEN: {m.get("fen","")[:60]}')
+            lines.append(f'    PV: {m.get("pv","")}')
+            if a:
+                lines.append(
+                    f'  AFTER: {a["label"]} {a["san"]} '
+                    f'cp={a["cp_b"]}→{a["cp_a"]}'
+                )
+            lines.append("")
+
+        batch_file = pathlib.Path(f"/tmp/batch_{batch_idx}.txt")
+        batch_file.write_text("\n".join(lines))
+
+    print(
+        f"Formatted {len(batches)} batch text files "
+        f"(/tmp/batch_0.txt .. /tmp/batch_{len(batches)-1}.txt)"
+    )
+
 
 if __name__ == "__main__":
     main()
