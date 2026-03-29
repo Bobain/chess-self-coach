@@ -405,4 +405,19 @@ GAMES: list[dict] = [
             70: "36.w Bg6+ — great (not detected by classifier)",
         },
     },
+    {
+        "game_id": "piotr_123321_165233427906",
+        "brilliant_indices": [],
+        "great_indices": [14, 25, 29, 33, 52, 63],  # 8.w dxe5, 13.b Nxd5, 15.b cxd6, 17.b Rxd6, 27.w Rxb8+, 32.b Nd5+
+        "notes": {
+            14: "8.w dxe5 — great (not detected by classifier)",
+            25: "13.b Nxd5 — great (not detected by classifier)",
+            29: "15.b cxd6 — great (not detected by classifier)",
+            33: "17.b Rxd6 — great",
+            52: "27.w Rxb8+ — great (not detected by classifier)",
+            58: "30.w Kd2 — not great, other",
+            63: "32.b Nd5+ — great",
+            77: "39.b f4 — not great, other",
+        },
+    },
 ]
