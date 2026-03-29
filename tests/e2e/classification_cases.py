@@ -217,4 +217,15 @@ GAMES: list[dict] = [
             38: "20.w Nxf5 — great",
         },
     },
+    {
+        "game_id": "farees23556_125351974269",
+        "brilliant_indices": [],
+        "great_indices": [9],  # 5.b Nc6
+        "notes": {
+            9: "5.b Nc6 — great (not detected by classifier)",
+            24: "13.w c4 — not great, other",
+            29: "15.b Nxc3 — not great, other",
+            31: "16.b Nc2+ — not great, other",
+        },
+    },
 ]
