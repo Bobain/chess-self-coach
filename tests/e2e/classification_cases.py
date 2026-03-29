@@ -380,4 +380,15 @@ GAMES: list[dict] = [
             75: "38.b Qxe1+ — great (not detected by classifier)",
         },
     },
+    {
+        "game_id": "melb123456789_130673436141",
+        "brilliant_indices": [],
+        "great_indices": [34, 53, 60],  # 18.w Ne6+, 27.b Qxf2+, 31.w Qe7+
+        "notes": {
+            34: "18.w Ne6+ — great (not detected by classifier)",
+            53: "27.b Qxf2+ — great",
+            58: "30.w Qe6+ — not great, other",
+            60: "31.w Qe7+ — great",
+        },
+    },
 ]
