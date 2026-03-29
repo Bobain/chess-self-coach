@@ -239,4 +239,15 @@ GAMES: list[dict] = [
             57: "29.b Nxb5 — not great, other",
         },
     },
+    {
+        "game_id": "edulof_120905678788",
+        "brilliant_indices": [],
+        "great_indices": [25, 56],  # 13.b Nxg4, 29.w Qxh6+
+        "notes": {
+            25: "13.b Nxg4 — great (not detected by classifier)",
+            35: "18.b Nh5 — not great, other",
+            53: "27.b Rxd2 — not great, other",
+            56: "29.w Qxh6+ — great",
+        },
+    },
 ]
