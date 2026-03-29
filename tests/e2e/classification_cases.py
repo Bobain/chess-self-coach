@@ -391,4 +391,18 @@ GAMES: list[dict] = [
             60: "31.w Qe7+ — great",
         },
     },
+    {
+        "game_id": "najshajs_165191804886",
+        "brilliant_indices": [],
+        "great_indices": [30, 41, 70],  # 16.w g3, 21.b Nxc4, 36.w Bg6+
+        "notes": {
+            30: "16.w g3 — great (not detected by classifier)",
+            34: "18.w Bxc5 — not great, other",
+            41: "21.b Nxc4 — great (not detected by classifier)",
+            45: "23.b Qxd4 — not great, other",
+            64: "33.w f4 — not great, other",
+            68: "35.w f5 — not great, other",
+            70: "36.w Bg6+ — great (not detected by classifier)",
+        },
+    },
 ]
