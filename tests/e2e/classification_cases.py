@@ -329,6 +329,21 @@ GAMES: list[dict] = [
         },
     },
     {
+        "game_id": "Republikaner95_129548018835",
+        "brilliant_indices": [],
+        "great_indices": [12, 53, 76, 79, 92],  # 7.w Nxb4, 27.b Rxb5, 39.w Kxe4, 40.b Kf5, 47.w Kh6
+        "notes": {
+            12: "7.w Nxb4 — great (not detected by classifier)",
+            38: "20.w Nxd5 — not great, other",
+            49: "25.b Rb4 — not great, other",
+            53: "27.b Rxb5 — great (not detected by classifier)",
+            71: "36.b h5 — not great, other",
+            76: "39.w Kxe4 — great (not detected by classifier)",
+            79: "40.b Kf5 — great",
+            92: "47.w Kh6 — great (not detected by classifier)",
+        },
+    },
+    {
         "game_id": "April_Incandenza_129308541535",
         "brilliant_indices": [],
         "great_indices": [28, 33, 45, 51],  # 15.w Bxd5, 17.b Qxd2, 23.b Nb4, 26.b axb3
