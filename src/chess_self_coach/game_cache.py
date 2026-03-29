@@ -340,7 +340,7 @@ def get_unified_game_list(limit: int = 20) -> list[GameSummary]:
             oe = m.get("opening_explorer")
             if oe and oe.get("moves"):
                 for om in oe["moves"]:
-                    if om.get("opening", {}).get("name") and om.get("uci") == m.get(
+                    if om and om.get("opening", {}).get("name") and om.get("uci") == m.get(
                         "move_uci"
                     ):
                         opening = om["opening"]["name"]
