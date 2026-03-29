@@ -1577,6 +1577,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#chessselfcoachismissedcapturemove-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~isMissedCapture(move) ⇒ boolean
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chessselfcoachclassifymovemove-playercolor-object" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2845,6 +2856,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#chessselfcoachismissedcapturemove-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChessSelfCoach~isMissedCapture(move) ⇒ boolean
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chessselfcoachclassifymovemove-playercolor-object" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3293,6 +3315,7 @@ repetition to schedule reviews.</p>
 <li><a href="#module_ChessSelfCoach..loadAnalysisData">~loadAnalysisData()</a></li>
 <li><a href="#module_ChessSelfCoach..winProb">~winProb(cp)</a> ⇒ <code>number</code></li>
 <li><a href="#module_ChessSelfCoach..isSacrifice">~isSacrifice(move)</a> ⇒ <code>boolean</code></li>
+<li><a href="#module_ChessSelfCoach..isMissedCapture">~isMissedCapture(move)</a> ⇒ <code>boolean</code></li>
 <li><a href="#module_ChessSelfCoach..classifyMove">~classifyMove(move, playerColor)</a> ⇒ <code>Object</code></li>
 <li><a href="#module_ChessSelfCoach..classifyAllMoves">~classifyAllMoves(moves, playerColor)</a> ⇒ <code>Array</code></li>
 <li><a href="#module_ChessSelfCoach..computeAccuracy">~computeAccuracy(moves, classifications, color)</a> ⇒ <code>number</code></li>
@@ -4101,6 +4124,29 @@ Returns true for:
 <td>move</td>
 <td><code>Object</code></td>
 <td>Move data with fen_before, move_san, move_uci, eval_before.</td>
+</tr>
+</tbody>
+</table>
+<p><a name="module_ChessSelfCoach..isMissedCapture"></a></p>
+<h3 id="chessselfcoachismissedcapturemove-boolean">ChessSelfCoach~isMissedCapture(move) ⇒ <code>boolean</code></h3>
+<p>Check if the engine's best move was a capture winning material (missed opportunity).
+Simulates the best move and follows the PV up to 8 plies, tracking all captures
+on any square (an exchange can remove a defender, enabling a capture elsewhere).</p>
+<p><strong>Kind</strong>: inner method of <a href="#module_ChessSelfCoach"><code>ChessSelfCoach</code></a><br />
+<strong>Returns</strong>: <code>boolean</code> - True if best move was a capture with net material gain.  </p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>move</td>
+<td><code>Object</code></td>
+<td>Move data (must have fen_before, move_uci, eval_before with PV).</td>
 </tr>
 </tbody>
 </table>

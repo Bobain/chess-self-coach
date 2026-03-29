@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chess-self-coach-0.4.10';
+const CACHE_NAME = 'chess-self-coach-0.4.11';
 
 const LOCAL_ASSETS = [
   './',

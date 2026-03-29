@@ -1513,6 +1513,56 @@ function isSacrifice(move) {
 }
 
 /**
+ * Check if the engine's best move was a capture winning material (missed opportunity).
+ * Simulates the best move and follows the PV up to 8 plies, tracking all captures
+ * on any square (an exchange can remove a defender, enabling a capture elsewhere).
+ * @param {Object} move - Move data (must have fen_before, move_uci, eval_before with PV).
+ * @returns {boolean} True if best move was a capture with net material gain.
+ */
+function isMissedCapture(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const eb = move.eval_before;
+  if (!eb || !eb.pv_uci || !eb.pv_uci.length || !eb.best_move_uci) return false;
+
+  // Player must NOT have played the best move (otherwise no miss)
+  if (move.move_uci === eb.best_move_uci) return false;
+
+  // Simulate best move on the board
+  try {
+    const chess = new Chess(move.fen_before);
+    const bestTo = eb.best_move_uci.slice(2, 4);
+    const bestPromo = eb.best_move_uci.length > 4 ? eb.best_move_uci[4] : undefined;
+    const firstResult = chess.move({
+      from: eb.best_move_uci.slice(0, 2), to: bestTo, promotion: bestPromo,
+    });
+    if (!firstResult || !firstResult.captured) return false;
+
+    // Follow the PV up to 8 plies, tracking all captures on any square.
+    // An exchange on one square can leave another piece undefended elsewhere.
+    let materialBalance = PIECE_VALUES[firstResult.captured];
+    const MAX_PLIES = 8;
+
+    for (let k = 1; k < Math.min(eb.pv_uci.length, MAX_PLIES); k++) {
+      const promo = eb.pv_uci[k].length > 4 ? eb.pv_uci[k][4] : undefined;
+      const result = chess.move({
+        from: eb.pv_uci[k].slice(0, 2),
+        to: eb.pv_uci[k].slice(2, 4),
+        promotion: promo,
+      });
+      if (!result) break;
+      if (result.captured) {
+        const capSign = (k % 2 === 0) ? 1 : -1;
+        materialBalance += capSign * PIECE_VALUES[result.captured];
+      }
+    }
+
+    return materialBalance > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Classify a move based on expected points lost.
  * @param {Object} move - Move data from analysis_data.json.
  * @param {string} playerColor - 'white' or 'black'.
@@ -1606,10 +1656,11 @@ function classifyMove(move, playerColor, prevMove) {
     }
   }
 
-  // Miss detection: opponent blundered but player failed to capitalize
-  // The opponent created an opportunity (lost ≥15% wp) but the player's response
-  // was significantly suboptimal (lost >5% wp compared to best move)
-  if (!isOpening && eplLost > 0.05 && prevMove
+  // Miss detection: opponent blundered and there was a simple capture to win
+  // material, but the player didn't see it.
+  // Requires: opponent lost ≥15% wp + player lost >5% wp + best move was a
+  // capture winning net material in ≤3 exchanges on the same square.
+  if (!isOpening && eplLost > 0.05 && isMissedCapture(move) && prevMove
       && prevMove.eval_before && prevMove.eval_after
       && prevMove.eval_before.score_cp != null && prevMove.eval_after.score_cp != null
       && !prevMove.eval_before.is_mate && !prevMove.eval_after.is_mate) {
@@ -1640,6 +1691,7 @@ function classifyMove(move, playerColor, prevMove) {
 // Expose for E2E testing (module-scoped functions are not accessible from page.evaluate)
 window._classifyMove = classifyMove;
 window._isSacrifice = isSacrifice;
+window._isMissedCapture = isMissedCapture;
 
 /**
  * Classify all moves in a game for both players.
@@ -1770,12 +1822,19 @@ async function showGameSelector() {
     for (const m of game.moves) {
       if (m.opening_explorer && m.opening_explorer.moves) {
         for (const om of m.opening_explorer.moves) {
-          if (om.opening && om.opening.name && om.uci === m.move_uci) {
+          if (om && om.opening && om.opening.name && om.uci === m.move_uci) {
             name = om.opening.name;
           }
         }
       }
     }
+    // Fallback to PGN header opening name
+    if (!name && game.headers) {
+      name = game.headers.opening || game.headers.Opening || '';
+    }
+    // Truncate to opening family (before first colon)
+    const colonIdx = name.indexOf(':');
+    if (colonIdx > 0) name = name.slice(0, colonIdx).trim();
     return name;
   }
 
