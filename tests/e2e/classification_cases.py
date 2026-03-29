@@ -456,4 +456,22 @@ GAMES: list[dict] = [
             37: "19.b Kh8 — not great, other",
         },
     },
+    {
+        "game_id": "Tasoulinga_165939820182",
+        "brilliant_indices": [],
+        "great_indices": [18, 22, 53, 73, 74, 75, 81, 103],  # 10.w e4, 12.w Qa4+, 27.b exd5, 37.b Ra6, 38.w Rc1, 38.b Bc4, 41.b Bxd7, 52.b Rg1
+        "notes": {
+            15: "8.b e6 — not great, other",
+            18: "10.w e4 — great (not detected by classifier)",
+            22: "12.w Qa4+ — great (not detected by classifier)",
+            42: "22.w Rb1 — not great, other",
+            53: "27.b exd5 — great (not detected by classifier)",
+            73: "37.b Ra6 — great (not detected by classifier)",
+            74: "38.w Rc1 — great (not detected by classifier)",
+            75: "38.b Bc4 — great (not detected by classifier)",
+            77: "39.b Rxc6 — not great, other",
+            81: "41.b Bxd7 — great (not detected by classifier)",
+            103: "52.b Rg1 — great",
+        },
+    },
 ]
