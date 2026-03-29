@@ -420,4 +420,18 @@ GAMES: list[dict] = [
             77: "39.b f4 — not great, other",
         },
     },
+    {
+        "game_id": "LuisMarciel_165644144456",
+        "brilliant_indices": [],
+        "great_indices": [40, 53, 83, 94, 100, 102],  # 21.w Ng4, 27.b Rxg4, 42.b Rxc3, 48.w Rb5, 51.w Rxa5, 52.w Rb5
+        "notes": {
+            40: "21.w Ng4 — great",
+            53: "27.b Rxg4 — great (not detected by classifier)",
+            58: "30.w Kf2 — not great, other",
+            83: "42.b Rxc3 — great",
+            94: "48.w Rb5 — great",
+            100: "51.w Rxa5 — great (not detected by classifier)",
+            102: "52.w Rb5 — great (not detected by classifier)",
+        },
+    },
 ]
