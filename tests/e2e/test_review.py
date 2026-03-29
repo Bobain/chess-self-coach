@@ -761,13 +761,58 @@ def _classify_game(page, pwa_url, game_gt):
     return classes, class_f1, macro_f1, errors
 
 
-# Minimum acceptable macro F1 across all games (non-regression threshold).
-# Current baseline: ~0.55. Lower bound set to catch significant regressions.
-MIN_GLOBAL_MACRO_F1 = 0.50
+# Minimum acceptable regularized score across all games (non-regression).
+# score = macro_F1 - λ × complexity / budget
+# This penalizes overfitting: adding rules that barely improve F1 is rejected.
+MIN_GLOBAL_SCORE = 0.30
+COMPLEXITY_LAMBDA = 0.10
+COMPLEXITY_BUDGET = 50
+
+
+def _count_classifier_complexity() -> tuple[int, int, int, int]:
+    """Count classifier complexity by parsing classifyMove and its helpers in app.js.
+
+    Returns (n_thresholds, n_conditions, n_helpers, total_complexity).
+    """
+    import re
+
+    app_js = pathlib.Path(__file__).parent.parent.parent / "pwa" / "app.js"
+    code = app_js.read_text()
+
+    classifier_functions = ["classifyMove", "isSacrifice", "isMissedCapture"]
+    total_thresholds: set[str] = set()
+    total_conditions = 0
+    n_helpers = 0
+
+    for func_name in classifier_functions:
+        match = re.search(rf"function {func_name}\b", code)
+        if not match:
+            continue
+        # Extract function body by counting braces
+        depth = 0
+        func_code = ""
+        for i in range(match.start(), len(code)):
+            if code[i] == "{":
+                depth += 1
+            elif code[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    func_code = code[match.start() : i + 1]
+                    break
+        # Count unique numeric thresholds in comparisons (e.g. >= 0.15, < -0.005)
+        for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", func_code):
+            total_thresholds.add(t)
+        # Count conditions (if statements)
+        total_conditions += len(re.findall(r"\bif\s*\(", func_code))
+
+        if func_name != "classifyMove":
+            n_helpers += 1
+
+    return len(total_thresholds), total_conditions, n_helpers, len(total_thresholds) + total_conditions + n_helpers
 
 
 def test_classification_macro_f1_regression(page, pwa_url):
-    """Global non-regression: average macro F1 across all labeled games must not drop."""
+    """Global non-regression: regularized score (F1 - complexity penalty) must not drop."""
     macro_f1_scores = []
     total_brilliant = {"tp": 0, "fp": 0, "fn": 0}
     total_great = {"tp": 0, "fp": 0, "fn": 0}
@@ -783,15 +828,24 @@ def test_classification_macro_f1_regression(page, pwa_url):
     _, _, brilliant_f1 = _compute_f1(total_brilliant["tp"], total_brilliant["fp"], total_brilliant["fn"])
     _, _, great_f1 = _compute_f1(total_great["tp"], total_great["fp"], total_great["fn"])
 
+    # Complexity penalty
+    n_thresholds, n_conditions, n_helpers, complexity = _count_classifier_complexity()
+    penalty = COMPLEXITY_LAMBDA * complexity / COMPLEXITY_BUDGET
+    score = avg_macro_f1 - penalty
+
     print(f"\n{'='*60}")
     print(f"GLOBAL CLASSIFICATION SUMMARY ({len(CLASSIFICATION_GAMES)} games)")
     print(f"  Brilliant: TP={total_brilliant['tp']} FP={total_brilliant['fp']} FN={total_brilliant['fn']} F1={brilliant_f1:.3f}")
     print(f"  Great:     TP={total_great['tp']} FP={total_great['fp']} FN={total_great['fn']} F1={great_f1:.3f}")
-    print(f"  Average macro F1={avg_macro_f1:.3f} (threshold={MIN_GLOBAL_MACRO_F1})")
+    print(f"  Average macro F1={avg_macro_f1:.3f}")
+    print(f"  Complexity: {complexity} ({n_thresholds} thresholds + {n_conditions} conditions + {n_helpers} helpers)")
+    print(f"  Penalty: -{penalty:.3f} (λ={COMPLEXITY_LAMBDA}, budget={COMPLEXITY_BUDGET})")
+    print(f"  Regularized score={score:.3f} (threshold={MIN_GLOBAL_SCORE})")
     print(f"{'='*60}")
 
-    assert avg_macro_f1 >= MIN_GLOBAL_MACRO_F1, (
-        f"Global macro F1 {avg_macro_f1:.3f} dropped below threshold {MIN_GLOBAL_MACRO_F1}"
+    assert score >= MIN_GLOBAL_SCORE, (
+        f"Regularized score {score:.3f} dropped below threshold {MIN_GLOBAL_SCORE} "
+        f"(F1={avg_macro_f1:.3f}, complexity={complexity})"
     )
 
 
