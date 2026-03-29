@@ -7,9 +7,11 @@ set -euo pipefail
 INPUT=$(cat)
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-README_MARKER="$REPO_ROOT/.claude/.pending-readme-check"
-FLOWS_MARKER="$REPO_ROOT/.claude/.pending-flows-check"
-DOCS_MARKER="$REPO_ROOT/.claude/.pending-docs-check"
+MARKER_DIR="/tmp/chess-doc-markers"
+mkdir -p "$MARKER_DIR"
+README_MARKER="$MARKER_DIR/.pending-readme-check"
+FLOWS_MARKER="$MARKER_DIR/.pending-flows-check"
+DOCS_MARKER="$MARKER_DIR/.pending-docs-check"
 
 # Extract the file path from the tool input
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')

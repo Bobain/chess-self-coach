@@ -560,29 +560,33 @@ def test_sacrifice_in_dominating_position_not_brilliant(page, pwa_url):
     )
 
 
-def test_missed_opportunity_classified_as_miss(page, pwa_url):
-    """When opponent blunders and player fails to capitalize, it's a 'miss'.
+def test_missed_capture_classified_as_miss(page, pwa_url):
+    """When opponent leaves a piece hanging and player doesn't take it, it's a 'miss'.
 
-    Scenario: opponent's previous move lost ≥15% wp (big blunder),
-    but player's response lost >5% wp (didn't find the punishment).
+    Position: Black knight on e4 is undefended. White's best move is Bxe4
+    (bishop takes knight, winning 3 pts). But white plays h3 instead.
+    Opponent blundered on previous move (oppEPL ≈ 0.34).
     """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
-    # prevMove: opponent blundered (cp went from 0 to -300 from opponent's perspective)
-    # This means oppWpBefore ≈ 0.50, oppWpAfter ≈ 0.16 → oppEPL ≈ 0.34
-    # move: player responded poorly (cp 300 for white → 200 after, eplLost ≈ 0.07)
+    # FEN: white bishop on d3, black knight on e4 (undefended)
     result = page.evaluate("""() => {
         const prevMove = {
-            move_uci: 'd7d5',
+            move_uci: 'f6e4',
             eval_before: { score_cp: 0, is_mate: false, mate_in: null },
             eval_after: { score_cp: 300, is_mate: false, mate_in: null },
         };
         return window._classifyMove(
             {
-                move_san: 'Nf3',
-                move_uci: 'g1f3',
-                eval_before: { score_cp: 300, is_mate: false, mate_in: null },
+                fen_before: 'r1bqkb1r/pppp1ppp/2n5/4p3/4n3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 5',
+                move_san: 'h3',
+                move_uci: 'h2h3',
+                eval_before: {
+                    score_cp: 300, is_mate: false, mate_in: null,
+                    best_move_uci: 'd3e4',
+                    pv_uci: ['d3e4', 'd7d5', 'e4d3'],
+                },
                 eval_after: { score_cp: 200, is_mate: false, mate_in: null },
             },
             'white',
@@ -590,21 +594,23 @@ def test_missed_opportunity_classified_as_miss(page, pwa_url):
         );
     }""")
 
-    assert result is not None, "classifyMove returned null for missed opportunity"
+    assert result is not None, "classifyMove returned null for missed capture"
     assert result["category"] == "miss", (
-        f"Missed opportunity classified as '{result['category']}' instead of 'miss'"
+        f"Missed capture classified as '{result['category']}' instead of 'miss'"
     )
     assert result["symbol"] == "\u00d7"
     assert result["color"] == "#e06666"
 
 
-def test_correct_response_to_blunder_not_miss(page, pwa_url):
-    """When opponent blunders and player finds the right response, it's NOT a miss."""
+def test_missed_positional_not_miss(page, pwa_url):
+    """When the best move is positional (not a capture), it's NOT a 'miss'.
+
+    Even if opponent blundered and player responded poorly, miss only applies
+    when the best move was a material-winning capture.
+    """
     page.goto(pwa_url)
     page.wait_for_selector(".game-card", timeout=10000)
 
-    # prevMove: opponent blundered (oppEPL ≈ 0.34)
-    # move: player responded well (eplLost ≈ -0.01, position improved)
     result = page.evaluate("""() => {
         const prevMove = {
             move_uci: 'd7d5',
@@ -613,10 +619,15 @@ def test_correct_response_to_blunder_not_miss(page, pwa_url):
         };
         return window._classifyMove(
             {
-                move_san: 'dxe5',
-                move_uci: 'd4e5',
-                eval_before: { score_cp: 300, is_mate: false, mate_in: null },
-                eval_after: { score_cp: 310, is_mate: false, mate_in: null },
+                fen_before: 'rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1',
+                move_san: 'h3',
+                move_uci: 'h2h3',
+                eval_before: {
+                    score_cp: 300, is_mate: false, mate_in: null,
+                    best_move_uci: 'c2c4',
+                    pv_uci: ['c2c4', 'e7e6', 'b1c3'],
+                },
+                eval_after: { score_cp: 200, is_mate: false, mate_in: null },
             },
             'white',
             prevMove
@@ -624,27 +635,25 @@ def test_correct_response_to_blunder_not_miss(page, pwa_url):
     }""")
 
     assert result is not None
-    # Should be great (oppEPL ≈ 0.34, eplLost < 0, not recapture)
-    # or at least best/excellent — NOT miss
     assert result["category"] != "miss", (
-        f"Correct response to blunder wrongly classified as 'miss'"
+        f"Positional miss wrongly classified as 'miss' — should only flag missed captures"
     )
 
 
-# --- Game-level brilliant classification with F1 scoring ---
+# --- Game-level classification with F1 scoring ---
 
 import pathlib
 from datetime import datetime, timezone
 
-from tests.e2e.brilliant_cases import GAMES as BRILLIANT_GAMES
+from tests.e2e.classification_cases import GAMES as CLASSIFICATION_GAMES
 
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
-F1_LOG = pathlib.Path(__file__).parent / "brilliant_f1_log.md"
+F1_LOG = pathlib.Path(__file__).parent / "classification_f1_log.md"
 
 
 def _load_game_moves(game_id: str) -> list[dict]:
     """Load moves for a game from the ground truth fixture."""
-    gt_path = FIXTURES_DIR / "brilliant_ground_truth.json"
+    gt_path = FIXTURES_DIR / "classification_ground_truth.json"
     with open(gt_path) as f:
         data = json.load(f)
     for game in data["games"]:
@@ -752,37 +761,169 @@ def _classify_game(page, pwa_url, game_gt):
     return classes, class_f1, macro_f1, errors
 
 
-# Minimum acceptable macro F1 across all games (non-regression threshold).
-# Current baseline: ~0.55. Lower bound set to catch significant regressions.
-MIN_GLOBAL_MACRO_F1 = 0.50
+# Minimum acceptable regularized score across all games (non-regression).
+# score = macro_F1 - λ × complexity / budget
+# This penalizes overfitting: adding rules that barely improve F1 is rejected.
+MIN_GLOBAL_SCORE = 0.60
+COMPLEXITY_LAMBDA = 0.10
+COMPLEXITY_BUDGET = 50
+
+
+def _count_classifier_complexity() -> tuple[int, int, int, int]:
+    """Count complexity of !! and ! classification by dynamic dependency analysis.
+
+    Parses classifyMove to find the code zone that produces 'brilliant' or 'great'
+    returns, identifies helper functions called in that zone, and counts thresholds
+    + conditions in all relevant code. No hardcoded function lists.
+
+    Returns (n_thresholds, n_conditions, n_helpers, total_complexity).
+    """
+    import re
+
+    app_js = pathlib.Path(__file__).parent.parent.parent / "pwa" / "app.js"
+    code = app_js.read_text()
+
+    def _extract_function(name: str) -> str:
+        """Extract a function body from source code by brace counting."""
+        match = re.search(rf"function {name}\b", code)
+        if not match:
+            return ""
+        depth = 0
+        for i in range(match.start(), len(code)):
+            if code[i] == "{":
+                depth += 1
+            elif code[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    return code[match.start() : i + 1]
+        return ""
+
+    def _count_in_code(src: str) -> tuple[set[str], int]:
+        """Count unique thresholds and rule conditions in a code fragment.
+
+        Conditions are counted as "rules" (domain logic) only when the if()
+        contains a numeric comparison or a function call. Pure null/type guards
+        (e.g. `if (!prevMove || prevMove.eval_before.score_cp == null)`) are
+        excluded — they are defensive boilerplate, not classification logic.
+        """
+        thresholds: set[str] = set()
+        for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", src):
+            thresholds.add(t)
+        for t in re.findall(r"[<>=!]=?\s*(-?\d+)(?!\.\d)", src):
+            if abs(int(t)) > 2:
+                thresholds.add(t)
+        # Count only rule conditions (not null/type guards)
+        rule_conditions = 0
+        for m in re.finditer(r"\bif\s*\(", src):
+            # Extract the condition between matching parens
+            start = m.end()
+            depth = 1
+            end = start
+            for j in range(start, len(src)):
+                if src[j] == "(":
+                    depth += 1
+                elif src[j] == ")":
+                    depth -= 1
+                    if depth == 0:
+                        end = j
+                        break
+            cond = src[start:end]
+            # A rule condition contains a numeric literal or a function call
+            has_numeric = bool(re.search(r"[<>=!]=?\s*-?\d", cond))
+            has_call = bool(re.search(r"\b[a-zA-Z_]\w+\s*\(", cond))
+            has_domain = bool(re.search(r"is_mate|isOpening|isBook|isRecapture|is_best|stillMate|mateForPlayer", cond))
+            if has_numeric or has_call or has_domain:
+                rule_conditions += 1
+        return thresholds, rule_conditions
+
+    # 1. Extract classifyMove body
+    classify_body = _extract_function("classifyMove")
+
+    # 2. Find the "brilliant/great zone": from the start of classifyMove up to
+    #    (and including) the last return of 'brilliant' or 'great'. This captures
+    #    all setup code (eval extraction, wp model) + the detection logic itself.
+    last_bg_pos = 0
+    for cat in ("brilliant", "great"):
+        for match in re.finditer(rf"return\s*\{{\s*category:\s*'{cat}'", classify_body):
+            if match.end() > last_bg_pos:
+                last_bg_pos = match.end()
+    # Extend to the end of the line/statement after the last brilliant/great return
+    next_newline = classify_body.find("\n", last_bg_pos)
+    bg_zone = classify_body[: next_newline if next_newline > 0 else last_bg_pos]
+
+    # 3. Count thresholds and conditions in the brilliant/great zone
+    total_thresholds, total_conditions = _count_in_code(bg_zone)
+
+    # 4. Find helper functions called in the brilliant/great zone
+    #    (any identifier followed by '(' that exists as 'function X(' in app.js)
+    called = set(re.findall(r"\b([a-zA-Z_]\w+)\s*\(", bg_zone))
+    defined = set(re.findall(r"function\s+([a-zA-Z_]\w+)\s*\(", code))
+    helpers = called & defined - {"classifyMove"}
+    n_helpers = 0
+
+    # 5. Recursively count complexity in each helper
+    for helper_name in helpers:
+        helper_code = _extract_function(helper_name)
+        if helper_code:
+            h_thresholds, h_conditions = _count_in_code(helper_code)
+            total_thresholds |= h_thresholds
+            total_conditions += h_conditions
+            n_helpers += 1
+
+    return len(total_thresholds), total_conditions, n_helpers, len(total_thresholds) + total_conditions + n_helpers
 
 
 def test_classification_macro_f1_regression(page, pwa_url):
-    """Global non-regression: average macro F1 across all labeled games must not drop."""
-    macro_f1_scores = []
+    """Global non-regression: regularized score (F1 - complexity penalty) must not drop."""
     total_brilliant = {"tp": 0, "fp": 0, "fn": 0}
     total_great = {"tp": 0, "fp": 0, "fn": 0}
+    total_moves = 0
 
-    for game_gt in BRILLIANT_GAMES:
+    for game_gt in CLASSIFICATION_GAMES:
         classes, class_f1, macro_f1, errors = _classify_game(page, pwa_url, game_gt)
-        macro_f1_scores.append(macro_f1)
         for key in ("tp", "fp", "fn"):
             total_brilliant[key] += classes["brilliant"][key]
             total_great[key] += classes["great"][key]
+        moves = _load_game_moves(game_gt["game_id"])
+        total_moves += len(moves)
 
-    avg_macro_f1 = sum(macro_f1_scores) / len(macro_f1_scores)
+    # Global F1 per class (aggregated across all games, not averaged per game)
     _, _, brilliant_f1 = _compute_f1(total_brilliant["tp"], total_brilliant["fp"], total_brilliant["fn"])
     _, _, great_f1 = _compute_f1(total_great["tp"], total_great["fp"], total_great["fn"])
 
+    # "Other" class: FP_other = FN_brilliant + FN_great (moves expected !! or ! but predicted other)
+    #                FN_other = FP_brilliant + FP_great (moves predicted !! or ! but expected other)
+    #                TP_other = total_moves - TP_b - FP_b - FN_b - TP_g - FP_g - FN_g + ...
+    # Simpler: TP_other = total - all moves involved in brilliant/great errors or TPs
+    fp_other = total_brilliant["fn"] + total_great["fn"]
+    fn_other = total_brilliant["fp"] + total_great["fp"]
+    tp_other = total_moves - (total_brilliant["tp"] + total_brilliant["fn"]
+                              + total_great["tp"] + total_great["fn"]
+                              + fn_other)
+    _, _, other_f1 = _compute_f1(tp_other, fp_other, fn_other)
+
+    # True macro F1: average of F1 across all 3 classes (brilliant, great, other)
+    macro_f1 = (brilliant_f1 + great_f1 + other_f1) / 3
+
+    # Complexity penalty
+    n_thresholds, n_conditions, n_helpers, complexity = _count_classifier_complexity()
+    penalty = COMPLEXITY_LAMBDA * complexity / COMPLEXITY_BUDGET
+    score = macro_f1 - penalty
+
     print(f"\n{'='*60}")
-    print(f"GLOBAL CLASSIFICATION SUMMARY ({len(BRILLIANT_GAMES)} games)")
+    print(f"GLOBAL CLASSIFICATION SUMMARY ({len(CLASSIFICATION_GAMES)} games, {total_moves} moves)")
     print(f"  Brilliant: TP={total_brilliant['tp']} FP={total_brilliant['fp']} FN={total_brilliant['fn']} F1={brilliant_f1:.3f}")
     print(f"  Great:     TP={total_great['tp']} FP={total_great['fp']} FN={total_great['fn']} F1={great_f1:.3f}")
-    print(f"  Average macro F1={avg_macro_f1:.3f} (threshold={MIN_GLOBAL_MACRO_F1})")
+    print(f"  Other:     TP={tp_other} FP={fp_other} FN={fn_other} F1={other_f1:.3f}")
+    print(f"  Macro F1={macro_f1:.3f} (average of 3 class F1s)")
+    print(f"  Complexity: {complexity} ({n_thresholds} thresholds + {n_conditions} conditions + {n_helpers} helpers)")
+    print(f"  Penalty: -{penalty:.3f} (λ={COMPLEXITY_LAMBDA}, budget={COMPLEXITY_BUDGET})")
+    print(f"  Regularized score={score:.3f} (threshold={MIN_GLOBAL_SCORE})")
     print(f"{'='*60}")
 
-    assert avg_macro_f1 >= MIN_GLOBAL_MACRO_F1, (
-        f"Global macro F1 {avg_macro_f1:.3f} dropped below threshold {MIN_GLOBAL_MACRO_F1}"
+    assert score >= MIN_GLOBAL_SCORE, (
+        f"Regularized score {score:.3f} dropped below threshold {MIN_GLOBAL_SCORE} "
+        f"(F1={macro_f1:.3f}, complexity={complexity})"
     )
 
 

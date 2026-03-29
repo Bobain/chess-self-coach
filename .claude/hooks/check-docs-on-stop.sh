@@ -12,12 +12,12 @@ if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
 fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-MARKER="$REPO_ROOT/.claude/.pending-docs-check"
+MARKER="/tmp/chess-doc-markers/.pending-docs-check"
 
 if [ ! -f "$MARKER" ]; then
   exit 0
 fi
 
 cat <<'EOF'
-{"decision": "block", "reason": "DOCS SYNC — Source code that affects documentation was modified during this session. Check if docs/*.md needs updating:\n- trainer.py → training.md\n- cli.py → cli.md, setup.md\n- app.js → training.md, index.md\nIf the docs are already up to date, remove the marker with: rm -f .claude/.pending-docs-check"}
+{"decision": "block", "reason": "DOCS SYNC — Source code that affects documentation was modified during this session. Check if docs/*.md needs updating:\n- trainer.py → training.md\n- cli.py → cli.md, setup.md\n- app.js → training.md, index.md\nIf the docs are already up to date, remove the marker with: rm -f /tmp/chess-doc-markers/.pending-docs-check"}
 EOF

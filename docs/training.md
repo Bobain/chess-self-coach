@@ -123,7 +123,7 @@ Uses a win probability model (chess.com-style): `winProb(cp) = 1 / (1 + 10^(-cp/
 |------------|---------|---------|--------|
 | Brilliant  | EPL < -0.005 + sacrifice (piece > pawn) + wp 0.20–0.95 + not opening | #1baca6 | !!     |
 | Great      | EPL ≤ 0.02 + opponent blundered (≥15% wp loss) + EPL ≤ 0 + not recapture + not opening | #5c9ced | !      |
-| Miss       | Opponent blundered (≥15% wp loss) + player EPL > 0.05 + not opening | #e06666 | ×      |
+| Miss       | Opponent blundered (≥15% wp loss) + best move was a capture winning net material (PV ≤8 plies, any square) + player EPL > 0.05 + not opening | #e06666 | ×      |
 | Best       | ≤ 0.00              | #96bc4b | ★      |
 | Excellent  | ≤ 0.02              | #96bc4b | ↑      |
 | Good       | ≤ 0.05              | #95b776 | ✓      |

@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
-    "ux-auditor": true
+    "ux-auditor": true,
+    "chess-classifier": true
   },
   "hooks": {
     "PostToolUse": [

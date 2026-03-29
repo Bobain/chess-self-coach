@@ -12,12 +12,12 @@ if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
 fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-MARKER="$REPO_ROOT/.claude/.pending-readme-check"
+MARKER="/tmp/chess-doc-markers/.pending-readme-check"
 
 if [ ! -f "$MARKER" ]; then
   exit 0
 fi
 
 cat <<'EOF'
-{"decision": "block", "reason": "README SYNC — Du code a été modifié pendant cette session. Vérifie si README.md et CONTRIBUTING.md (section Architecture) doivent être mis à jour (nouvelles commandes, options modifiées, workflow changé, sections CI/CD, distinction static demo / application). Pense aussi à docs/flows/ si des flux ont changé. Si la doc est déjà à jour, supprime le marker avec : rm -f .claude/.pending-readme-check"}
+{"decision": "block", "reason": "README SYNC — Du code a été modifié pendant cette session. Vérifie si README.md et CONTRIBUTING.md (section Architecture) doivent être mis à jour (nouvelles commandes, options modifiées, workflow changé, sections CI/CD, distinction static demo / application). Pense aussi à docs/flows/ si des flux ont changé. Si la doc est déjà à jour, supprime le marker avec : rm -f /tmp/chess-doc-markers/.pending-readme-check"}
 EOF
