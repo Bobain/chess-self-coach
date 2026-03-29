@@ -172,11 +172,30 @@ def main() -> None:
             f"{cat}: TP={tp} FP={fp} FN={fn} (total {len(entries)} moves)"
         )
 
+    # Save full data
     out = pathlib.Path("/tmp/classifier_data.json")
     with open(out, "w") as f:
         json.dump(results, f, indent=2)
     total = sum(len(v) for v in results.values())
     print(f"\nSaved to {out} ({total} moves)")
+
+    # Prepare batches for agent analysis (~15 moves each, mixing TP/FP/FN)
+    all_moves = []
+    for cat in ("brilliant", "great"):
+        for entry in results[cat]:
+            entry["category"] = cat
+            all_moves.append(entry)
+
+    batch_size = 15
+    batches = [
+        all_moves[i : i + batch_size]
+        for i in range(0, len(all_moves), batch_size)
+    ]
+
+    batches_out = pathlib.Path("/tmp/classifier_batches.json")
+    with open(batches_out, "w") as f:
+        json.dump(batches, f, indent=2)
+    print(f"Prepared {len(batches)} batches of ~{batch_size} moves → {batches_out}")
 
 
 if __name__ == "__main__":
