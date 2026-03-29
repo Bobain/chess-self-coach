@@ -273,4 +273,18 @@ GAMES: list[dict] = [
             47: "24.b Bxa1 — great",
         },
     },
+    {
+        "game_id": "sujalpotghan_121654941186",
+        "brilliant_indices": [],
+        "great_indices": [15, 16, 21, 28, 38, 69],  # 8.b dxe4, 9.w Qxd8, 11.b Nxf2, 15.w Be3, 20.w Rxd8, 35.b Rxb2
+        "notes": {
+            15: "8.b dxe4 — great",
+            16: "9.w Qxd8 — great (not detected by classifier)",
+            21: "11.b Nxf2 — great",
+            26: "14.w Nc3 — not great, other",
+            28: "15.w Be3 — great (not detected by classifier)",
+            38: "20.w Rxd8 — great (not detected by classifier)",
+            69: "35.b Rxb2 — great",
+        },
+    },
 ]
