@@ -2,39 +2,47 @@ Analyze classification errors across the full ground truth dataset, find common 
 
 **Goal**: maximize macro F1 without overfitting. Rules must be simple and explainable to a 1200 ELO player.
 
-## Step 1: Collect all classification errors
+## Step 1: Collect all classification results
 
 Run the real JS classifier (via Playwright, `window._classifyMove`) on ALL games in `tests/e2e/classification_cases.py` and collect:
+- All TP (correctly classified as !! or !)
 - All FN (expected !! or ! but classified as other)
 - All FP (classified as !! or ! but expected other)
-- For each error: idx, move SAN, cp before→after, is_mate, best move, PV (5 moves), oppEPL, eplLost, wpBefore
+- For each move: idx, move SAN, cp before→after, is_mate, best move, PV (5 moves), oppEPL, eplLost, wpBefore
 
-Also extract the same data for the move BEFORE and the move AFTER each error (the 3-move context window).
+Also extract the same data for the move BEFORE and the move AFTER each move (the 3-move context window).
 
-Print a summary: total errors, FN brilliant count, FN great count, FP brilliant count, FP great count.
+Print a summary: TP/FP/FN counts for both brilliant and great, plus current macro F1.
 
-## Step 2: Deep chess analysis with parallel agents
+## Step 2: Deep chess analysis with 4 parallel agents
 
-Launch specialized agents in parallel to analyze the errors. Each agent receives the full 3-move context (move before, the move, move after) with Stockfish eval and best lines.
+Launch 4 specialized agents in parallel. Each receives moves with full 3-move context (move before, the move, move after) including FEN, Stockfish eval, best lines, and PV.
 
-**Agent grouping** (adapt based on error counts):
-- **Agent for FN great**: "Why should these moves be classified as great (!)? What chess characteristic makes them stand out? What quantitative signals could detect them?" Give ALL FN great moves with their 3-move context.
-- **Agent for FP great**: "Why are these moves NOT great despite the algorithm flagging them? What distinguishes them from true great moves?" Give ALL FP great moves.
-- **Agent for !! errors** (if any): Special attention to brilliant moves — analyze any FN or FP brilliant with detailed context.
+**Agent 1 — Brilliant (all TP/FP/FN !!)**: Analyze ALL brilliant-related moves together (typically few moves). For TP: what makes the current rules work — preserve these patterns. For FP: why the algorithm flags them incorrectly. For FN: what the algorithm misses and how to detect it. Propose fixes for brilliant detection.
+
+**Agent 2 — TP Great**: Analyze all TRUE POSITIVE great moves. What makes the current rules work? What patterns do correctly-detected great moves share? This understanding is essential to ensure new rules/filters don't break existing TP.
+
+**Agent 3 — FP Great**: Analyze all FALSE POSITIVE great moves. Why does the algorithm flag them but the human says they're not great? What distinguishes them from true great moves? Propose filters to eliminate FP without hurting TP.
+
+**Agent 4 — FN Great**: Analyze all FALSE NEGATIVE great moves. Why should these be classified as great? What chess characteristics make them stand out that the current rules miss? Propose new detection rules to catch them.
 
 Each agent must:
 - Use Stockfish eval AND their own chess judgment
 - Identify COMMON patterns across moves, not individual explanations
 - Propose quantitative criteria that could be implemented in code
 - Explicitly flag any rule that would be overfitting
+- Reference the TP analysis to ensure proposals don't break existing correct classifications
 
 ## Step 3: Pattern synthesis
 
-Collect all agent analyses and find convergent themes:
-- What patterns do FN great moves share that the current rule misses?
-- What patterns do FP great moves share that could filter them out?
+Collect all 4 agent analyses and find convergent themes:
+- What do TP great moves have in common? (Agent 2) — these patterns MUST be preserved
+- What patterns do FN great moves share that the current rule misses? (Agent 4)
+- What patterns do FP great moves share that could filter them out? (Agent 3)
+- Do any proposed FP filters risk removing TP? Cross-check Agent 3 proposals against Agent 2 findings
 - Is the current oppEPL rule salvageable, or should it be replaced/augmented?
 - Are there simpler rules that achieve better F1?
+- What fixes does Agent 1 propose for brilliant detection?
 
 ## Step 4: Rule derivation
 
