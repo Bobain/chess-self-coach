@@ -255,6 +255,37 @@ def main() -> None:
         f"(/tmp/batch_0.txt .. /tmp/batch_{len(batches)-1}.txt)"
     )
 
+    # Detailed analysis for rule derivation
+    print("\n=== ANALYSIS FOR RULE DERIVATION ===")
+
+    for cat in ("brilliant", "great"):
+        for status in ("TP", "FP", "FN"):
+            entries = [e for e in results[cat] if e["status"] == status]
+            if not entries:
+                continue
+            not_best = [
+                e for e in entries if e.get("move", {}).get("is_best") is False
+            ]
+            prev_counts: dict[str, int] = {}
+            for e in entries:
+                pc = e.get("prev_classification", "?")
+                prev_counts[pc] = prev_counts.get(pc, 0) + 1
+            print(f"\n{status} {cat} ({len(entries)}):")
+            print(f"  not_best: {len(not_best)}")
+            if not_best:
+                for e in not_best:
+                    m = e.get("move", {})
+                    print(
+                        f"    {e['game']} {m.get('label','?')} "
+                        f"{m.get('san','?')} epl={e['epl_lost']}"
+                    )
+            print(
+                f"  prev_class: "
+                + ", ".join(
+                    f"{k}={v}" for k, v in sorted(prev_counts.items(), key=lambda x: -x[1])
+                )
+            )
+
 
 if __name__ == "__main__":
     main()
