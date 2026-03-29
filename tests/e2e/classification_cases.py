@@ -357,4 +357,16 @@ GAMES: list[dict] = [
             60: "31.w Ke2 — not great, other",
         },
     },
+    {
+        "game_id": "badlanshunty_129817210961",
+        "brilliant_indices": [44],  # 23.w Ng5
+        "great_indices": [15, 34, 37],  # 8.b Nbd7, 18.w Kb2, 19.b Qc3+
+        "notes": {
+            15: "8.b Nbd7 — great",
+            29: "15.b Bxh6 — not great, other",
+            34: "18.w Kb2 — great",
+            37: "19.b Qc3+ — great",
+            44: "23.w Ng5 — brilliant (not detected by classifier)",
+        },
+    },
 ]
