@@ -92,13 +92,14 @@ After user approval:
    | Penalty             | -0.076 | -x.xx |       |
    | Regularized score   |  0.412 | 0.xxx | +x.xx |
    ```
-5. The regularized score must not decrease — if it does, the change adds more complexity than value. Reject and simplify.
-6. Commit with descriptive message including the before/after regularized scores
+5. **AUTOMATIC ROLLBACK**: If the regularized score decreases (or if macro F1 decreases, or if tests fail), immediately run `git checkout pwa/app.js` to revert ALL changes. Do NOT attempt to fix or adjust the broken code — revert first, then analyze what went wrong. Report the failure to the user with the BEFORE/AFTER table showing why the score dropped.
+6. Only if the regularized score strictly IMPROVES: commit with descriptive message including the before/after regularized scores.
 
 ## Important rules
 
-- NEVER use a Python proxy of the classifier. ALWAYS use `window._classifyMove` via Playwright for error collection.
+- NEVER use a Python proxy of the classifier. ALWAYS use `window._classifyMove` via Playwright for error collection and scoring.
 - **BOTH SIDES**: errors include moves from both players.
 - **NO OVERFITTING**: with a larger dataset the risk increases. Every proposed rule must be justified by a general chess principle.
 - Pay special attention to !! moves — they are rare and each FN/FP matters more.
 - The analysis agents should receive the FULL context: FEN, cp, mate_in, best_move, PV, and the same for the move before and after.
+- **ROLLBACK ON REGRESSION**: if ANY implementation attempt lowers the regularized score, revert immediately with `git checkout pwa/app.js`. Never try to "fix forward" — revert first, analyze, then try a different approach.
