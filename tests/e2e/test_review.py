@@ -799,15 +799,42 @@ def _count_classifier_complexity() -> tuple[int, int, int, int]:
         return ""
 
     def _count_in_code(src: str) -> tuple[set[str], int]:
-        """Count unique thresholds and conditions in a code fragment."""
+        """Count unique thresholds and rule conditions in a code fragment.
+
+        Conditions are counted as "rules" (domain logic) only when the if()
+        contains a numeric comparison or a function call. Pure null/type guards
+        (e.g. `if (!prevMove || prevMove.eval_before.score_cp == null)`) are
+        excluded — they are defensive boilerplate, not classification logic.
+        """
         thresholds: set[str] = set()
         for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", src):
             thresholds.add(t)
         for t in re.findall(r"[<>=!]=?\s*(-?\d+)(?!\.\d)", src):
             if abs(int(t)) > 2:
                 thresholds.add(t)
-        conditions = len(re.findall(r"\bif\s*\(", src))
-        return thresholds, conditions
+        # Count only rule conditions (not null/type guards)
+        rule_conditions = 0
+        for m in re.finditer(r"\bif\s*\(", src):
+            # Extract the condition between matching parens
+            start = m.end()
+            depth = 1
+            end = start
+            for j in range(start, len(src)):
+                if src[j] == "(":
+                    depth += 1
+                elif src[j] == ")":
+                    depth -= 1
+                    if depth == 0:
+                        end = j
+                        break
+            cond = src[start:end]
+            # A rule condition contains a numeric literal or a function call
+            has_numeric = bool(re.search(r"[<>=!]=?\s*-?\d", cond))
+            has_call = bool(re.search(r"\b[a-zA-Z_]\w+\s*\(", cond))
+            has_domain = bool(re.search(r"is_mate|isOpening|isBook|isRecapture|is_best|stillMate|mateForPlayer", cond))
+            if has_numeric or has_call or has_domain:
+                rule_conditions += 1
+        return thresholds, rule_conditions
 
     # 1. Extract classifyMove body
     classify_body = _extract_function("classifyMove")
