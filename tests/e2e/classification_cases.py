@@ -313,4 +313,19 @@ GAMES: list[dict] = [
             81: "41.b Rxd2 — great",
         },
     },
+    {
+        "game_id": "danial_zinou_121735581108",
+        "brilliant_indices": [],
+        "great_indices": [8, 10, 12, 18, 39, 44, 54],  # 5.w Bd2, 6.w Nc3, 7.w Rb1, 10.w Nxc7+, 20.b Qh5, 23.w c4, 28.w Rxd7+
+        "notes": {
+            8: "5.w Bd2 — great (not detected by classifier)",
+            10: "6.w Nc3 — great (not detected by classifier)",
+            12: "7.w Rb1 — great (not detected by classifier)",
+            18: "10.w Nxc7+ — great (not detected by classifier)",
+            39: "20.b Qh5 — great",
+            41: "21.b Qxb5 — not great, other",
+            44: "23.w c4 — great",
+            54: "28.w Rxd7+ — great (not detected by classifier)",
+        },
+    },
 ]
