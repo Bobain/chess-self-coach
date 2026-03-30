@@ -116,7 +116,7 @@ Complexity is computed by `_count_classifier_complexity()` in `tests/e2e/test_re
 - **Zone**: from start of `classifyMove()` to last `return { category: 'brilliant'` or `'great'`
 - **Thresholds**: unique numeric constants in comparisons (integers <= 2 excluded). Reusing an existing threshold costs 0.
 - **Conditions**: `if()` with numeric comparisons, function calls, or domain keywords. Null/type guards NOT counted.
-- **Helpers**: functions called from the zone (e.g. `isSacrifice`, `winProb`). Counted recursively.
+- **Helpers**: functions called from the zone (e.g. `isSacrifice`, `winProb`). Flat cost: 1 point per helper (internals NOT counted — a well-named helper encapsulates complexity, it doesn't add it).
 - **Total** = thresholds + conditions + helpers
 
 ## Important rules

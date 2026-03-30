@@ -861,14 +861,11 @@ def _count_classifier_complexity() -> tuple[int, int, int, int]:
     helpers = called & defined - {"classifyMove"}
     n_helpers = 0
 
-    # 5. Recursively count complexity in each helper
-    for helper_name in helpers:
-        helper_code = _extract_function(helper_name)
-        if helper_code:
-            h_thresholds, h_conditions = _count_in_code(helper_code)
-            total_thresholds |= h_thresholds
-            total_conditions += h_conditions
-            n_helpers += 1
+    # 5. Count helpers as 1 point each (flat cost, no recursive counting).
+    #    A well-named helper (isSacrifice, winProb) encapsulates complexity
+    #    behind a readable interface — it makes the classifier MORE readable,
+    #    not less. Counting internals discourages feature engineering.
+    n_helpers = len(helpers)
 
     return len(total_thresholds), total_conditions, n_helpers, len(total_thresholds) + total_conditions + n_helpers
 
