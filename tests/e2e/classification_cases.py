@@ -539,4 +539,12 @@ GAMES: list[dict] = [
             20: "Qf3 — great",
         },
     },
+    {
+        "game_id": "ibra_matador_121721706228",
+        "brilliant_indices": [],
+        "great_indices": [14],  # 8.w Bxe7
+        "notes": {
+            14: "Bxe7 — great",
+        },
+    },
 ]
