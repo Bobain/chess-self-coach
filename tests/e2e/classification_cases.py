@@ -599,4 +599,17 @@ GAMES: list[dict] = [
             52: "Rxd5 — brilliant",
         },
     },
+    {
+        "game_id": "ekostrenkov_166493950346",
+        "brilliant_indices": [46],  # 24.w Nd6
+        "great_indices": [21, 29, 36, 39, 42],  # 11.b bxc5, 15.b Nxe5, 19.w Nb5, 20.b Bxe5, 22.w fxe5
+        "notes": {
+            21: "bxc5 — great",
+            29: "Nxe5 — great",
+            36: "Nb5 — great",
+            39: "Bxe5 — great",
+            42: "fxe5 — great",
+            46: "Nd6 — brilliant",
+        },
+    },
 ]
