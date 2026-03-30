@@ -21,13 +21,11 @@ If no candidates found, inform the user and stop.
 
 For each candidate game, from oldest to newest (!! games first):
 
-1. Show game info: White vs Black, date, result, player color, number of moves, and the **game URL** (the full game_id from analysis_data.json, e.g. https://www.chess.com/game/live/123456)
-2. Show ONLY the moves classified as !! or ! in a table:
-   ```
-   Idx  Move#  Move      Category  cp before→after  PV (first 5 moves)
-   ```
-3. Ask the user: "Which indices are !! and which are ! ?" — the user will respond with something like "idx 36 is !!, idx 38 is !" or "aucun coup !! ni !" (= all other)
-4. Any move not mentioned by the user is considered "other" (not !! or !)
+1. Show game info: White vs Black, date, result, player color, number of moves
+2. Give the user the **game URL** (the full URL from analysis_data.json, e.g. https://www.chess.com/game/live/123456) so they can review the game themselves
+3. Wait for the user's response. The user will review the game on chess.com and reply with the list of !! and ! moves using move numbers, e.g. "9.b Bh2+ is !, 15.w Nxe6 is !!" or "aucun coup !! ni !" (= all other)
+4. **Map the user's move numbers to indices**: use the moves array from analysis_data.json to find the index for each move number. Move 1.w = index 0, move 1.b = index 1, move 2.w = index 2, etc. General formula: index = (move_number - 1) * 2 + (1 if black else 0). Verify the SAN matches what the user said.
+5. Any move not mentioned by the user is considered "other" (not !! or !)
 
 ## Step 3: Update fixtures
 

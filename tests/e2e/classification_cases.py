@@ -490,4 +490,13 @@ GAMES: list[dict] = [
             122: "62.w Rxe1 — great (not detected by classifier)",
         },
     },
+    {
+        "game_id": "surangart_125132968589",
+        "brilliant_indices": [],
+        "great_indices": [17, 31],  # 9.b Bh2+, 16.b Qh4
+        "notes": {
+            17: "Bh2+ — great, deflection sacrifice",
+            31: "Qh4 — great",
+        },
+    },
 ]
