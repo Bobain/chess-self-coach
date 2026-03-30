@@ -511,4 +511,14 @@ GAMES: list[dict] = [
             31: "Qh4 — great",
         },
     },
+    {
+        "game_id": "primocorti_125144956051",
+        "brilliant_indices": [],
+        "great_indices": [42, 44, 47],  # 22.w Kh2, 23.w Qg6+, 24.b Rf6
+        "notes": {
+            42: "Kh2 — great",
+            44: "Qg6+ — great",
+            47: "Rf6 — great",
+        },
+    },
 ]
