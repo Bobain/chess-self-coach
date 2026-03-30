@@ -575,4 +575,20 @@ GAMES: list[dict] = [
             36: "Be4 — great",
         },
     },
+    {
+        "game_id": "JARVIS42AI_166054148592",
+        "brilliant_indices": [],
+        "great_indices": [47, 59, 72, 75, 81, 83, 85, 128, 131],
+        "notes": {
+            47: "Nf4+ — great",
+            59: "Kf6 — great",
+            72: "fxg4+ — great",
+            75: "Kg6 — great",
+            81: "Kh4 — great",
+            83: "Kh3 — great",
+            85: "Kg2 — great",
+            128: "Qa3+ — great",
+            131: "Kd6 — great",
+        },
+    },
 ]
