@@ -2,7 +2,7 @@ Analyze classification errors across the full ground truth dataset using per-pos
 
 **Goal**: maximize regularized score = macro_F1 - 0.10 × complexity / 50. Rules must be simple and explainable to a 1200 ELO player. NO OVERFITTING.
 
-**Macro F1 definition**: computed globally (all TP/FP/FN aggregated across ALL games, not per-game averages) for 3 classes: `brilliant`, `great`, and `other` (any move that is neither !! nor !). F1 is calculated per class, then macro F1 = (F1_brilliant + F1_great + F1_other) / 3. Note: F1_other is typically ~0.97 because 95% of moves are "other" and most are correctly classified. The lever for improvement is F1_brilliant (~0.67) and F1_great (~0.49). Reducing FP great hurts F1_other too (FP great = FN other), so there's a trade-off.
+**Macro F1 definition**: computed globally (all TP/FP/FN aggregated across ALL games, not per-game averages) for 2 classes: `brilliant` and `great`. F1 is calculated per class, then macro F1 = (F1_brilliant + F1_great) / 2. F1_other is excluded because it's ~0.97 constant (95% of moves are "other") and double-counts errors already penalized by F1_brilliant and F1_great (FP_great = FN_other).
 
 ## Step 1: Collect data + BEFORE score
 
