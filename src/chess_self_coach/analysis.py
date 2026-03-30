@@ -29,6 +29,7 @@ from chess_self_coach.constants import (
     MATE_CP,
     MIDDLEGAME_PIECES_MAX,
 )
+from chess_self_coach.io import atomic_write_json
 from chess_self_coach.tablebase import MAX_PIECES, probe_position_full
 
 _log = logging.getLogger(__name__)
@@ -88,9 +89,6 @@ class AnalysisSettings:
             "hash_mb": self.hash_mb,
             "limits": self.limits,
         }
-
-
-from chess_self_coach.io import atomic_write_json
 
 
 def load_analysis_data(path: Path | None = None) -> dict:

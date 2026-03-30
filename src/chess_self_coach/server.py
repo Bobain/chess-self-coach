@@ -609,8 +609,6 @@ def run_server() -> None:
     Called by cli.py when user runs `chess-self-coach` (no subcommand)
     or `chess-self-coach train --serve`.
     """
-    import threading
-
     import uvicorn
 
     port = _find_available_port()

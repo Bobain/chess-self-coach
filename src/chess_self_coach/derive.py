@@ -28,10 +28,10 @@ from chess_self_coach.tablebase import (
     tablebase_explanation,
 )
 from chess_self_coach.trainer import (
-    _classify_mistake,
-    _format_score_cp,
-    _generate_context,
-    _time_pressure_context,
+    classify_mistake,
+    format_score_cp,
+    generate_context,
+    time_pressure_context,
     generate_explanation,
 )
 
@@ -108,7 +108,7 @@ def annotate_and_derive(
             if cp_loss < min_cp_loss:
                 continue
 
-            category = _classify_mistake(cp_loss)
+            category = classify_mistake(cp_loss)
             if category is None:
                 continue
 
@@ -162,7 +162,7 @@ def annotate_and_derive(
             )
 
             # Generate context
-            context = _generate_context(
+            context = generate_context(
                 category,
                 cp_loss,
                 was_mate,
@@ -199,7 +199,7 @@ def annotate_and_derive(
 
             # Time pressure context
             clock = move_data.get("clock", {})
-            time_ctx = _time_pressure_context(
+            time_ctx = time_pressure_context(
                 clock.get("player"), clock.get("opponent")
             )
             if time_ctx:
@@ -220,9 +220,9 @@ def annotate_and_derive(
                 "player_move": actual_san,
                 "best_move": best_san or actual_san,
                 "context": context,
-                "score_before": _format_score_cp(score_before_cp),
-                "score_after": _format_score_cp(score_after_cp),
-                "score_after_best": _format_score_cp(score_before_cp),
+                "score_before": format_score_cp(score_before_cp),
+                "score_after": format_score_cp(score_after_cp),
+                "score_after_best": format_score_cp(score_before_cp),
                 "cp_loss": cp_loss,
                 "category": category,
                 "explanation": explanation,

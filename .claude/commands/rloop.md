@@ -12,7 +12,7 @@ Run `uv run pytest tests/test_training_texts.py -v`. If any test fails:
 
 **Step 3 — Semantic review:**
 Run `uv run python3 scripts/review_texts.py`. If exit code 1 (issues found):
-- If systemic (pattern across multiple positions): fix `_generate_context()` or `generate_explanation()` in trainer.py
+- If systemic (pattern across multiple positions): fix `generate_context()` or `generate_explanation()` in trainer.py
 - If data bug: fix the root cause in the generation code
 - Go back to Step 1
 

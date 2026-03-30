@@ -19,7 +19,7 @@ Read `training_data.json` and analyze each position for:
 4. **Anomalies**: Flag any "unknown" sources, empty fields, suspicious pawn counts (>50), or missing PV lines.
 
 For each issue found:
-- If it's a **systemic pattern** (same type of bad context across many positions): propose a fix to `_generate_context()` or `generate_explanation()` in `src/chess_self_coach/trainer.py`, apply it, then run `uv run chess-self-coach train --refresh-explanations` to update all positions.
+- If it's a **systemic pattern** (same type of bad context across many positions): propose a fix to `generate_context()` or `generate_explanation()` in `src/chess_self_coach/trainer.py`, apply it, then run `uv run chess-self-coach train --refresh-explanations` to update all positions.
 - If it's a **data bug** (wrong source, missing field): fix the root cause in the code that generates the data.
 - After any code changes, run `uv run pytest tests/test_training_texts.py -v` to verify.
 

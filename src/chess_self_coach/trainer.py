@@ -29,7 +29,7 @@ from chess_self_coach.constants import (
 )
 
 
-def _format_score_cp(cp: int | None) -> str:
+def format_score_cp(cp: int | None) -> str:
     """Format centipawn value as score string like '+0.32'."""
     if cp is None:
         return "+0.00"
@@ -39,7 +39,7 @@ def _format_score_cp(cp: int | None) -> str:
 
 
 
-def _classify_mistake(cp_loss: int) -> str | None:
+def classify_mistake(cp_loss: int) -> str | None:
     """Classify a move by centipawn loss.
 
     Returns:
@@ -198,7 +198,7 @@ def _describe_advantage(score_before_cp: int | None, player_color: str) -> str:
     return "you were in a difficult position"
 
 
-def _time_pressure_context(
+def time_pressure_context(
     player_clock: float | None, opponent_clock: float | None,
 ) -> str:
     """Generate time pressure context string, or empty if not relevant.
@@ -231,7 +231,7 @@ def _time_pressure_context(
     return ""
 
 
-def _generate_context(
+def generate_context(
     category: str,
     cp_loss: int,
     was_mate: bool,
@@ -399,7 +399,7 @@ def refresh_explanations() -> None:
                 pos["cp_loss"], pos["category"],
                 was_mate=was_mate, score_after_cp=score_after_cp,
             )
-            new_context = _generate_context(
+            new_context = generate_context(
                 pos["category"], pos["cp_loss"], was_mate, score_after_cp,
                 fen=pos["fen"], score_before_cp=score_before_cp,
                 player_color=pos.get("player_color", "white"),

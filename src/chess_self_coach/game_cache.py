@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 import chess.pgn
 
 from chess_self_coach.config import analysis_data_path, fetched_games_path
+from chess_self_coach.io import atomic_write_json
 
 _log = logging.getLogger(__name__)
 
@@ -237,9 +238,7 @@ def fetch_and_cache_games(
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "games": cache_games,
     }
-    with open(cache_path, "w") as f:
-        json.dump(cache_data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    atomic_write_json(cache_path, cache_data)
 
     _log.info("Cached %d games (%d new) to %s", len(cache_games), new_count, cache_path)
     return summaries
