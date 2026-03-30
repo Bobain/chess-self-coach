@@ -1,10 +1,12 @@
-"""Shared constants for chess analysis engine.
+"""Shared constants and types for chess analysis engine.
 
 Single source of truth for values used across multiple modules
 (analysis.py, trainer.py, tablebase.py).
 """
 
 from __future__ import annotations
+
+from typing import TypedDict
 
 # --- Mate score sentinel (centipawns) ---
 MATE_CP = 10_000
@@ -33,3 +35,29 @@ DOMINATED_POSITION_CP = 500  # |eval| > this → position is already won/lost
 
 # --- PV display limit (non-mate positions) ---
 MAX_PV_MOVES = 10
+
+
+# --- Typed evaluation structure ---
+
+
+class EvalDict(TypedDict):
+    """Standard evaluation dictionary returned by all eval extraction functions.
+
+    Used by _extract_eval (Stockfish), _tb_to_eval (tablebase),
+    and _cloud_eval_to_eval (Lichess Cloud Eval).
+    """
+
+    score_cp: int | None
+    is_mate: bool
+    mate_in: int | None
+    depth: int | None
+    seldepth: int | None
+    nodes: int | None
+    nps: int | None
+    time_ms: int | None
+    tbhits: int | None
+    hashfull: int | None
+    pv_san: list[str]
+    pv_uci: list[str]
+    best_move_san: str | None
+    best_move_uci: str | None

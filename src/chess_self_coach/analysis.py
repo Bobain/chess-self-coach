@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import threading
 import time as _time
 from collections.abc import Callable
@@ -101,20 +100,7 @@ class AnalysisSettings:
         }
 
 
-def _atomic_write_json(path: Path, data: dict) -> None:
-    """Write JSON atomically: temp file, fsync, os.replace.
-
-    Args:
-        path: Target file path.
-        data: Dict to serialize as JSON.
-    """
-    tmp_path = path.with_suffix(".tmp")
-    with open(tmp_path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp_path, path)
+from chess_self_coach.io import atomic_write_json
 
 
 def load_analysis_data(path: Path | None = None) -> dict:
@@ -148,7 +134,7 @@ def save_analysis_data(data: dict, path: Path | None = None) -> None:
     if path is None:
         path = _default_analysis_path()
     data["version"] = "1.0"
-    _atomic_write_json(path, data)
+    atomic_write_json(path, data)
 
 
 def settings_match(stored: dict, current: dict) -> bool:
@@ -229,6 +215,34 @@ def _score_to_cp(score: chess.engine.PovScore) -> tuple[int | None, bool, int | 
     return white.score(), False, None
 
 
+def _convert_pv(
+    board: chess.Board, moves: list[chess.Move] | list[str],
+) -> tuple[list[str], list[str]]:
+    """Convert a principal variation to SAN and UCI string lists.
+
+    Accepts either chess.Move objects (from Stockfish) or UCI strings (from APIs).
+
+    Args:
+        board: Board position before the PV starts.
+        moves: PV as Move objects or UCI strings.
+
+    Returns:
+        Tuple of (pv_san, pv_uci).
+    """
+    pv_san: list[str] = []
+    pv_uci: list[str] = []
+    pv_board = board.copy()
+    for raw_move in moves:
+        try:
+            move = chess.Move.from_uci(raw_move) if isinstance(raw_move, str) else raw_move
+            pv_san.append(pv_board.san(move))
+            pv_uci.append(move.uci())
+            pv_board.push(move)
+        except (ValueError, AssertionError):
+            break
+    return pv_san, pv_uci
+
+
 def _extract_eval(info: chess.engine.InfoDict, board: chess.Board) -> dict:
     """Extract full evaluation data from a Stockfish info dict.
 
@@ -237,8 +251,7 @@ def _extract_eval(info: chess.engine.InfoDict, board: chess.Board) -> dict:
         board: Board position that was analyzed (for PV SAN conversion).
 
     Returns:
-        Dict with score_cp, is_mate, mate_in, depth, seldepth, nodes, nps,
-        time_ms, tbhits, hashfull, pv_san, pv_uci, best_move_san, best_move_uci.
+        Typed eval dict with score, PV, best move, and engine metadata.
     """
     score = info.get("score")
     if score is None:
@@ -262,21 +275,9 @@ def _extract_eval(info: chess.engine.InfoDict, board: chess.Board) -> dict:
     score_cp, is_mate, mate_in = _score_to_cp(score)
     pv = info.get("pv", [])
 
-    # Convert full PV to SAN and UCI
-    pv_san: list[str] = []
-    pv_uci: list[str] = []
-    pv_board = board.copy()
-    for move in pv:
-        try:
-            pv_san.append(pv_board.san(move))
-            pv_uci.append(move.uci())
-            pv_board.push(move)
-        except (ValueError, AssertionError):
-            break
-
-    best_move = pv[0] if pv else None
-    best_san = board.san(best_move) if best_move else None
-    best_uci = best_move.uci() if best_move else None
+    pv_san, pv_uci = _convert_pv(board, pv)
+    best_san = pv_san[0] if pv_san else None
+    best_uci = pv_uci[0] if pv_uci else None
 
     # Time: python-chess reports seconds as float, convert to ms
     time_s = info.get("time")
@@ -343,7 +344,7 @@ def _cloud_eval_to_eval(cloud_data: dict, board: chess.Board) -> dict:
         board: Board position (for PV UCI-to-SAN conversion).
 
     Returns:
-        Dict matching the _extract_eval() structure.
+        Typed eval dict matching the _extract_eval() structure.
     """
     pv_entry = cloud_data.get("pvs", [{}])[0]
 
@@ -357,20 +358,8 @@ def _cloud_eval_to_eval(cloud_data: dict, board: chess.Board) -> dict:
         score_cp = MATE_CP if mate_in > 0 else -MATE_CP
 
     # PV: space-separated UCI moves
-    pv_uci_str = pv_entry.get("moves", "")
-    pv_uci = pv_uci_str.split() if pv_uci_str else []
-
-    # Convert PV to SAN
-    pv_san: list[str] = []
-    pv_board = board.copy()
-    for uci in pv_uci:
-        try:
-            move = chess.Move.from_uci(uci)
-            pv_san.append(pv_board.san(move))
-            pv_board.push(move)
-        except (ValueError, AssertionError):
-            break
-
+    pv_uci_raw = pv_entry.get("moves", "").split() if pv_entry.get("moves") else []
+    pv_san, pv_uci = _convert_pv(board, pv_uci_raw)
     best_uci = pv_uci[0] if pv_uci else None
     best_san = pv_san[0] if pv_san else None
 
@@ -1372,6 +1361,6 @@ def annotate_and_derive(
         "analyzed_game_ids": sorted(analyzed_game_ids),
     }
 
-    _atomic_write_json(output_path, training_data)
+    atomic_write_json(output_path, training_data)
     print(f"  Training data derived: {output_path}")
     print(f"  Total positions: {len(sorted_positions)} (from {len(games)} games)")

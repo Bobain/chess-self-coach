@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 import chess
 
-from chess_self_coach.analysis import _atomic_write_json
+from chess_self_coach.io import atomic_write_json
 from chess_self_coach.config import training_data_path
 from chess_self_coach.tablebase import (
     TablebaseResult,
@@ -419,7 +418,7 @@ def refresh_explanations() -> None:
             pos["context"] = new_context
             updated += 1
 
-    _atomic_write_json(data_path, data)
+    atomic_write_json(data_path, data)
 
     print(f"  Refreshed {updated}/{len(positions)} explanation(s) in {data_path}")
     if updated:

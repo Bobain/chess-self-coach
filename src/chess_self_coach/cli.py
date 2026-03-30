@@ -212,12 +212,12 @@ def main(argv: list[str] | None = None) -> None:
 
 def _setup() -> None:
     """Interactive setup: Stockfish, Syzygy, game platforms."""
-    import json
-
     from chess_self_coach.config import (
         check_stockfish_version,
         config_path,
         find_stockfish,
+        load_config,
+        save_config,
     )
 
     print("\n  === Chess Self-Coach Setup ===\n")
@@ -268,12 +268,12 @@ def _setup() -> None:
         sys.exit(1)
 
     # Write config
-    cfg_path = config_path()
-    cfg_path.parent.mkdir(parents=True, exist_ok=True)
-    config: dict = {}
-    if cfg_path.exists():
-        with open(cfg_path) as f:
-            config = json.load(f)
+    cfg = config_path()
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        config = load_config()
+    except SystemExit:
+        config = {}
 
     config["stockfish"] = {"path": str(sf_path)}
     players: dict[str, str] = {}
@@ -286,9 +286,7 @@ def _setup() -> None:
     # Remove legacy studies section if present
     config.pop("studies", None)
 
-    with open(cfg_path, "w") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    save_config(config)
 
     # Write .env if token provided
     if lichess_token:
@@ -298,8 +296,6 @@ def _setup() -> None:
         with open(env_path, "w") as f:
             f.write(f"LICHESS_API_TOKEN={lichess_token}\n")
         print(f"\n  ✓ Token saved to {env_path}")
-
-    print(f"  ✓ Config saved to {cfg_path}")
     print("\n  Setup complete! Run 'chess-self-coach train --prepare' to start.\n")
 
 

@@ -30,7 +30,6 @@ TRAINING_DATA_FILE = "training_data.json"
 FETCHED_GAMES_FILE = "fetched_games.json"
 
 ENV_FILE = ".env"
-ENV_EXAMPLE = ".env.example"
 
 # Default Stockfish paths (checked in order)
 _SF_SEARCH_PATHS = [
@@ -150,16 +149,16 @@ def load_config() -> dict[str, Any]:
 
 
 def save_config(config: dict[str, Any]) -> None:
-    """Write config back to config.json.
+    """Write config back to config.json atomically.
 
     Args:
         config: The config dictionary to save.
     """
+    from chess_self_coach.io import atomic_write_json
+
     cfg = config_path()
     cfg.parent.mkdir(parents=True, exist_ok=True)
-    with open(cfg, "w") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    atomic_write_json(cfg, config)
     print(f"  Config saved to {cfg}")
 
 
