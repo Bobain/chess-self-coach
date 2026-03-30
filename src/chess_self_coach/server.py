@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import shutil
 import socket
 import subprocess
@@ -44,8 +45,11 @@ from chess_self_coach.config import (
     _find_project_root,
     find_stockfish,
 )
+from chess_self_coach.io import atomic_write_json
 
 # --- State ---
+
+_log = logging.getLogger(__name__)
 
 _engine: chess.engine.SimpleEngine | None = None
 _engine_lock = asyncio.Lock()
@@ -71,9 +75,9 @@ async def lifespan(app: FastAPI):
         _engine = chess.engine.SimpleEngine.popen_uci(str(_sf_path))
         # Parse version from engine id
         _sf_version = _engine.id.get("name", "unknown")
-        print(f"  Stockfish: {_sf_version}")
+        _log.info("Stockfish: %s", _sf_version)
     except SystemExit:
-        print("  Warning: Stockfish not found. /api/stockfish/* will be unavailable.")
+        _log.warning("Stockfish not found. /api/stockfish/* will be unavailable.")
         _engine = None
 
     yield
@@ -259,7 +263,7 @@ async def bestmove(req: BestMoveRequest) -> BestMoveResponse:
             result = await asyncio.to_thread(_engine.play, board, limit)
         except chess.engine.EngineTerminatedError:
             # Engine crashed — restart and retry
-            print("  Warning: Stockfish crashed, restarting...")
+            _log.warning("Stockfish crashed, restarting...")
             if _sf_path:
                 _engine = chess.engine.SimpleEngine.popen_uci(str(_sf_path))
                 result = await asyncio.to_thread(_engine.play, board, limit)
@@ -303,9 +307,7 @@ async def update_config(req: ConfigUpdateRequest) -> ConfigResponse:
     if req.analysis is not None:
         config["analysis"] = req.analysis
 
-    with open(config_path, "w") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    atomic_write_json(config_path, config)
 
     return ConfigResponse(
         players=config.get("players", {}),
@@ -393,9 +395,7 @@ async def update_analysis_settings(req: AnalysisSettingsResponse) -> AnalysisSet
         "limits": req.limits,
     }
 
-    with open(config_path, "w") as f:
-        json.dump(config, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    atomic_write_json(config_path, config)
 
     return req
 
@@ -456,11 +456,8 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
     """
     global _current_job
 
-    from chess_self_coach.analysis import (
-        AnalysisInterrupted,
-        analyze_games,
-        annotate_and_derive,
-    )
+    from chess_self_coach.analysis import AnalysisInterrupted, analyze_games
+    from chess_self_coach.derive import annotate_and_derive
 
     assert _current_job is not None
     job = _current_job
