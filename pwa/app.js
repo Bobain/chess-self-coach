@@ -1624,14 +1624,9 @@ function classifyMove(move, playerColor, prevMove) {
     return { category: 'brilliant', symbol: '!!', color: '#1baca6' };
   }
 
-  // Great detection: best/near-best move in a critical moment
-  // Two paths:
-  // (A) Punish opponent's mistake — opponent lost significant win probability,
-  //     player finds a non-trivial correct response that maintains or improves position
-  // (B) Big swing — the move itself creates a large evaluation gain
-  const wpGain = wpAfter - wpBefore;
+  // Great detection: best/near-best move exploiting opponent's mistake
+  // Opponent lost significant win probability, player finds correct response
   if (eplLost <= 0.02 && !isOpening) {
-    // (A) Opponent blundered on previous move and player finds correct response
     if (prevMove && prevMove.eval_before && prevMove.eval_after
         && prevMove.eval_before.score_cp != null && prevMove.eval_after.score_cp != null
         && !prevMove.eval_before.is_mate && !prevMove.eval_after.is_mate) {
@@ -1639,9 +1634,9 @@ function classifyMove(move, playerColor, prevMove) {
       const oppWpBefore = winProb(prevMove.eval_before.score_cp * oppSign);
       const oppWpAfter = winProb(prevMove.eval_after.score_cp * oppSign);
       const oppEpl = oppWpBefore - oppWpAfter;
-      // Opponent lost >= 15% win probability AND:
-      // - Player's response is good (outer gate eplLost <= 0.02 already applied)
-      // - Not a trivial recapture on the same square
+      // Opponent lost >= 15% win probability
+      // Player's response is good (outer gate eplLost <= 0.02 already applied)
+      // Not a trivial recapture on the same square
       if (oppEpl >= 0.15) {
         const isRecapture = prevMove.move_uci && move.move_uci
           && prevMove.move_uci.slice(2, 4) === move.move_uci.slice(2, 4);
@@ -1649,10 +1644,6 @@ function classifyMove(move, playerColor, prevMove) {
           return { category: 'great', symbol: '!', color: '#5c9ced' };
         }
       }
-    }
-    // (B) Big win-probability swing (e.g. turning a losing position into equal)
-    if (wpGain >= 0.20 && wpBefore > 0.10 && wpBefore < 0.80) {
-      return { category: 'great', symbol: '!', color: '#5c9ced' };
     }
   }
 
