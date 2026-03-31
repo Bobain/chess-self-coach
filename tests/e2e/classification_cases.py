@@ -884,4 +884,13 @@ GAMES: list[dict] = [
             107: "Kf7 — great",
         },
     },
+    {
+        "game_id": "NirwanSaranga2006_166267979194",
+        "brilliant_indices": [],
+        "great_indices": [27, 46],  # 14.b Qd7, 24.w Rh4
+        "notes": {
+            27: "Qd7 — great",
+            46: "Rh4 — great",
+        },
+    },
 ]
