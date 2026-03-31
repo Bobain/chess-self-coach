@@ -849,4 +849,16 @@ GAMES: list[dict] = [
             48: "Bxf3 — great",
         },
     },
+    {
+        "game_id": "sidoye_165965658898",
+        "brilliant_indices": [],
+        "great_indices": [27, 36, 45, 49, 51],  # 14.b Be6, 19.w Bxc3, 23.b Nxa4, 25.b Rb8, 26.b Rb2
+        "notes": {
+            27: "Be6 — great",
+            36: "Bxc3 — great",
+            45: "Nxa4 — great",
+            49: "Rb8 — great",
+            51: "Rb2 — great",
+        },
+    },
 ]
