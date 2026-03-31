@@ -999,4 +999,13 @@ GAMES: list[dict] = [
         "great_indices": [],
         "notes": {},
     },
+    {
+        "game_id": "JuanAdo22_166615409160",
+        "brilliant_indices": [10],  # 6.w Nxf7
+        "great_indices": [12],  # 7.w Bg6+
+        "notes": {
+            10: "Nxf7 — brilliant, knight sacrifice exploiting h6 weakness",
+            12: "Bg6+ — great, bishop sacrifice forcing Kxg6 then Qxd8",
+        },
+    },
 ]

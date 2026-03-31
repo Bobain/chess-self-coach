@@ -462,15 +462,20 @@ def collect_game_data(
         # --- Opening Explorer: determine if move is in opening theory ---
         explorer_data = explorer_results[ply] if ply < len(explorer_results) else None
         in_opening = False
+        use_cloud_eval = False
         if explorer_data is not None:
             known_moves_uci = {m["uci"] for m in explorer_data.get("moves", [])}
-            in_opening = actual_move.uci() in known_moves_uci
+            is_known_move = actual_move.uci() in known_moves_uci
+            if is_known_move:
+                use_cloud_eval = True
+                # in_opening only if Masters confirmed this move as real theory
+                in_opening = explorer_data.get("_source") == "masters"
 
         # --- Eval: board_after_fen needed by both branches ---
         board_after_fen = board_after.fen()
 
         # --- Eval source + eval_before / eval_after ---
-        if in_opening:
+        if use_cloud_eval:
             # Opening book move: use Lichess Cloud Eval (fast), fall back to Stockfish
             # eval_source is set below based on actual evaluation provider
 

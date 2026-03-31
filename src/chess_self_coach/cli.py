@@ -177,6 +177,7 @@ def main(argv: list[str] | None = None) -> None:
             refresh_explanations()
         elif args.prepare:
             from chess_self_coach.analysis import AnalysisSettings, analyze_games
+            from chess_self_coach.opening_explorer import ExplorerAPIError
 
             # Build settings from config, with CLI overrides
             from chess_self_coach.config import load_config
@@ -195,7 +196,7 @@ def main(argv: list[str] | None = None) -> None:
                     settings=settings,
                     engine_path=args.engine,
                 )
-            except (FileNotFoundError, RuntimeError) as e:
+            except (FileNotFoundError, RuntimeError, ExplorerAPIError) as e:
                 print(f"  {e}", file=sys.stderr)
                 sys.exit(1)
         elif args.serve:

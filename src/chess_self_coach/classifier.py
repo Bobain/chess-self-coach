@@ -93,13 +93,9 @@ def classify_move(
     """
     cfg = config if config is not None else DEFAULT_CONFIG
 
-    # Book moves
-    is_book = move.get("in_opening", False)
-    if is_book:
-        eb = move.get("eval_before", {})
-        ea = move.get("eval_after", {})
-        if eb.get("score_cp") is None or ea.get("score_cp") is None:
-            return {"c": "book", **CATEGORIES["book"]}
+    # Book moves: in_opening=True means verified in Masters database (real theory)
+    if move.get("in_opening", False):
+        return {"c": "book", **CATEGORIES["book"]}
 
     eval_before = move.get("eval_before", {})
     eval_after = move.get("eval_after", {})

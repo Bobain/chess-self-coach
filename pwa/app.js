@@ -1334,12 +1334,16 @@ function showAnalysisProgress(jobId) {
         pendingGameIds.clear();
         analysisOffset = 0;
         analysisTotalAll = 0;
-        setTimeout(() => el.classList.add('hidden'), 2000);
-        if (event.phase === 'done') {
+        if (event.phase === 'error' || event.phase === 'interrupted') {
+          console.error('[showAnalysisProgress] Job failed:', event.phase, event.message);
+          el.textContent = event.message || 'Analysis failed';
+          el.style.color = 'red';
+          setTimeout(() => { el.classList.add('hidden'); el.style.color = ''; }, 8000);
+          showGameSelector();
+        } else {
+          setTimeout(() => el.classList.add('hidden'), 2000);
           loadAnalysisData();  // reloads analysisData then calls showGameSelector
           loadTrainingData();
-        } else {
-          showGameSelector();
         }
       }
     }
