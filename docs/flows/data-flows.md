@@ -19,7 +19,7 @@ flowchart LR
         IMP[Importer<br/>fetch games]
         SF[Stockfish 18<br/>N-1 threads, 1GB hash]
         TB[Lichess Tablebase<br/>≤7 pieces]
-        OE[Lichess Opening Explorer<br/>theory detection]
+        OE[Lichess Opening Explorer<br/>Masters primary, Lichess fallback]
     end
 
     subgraph Storage
@@ -100,7 +100,7 @@ Phase 2 can be re-run cheaply without re-running Stockfish (`chess-self-coach tr
           eval_source, in_opening, eval_before: {score_cp, is_mate, depth, seldepth, nodes, nps, time_ms, pv_san, ...},
           eval_after: {...}, eval_after_best: {score_cp, is_mate, mate_in},
           tablebase_before, tablebase_after,
-          opening_explorer: {opening: {eco, name}, moves: [{san, white, draws, black}]},
+          opening_explorer: {opening: {eco, name}, moves: [{san, white, draws, black}], _source: "masters"|"lichess"},
           cp_loss, board: {piece_count, is_check, is_capture, ...},
           clock: {player, opponent, time_spent} }
       ]

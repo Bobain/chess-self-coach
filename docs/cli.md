@@ -54,7 +54,7 @@ chess-self-coach train --stats
 
 `--prepare` runs two phases:
 
-1. **Phase 1 (collection)**: Lichess Opening Explorer + Stockfish eval + Lichess Tablebase for each move. Opening book moves skip Stockfish (eval sourced from explorer); Stockfish runs from the theory departure onward. Results stored in `data/analysis_data.json` (atomic write after each game, crash-safe).
+1. **Phase 1 (collection)**: Lichess Opening Explorer (Masters primary, Lichess fallback) + Stockfish eval + Lichess Tablebase for each move. Opening book moves use cloud eval (fast); Stockfish runs from the theory departure onward. Only Masters-confirmed moves are marked as real theory (`in_opening=True`). Results stored in `data/analysis_data.json` (atomic write after each game, crash-safe).
 2. **Phase 2 (derivation)**: Filter player mistakes, generate explanations, write `data/training_data.json`.
 
 `--derive` runs Phase 2 only — useful to iterate on thresholds or explanations without re-running Stockfish.

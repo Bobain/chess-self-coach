@@ -108,7 +108,7 @@ sequenceDiagram
     participant API as FastAPI server
     participant SF as Stockfish (native)
     participant TB as Lichess Tablebase
-    participant OE as Lichess Opening Explorer
+    participant OE as Lichess Opening Explorer<br/>(Masters + Lichess)
     participant L as Lichess API
     participant C as Chess.com API
 
@@ -159,7 +159,7 @@ sequenceDiagram
 - **Settings modal**: unified modal with Training, Accounts, Analysis (presets: Quick/Balanced/Deep + Advanced toggle), and Danger zone sections.
 - **Two-phase pipeline, per-game**: Phase 1 collects raw data (expensive), Phase 2 derives training data (cheap). Phase 2 runs after **each game** (not at end of batch), so accuracy badges, review, and training are available immediately.
 - **Engine model**: one Stockfish with N-1 threads + 1GB hash (configurable), sequential game-by-game.
-- **Opening Explorer**: queries Lichess API position by position until theory departure (move not in database).
+- **Opening Explorer**: queries Masters endpoint (FIDE 2200+ OTB) first, then Lichess as fallback. Only Masters data sets `in_opening=True` (real theory). Lichess fallback provides cloud eval speed but `in_opening=False`.
 - **Incremental**: only unanalyzed games are processed. `reanalyze_all` skips only same-settings games.
 - **Crash safety**: atomic write of `analysis_data.json` after each game. Resumable on interruption.
 - **Thresholds**: blunder ≥ 200cp, mistake ≥ 100cp, inaccuracy ≥ 50cp.

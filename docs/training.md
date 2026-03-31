@@ -127,7 +127,7 @@ Uses a win probability model (chess.com-style): `winProb(cp) = 1 / (1 + 10^(-cp/
 | Best       | ≤ 0.00              | #96bc4b | ★      |
 | Excellent  | ≤ 0.02              | #96bc4b | ↑      |
 | Good       | ≤ 0.05              | #95b776 | ✓      |
-| Book       | (opening explorer)  | #a88764 | ♗      |
+| Book       | in Masters database (FIDE 2200+ theory) | #a88764 | ♗      |
 | Inaccuracy | ≤ 0.10              | #f7c631 | ?!     |
 | Mistake    | ≤ 0.20              | #e6912a | ?      |
 | Blunder    | > 0.20              | #ca3431 | ??     |
