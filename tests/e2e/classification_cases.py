@@ -693,4 +693,13 @@ GAMES: list[dict] = [
             106: "Ne2 — great",
         },
     },
+    {
+        "game_id": "maheshpadar_125299145887",
+        "brilliant_indices": [],
+        "great_indices": [12, 23],  # 7.w Nc3, 12.b Nc2+
+        "notes": {
+            12: "Nc3 — great",
+            23: "Nc2+ — great",
+        },
+    },
 ]
