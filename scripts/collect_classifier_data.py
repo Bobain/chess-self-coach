@@ -1,6 +1,6 @@
-"""Collect all !! and ! classified moves (TP/FP/FN) with 3-move context.
+"""Collect all !! and ! classified moves (TP/FP/FN) with features + tactical motifs.
 
-Uses the real JS classifier via Playwright (window._classifyMove).
+Pure Python — uses classifier.py + tactics_data.json directly (no Playwright).
 Outputs to /tmp/classifier_data.json.
 
 Usage: uv run python3 scripts/collect_classifier_data.py
@@ -9,16 +9,17 @@ Usage: uv run python3 scripts/collect_classifier_data.py
 from __future__ import annotations
 
 import json
+import math
 import pathlib
+import time
 
-
-from playwright.sync_api import sync_playwright
-
+from chess_self_coach.classifier import classify_move
+from chess_self_coach.config import tactics_data_path
 
 
 def wp(cp: int, sign: int) -> float:
     """Win probability from centipawn score."""
-    return 1 / (1 + 10 ** (-cp * sign / 400))
+    return 1 / (1 + math.pow(10, -cp * sign / 400))
 
 
 def fmt_move(moves: list[dict], idx: int) -> dict | None:
@@ -29,12 +30,8 @@ def fmt_move(moves: list[dict], idx: int) -> dict | None:
     eb = m.get("eval_before", {})
     ea = m.get("eval_after", {})
     san = m.get("move_san", "?")
-
-    # Derive features from SAN notation
     is_capture = "x" in san
     is_check = "+" in san or "#" in san
-    is_promotion = "=" in san
-    # Piece moved: uppercase letter at start, or pawn if lowercase/none
     piece_moved = san[0] if san and san[0].isupper() else "P"
 
     return {
@@ -52,13 +49,14 @@ def fmt_move(moves: list[dict], idx: int) -> dict | None:
         "pv_len": len(eb.get("pv_uci", [])),
         "is_capture": is_capture,
         "is_check": is_check,
-        "is_promotion": is_promotion,
         "piece_moved": piece_moved,
     }
 
 
 def main() -> None:
-    """Collect classification data."""
+    """Collect classification data using Python classifier + tactics."""
+    t0 = time.monotonic()
+
     gt_path = pathlib.Path("tests/e2e/fixtures/classification_ground_truth.json")
     with open(gt_path) as f:
         gt_data = json.load(f)
@@ -76,317 +74,148 @@ def main() -> None:
     gt_by_id = {g["game_id"]: g for g in gt_data["games"]}
     results: dict[str, list[dict]] = {"brilliant": [], "great": []}
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-        page.goto("http://localhost:8000")
-        page.wait_for_selector(".game-card", timeout=30000)
-        page.wait_for_function(
-            "() => typeof window.analyzeMoveMotifs === 'function'",
-            timeout=10000,
-        )
+    # Load tactics data
+    tactics_by_game: dict[str, list[dict]] = {}
+    tp = tactics_data_path()
+    if tp.exists():
+        with open(tp) as f:
+            tactics_by_game = json.load(f).get("games", {})
 
-        # ── Pass 1: fast classification (all moves, no motifs) ──
-        # Collect per-game: classification results + which indices are interesting
-        game_data_list: list[dict] = []
+    for game_gt in GAMES:
+        gid = game_gt["game_id"]
+        gt_game = gt_by_id.get(gid)
+        if not gt_game:
+            continue
+        moves = gt_game["moves"]
+        brilliant_set = set(game_gt.get("brilliant_indices", []))
+        great_set = set(game_gt.get("great_indices", []))
 
-        for game_gt in GAMES:
-            gid = game_gt["game_id"]
-            gt_game = gt_by_id.get(gid)
-            if not gt_game:
-                continue
-            moves = gt_game["moves"]
-            brilliant_set = set(game_gt.get("brilliant_indices", []))
-            great_set = set(game_gt.get("great_indices", []))
+        # Find matching tactics by numeric ID in URL
+        num_id = gid.split("_")[-1]
+        game_tactics = None
+        for url, tac in tactics_by_game.items():
+            if num_id in url:
+                game_tactics = tac
+                break
 
-            moves_json = json.dumps(moves)
-            classified = page.evaluate(
-                f"""() => {{
-                const moves = {moves_json};
-                return moves.map((m, i) => {{
-                    const side = m.side || (i % 2 === 0 ? 'white' : 'black');
-                    const prevMove = i > 0 ? moves[i - 1] : null;
-                    const cls = window._classifyMove(m, side, prevMove);
-                    const cat = cls ? cls.category : 'other';
-                    const sac = window._isSacrifice(m);
-                    return {{ category: cat, is_sacrifice: sac }};
-                }});
-            }}"""
+        # Classify all moves
+        classified = []
+        for i, m in enumerate(moves):
+            side = m.get("side", "white" if i % 2 == 0 else "black")
+            prev = moves[i - 1] if i > 0 else None
+            tact = game_tactics[i] if game_tactics and i < len(game_tactics) else None
+            cls = classify_move(m, side, prev, tact)
+            classified.append(cls)
+
+        # Collect TP/FP/FN
+        for i, (m, cls) in enumerate(zip(moves, classified)):
+            predicted = cls["c"] if cls else "other"
+            if predicted not in ("brilliant", "great"):
+                predicted = "other"
+            expected = (
+                "brilliant" if i in brilliant_set
+                else "great" if i in great_set
+                else "other"
             )
+            if expected == "other" and predicted == "other":
+                continue
 
-            # Identify interesting indices (TP/FP/FN)
-            interesting_indices = []
-            for i, cls_result in enumerate(classified):
-                predicted = cls_result["category"]
-                if predicted not in ("brilliant", "great"):
-                    predicted = "other"
-                expected = (
-                    "brilliant" if i in brilliant_set
-                    else "great" if i in great_set
-                    else "other"
-                )
-                if expected != "other" or predicted != "other":
-                    interesting_indices.append(i)
+            side = "white" if i % 2 == 0 else "black"
+            sign = 1 if side == "white" else -1
 
-            game_data_list.append({
-                "gid": gid,
-                "moves": moves,
-                "classified": classified,
-                "brilliant_set": brilliant_set,
-                "great_set": great_set,
-                "interesting_indices": interesting_indices,
+            opp_epl = None
+            if i > 0:
+                prev = moves[i - 1]
+                peb = prev.get("eval_before", {})
+                pea = prev.get("eval_after", {})
+                if (peb.get("score_cp") is not None and pea.get("score_cp") is not None
+                        and not peb.get("is_mate") and not pea.get("is_mate")):
+                    opp_sign = -sign
+                    opp_epl = round(wp(peb["score_cp"], opp_sign) - wp(pea["score_cp"], opp_sign), 4)
+
+            eb = m.get("eval_before", {})
+            ea = m.get("eval_after", {})
+            wp_b = wp_a = epl = wp_gain = cp_gain = None
+            if eb.get("score_cp") is not None and not eb.get("is_mate"):
+                wp_b = round(wp(eb["score_cp"], sign), 4)
+                if ea.get("score_cp") is not None and not ea.get("is_mate"):
+                    wp_a = round(wp(ea["score_cp"], sign), 4)
+                    epl = round(wp_b - wp_a, 4)
+                    wp_gain = round(wp_a - wp_b, 4)
+                    cp_gain = (ea["score_cp"] - eb["score_cp"]) * sign
+
+            status = (
+                "TP" if expected == predicted
+                else ("FN" if expected in ("brilliant", "great") else "FP")
+            )
+            cat = "brilliant" if "brilliant" in (expected, predicted) else "great"
+
+            # Previous move classification
+            prev_cls = classified[i - 1] if i > 0 else None
+            prev_classification = prev_cls["c"] if prev_cls else "other"
+            if prev_classification not in (
+                "brilliant", "great", "best", "excellent",
+                "good", "miss", "inaccuracy", "mistake", "blunder",
+            ):
+                prev_classification = "other"
+
+            is_recapture = False
+            if i > 0 and moves[i - 1].get("move_uci") and m.get("move_uci"):
+                is_recapture = moves[i - 1]["move_uci"][2:4] == m["move_uci"][2:4]
+
+            # Tactical motifs
+            motifs = game_tactics[i] if game_tactics and i < len(game_tactics) else {}
+
+            move_fmt = fmt_move(moves, i)
+            results[cat].append({
+                "game": gid[:30],
+                "idx": i,
+                "status": status,
+                "predicted": predicted,
+                "expected": expected,
+                "wp_before": wp_b,
+                "wp_after": wp_a,
+                "epl_lost": epl,
+                "wp_gain": wp_gain,
+                "cp_gain": cp_gain,
+                "opp_epl": opp_epl,
+                "is_sacrifice": motifs.get("isSacrifice", False),
+                "is_recapture": is_recapture,
+                "is_capture": move_fmt.get("is_capture") if move_fmt else None,
+                "is_check": move_fmt.get("is_check") if move_fmt else None,
+                "piece_moved": move_fmt.get("piece_moved") if move_fmt else None,
+                "pv_len": move_fmt.get("pv_len") if move_fmt else None,
+                "prev_classification": prev_classification,
+                "in_opening": m.get("in_opening", False),
+                "motifs_on_move": {k: v for k, v in motifs.items() if k != "_pv" and v is True},
+                "motifs_in_pv": motifs.get("_pv", {}),
+                "has_tactic": any(v is True for k, v in motifs.items() if k != "_pv"),
+                "before": fmt_move(moves, i - 1),
+                "move": move_fmt,
+                "after": fmt_move(moves, i + 1),
             })
 
-        total_interesting = sum(len(g["interesting_indices"]) for g in game_data_list)
-        print(f"Pass 1 done: {total_interesting} interesting moves across {len(game_data_list)} games")
-
-        # ── Pass 2: motif analysis (only interesting moves) ──
-        print(f"Pass 2: analyzing motifs for {total_interesting} moves...")
-        motifs_by_game: dict[str, dict[int, dict]] = {}
-
-        for game_info in game_data_list:
-            indices = game_info["interesting_indices"]
-            if not indices:
-                motifs_by_game[game_info["gid"]] = {}
-                continue
-            moves_json = json.dumps(game_info["moves"])
-            indices_json = json.dumps(indices)
-            motif_results = page.evaluate(
-                f"""() => {{
-                const moves = {moves_json};
-                const indices = {indices_json};
-                const results = {{}};
-                for (const i of indices) {{
-                    try {{
-                        results[i] = window.analyzeMoveMotifs(moves[i]);
-                    }} catch(e) {{
-                        results[i] = null;
-                    }}
-                }}
-                return results;
-            }}"""
-            )
-            motifs_by_game[game_info["gid"]] = {int(k): v for k, v in motif_results.items()}
-
-        print("Pass 2 done")
-
-        # ── Build results (merge pass 1 + pass 2) ──
-        for game_info in game_data_list:
-            gid = game_info["gid"]
-            moves = game_info["moves"]
-            classified = game_info["classified"]
-            brilliant_set = game_info["brilliant_set"]
-            great_set = game_info["great_set"]
-            game_motifs = motifs_by_game.get(gid, {})
-
-            for i, (m, cls_result) in enumerate(zip(moves, classified)):
-                predicted = cls_result["category"]
-                is_sacrifice = cls_result["is_sacrifice"]
-                if predicted not in ("brilliant", "great"):
-                    predicted = "other"
-                expected = (
-                    "brilliant"
-                    if i in brilliant_set
-                    else "great"
-                    if i in great_set
-                    else "other"
-                )
-                if expected == "other" and predicted == "other":
-                    continue
-
-                side = "white" if i % 2 == 0 else "black"
-                sign = 1 if side == "white" else -1
-
-                opp_epl = None
-                if i > 0:
-                    prev = moves[i - 1]
-                    peb = prev.get("eval_before", {})
-                    pea = prev.get("eval_after", {})
-                    if (
-                        peb.get("score_cp") is not None
-                        and pea.get("score_cp") is not None
-                        and not peb.get("is_mate")
-                        and not pea.get("is_mate")
-                    ):
-                        opp_sign = -sign
-                        opp_epl = round(
-                            wp(peb["score_cp"], opp_sign)
-                            - wp(pea["score_cp"], opp_sign),
-                            4,
-                        )
-
-                eb = m.get("eval_before", {})
-                ea = m.get("eval_after", {})
-                wp_b = wp_a = epl = wp_gain = cp_gain = None
-                if eb.get("score_cp") is not None and not eb.get("is_mate"):
-                    wp_b = round(wp(eb["score_cp"], sign), 4)
-                    if ea.get("score_cp") is not None and not ea.get("is_mate"):
-                        wp_a = round(wp(ea["score_cp"], sign), 4)
-                        epl = round(wp_b - wp_a, 4)
-                        wp_gain = round(wp_a - wp_b, 4)
-                        cp_gain = (ea["score_cp"] - eb["score_cp"]) * sign
-
-                status = (
-                    "TP"
-                    if expected == predicted
-                    else ("FN" if expected in ("brilliant", "great") else "FP")
-                )
-                cat = (
-                    "brilliant"
-                    if "brilliant" in (expected, predicted)
-                    else "great"
-                )
-                # Classification of the previous move (opponent's move)
-                prev_cls_result = classified[i - 1] if i > 0 else {"category": "other"}
-                prev_classification = prev_cls_result["category"]
-                if prev_classification not in (
-                    "brilliant", "great", "best", "excellent",
-                    "good", "miss", "inaccuracy", "mistake", "blunder",
-                ):
-                    prev_classification = "other"
-
-                # Is recapture? (same destination square as previous move)
-                is_recapture = False
-                if i > 0 and moves[i - 1].get("move_uci") and m.get("move_uci"):
-                    is_recapture = (
-                        moves[i - 1]["move_uci"][2:4] == m["move_uci"][2:4]
-                    )
-
-                move_fmt = fmt_move(moves, i)
-                results[cat].append(
-                    {
-                        "game": gid[:30],
-                        "idx": i,
-                        "status": status,
-                        "predicted": predicted,
-                        "expected": expected,
-                        # Win probability features
-                        "wp_before": wp_b,
-                        "wp_after": wp_a,
-                        "epl_lost": epl,
-                        "wp_gain": wp_gain,
-                        "cp_gain": cp_gain,
-                        "opp_epl": opp_epl,
-                        # Move features
-                        "is_sacrifice": is_sacrifice,
-                        "is_recapture": is_recapture,
-                        "is_capture": move_fmt.get("is_capture") if move_fmt else None,
-                        "is_check": move_fmt.get("is_check") if move_fmt else None,
-                        "piece_moved": move_fmt.get("piece_moved") if move_fmt else None,
-                        "pv_len": move_fmt.get("pv_len") if move_fmt else None,
-                        # Context
-                        "prev_classification": prev_classification,
-                        "in_opening": m.get("in_opening", False),
-                        # Tactical motifs (on-move + PV lookahead)
-                        "motifs_on_move": (game_motifs.get(i) or {}).get("onMove", {}),
-                        "motifs_in_pv": (game_motifs.get(i) or {}).get("inPV", {}),
-                        "motifs_pv_depth": (game_motifs.get(i) or {}).get("pvDepth", {}),
-                        "has_tactic": (game_motifs.get(i) or {}).get("hasTactic", False),
-                        "best_tactic": (game_motifs.get(i) or {}).get("bestTactic"),
-                        # Detailed move data
-                        "before": fmt_move(moves, i - 1),
-                        "move": move_fmt,
-                        "after": fmt_move(moves, i + 1),
-                    }
-                )
-
-        browser.close()
+    elapsed = time.monotonic() - t0
+    print(f"Collected in {elapsed:.1f}s (pure Python, no Playwright)")
 
     for cat in ("brilliant", "great"):
         entries = results[cat]
-        tp = sum(1 for e in entries if e["status"] == "TP")
-        fp = sum(1 for e in entries if e["status"] == "FP")
-        fn = sum(1 for e in entries if e["status"] == "FN")
-        print(
-            f"{cat}: TP={tp} FP={fp} FN={fn} (total {len(entries)} moves)"
-        )
+        tp_n = sum(1 for e in entries if e["status"] == "TP")
+        fp_n = sum(1 for e in entries if e["status"] == "FP")
+        fn_n = sum(1 for e in entries if e["status"] == "FN")
+        print(f"{cat}: TP={tp_n} FP={fp_n} FN={fn_n} (total {len(entries)} moves)")
 
-    # Save full data
     out = pathlib.Path("/tmp/classifier_data.json")
     with open(out, "w") as f:
         json.dump(results, f, indent=2)
     total = sum(len(v) for v in results.values())
     print(f"\nSaved to {out} ({total} moves)")
 
-    # Prepare batches for agent analysis (~15 moves each, mixing TP/FP/FN)
-    all_moves = []
-    for cat in ("brilliant", "great"):
-        for entry in results[cat]:
-            entry["category"] = cat
-            all_moves.append(entry)
-
-    batch_size = 15
-    batches = [
-        all_moves[i : i + batch_size]
-        for i in range(0, len(all_moves), batch_size)
-    ]
-
-    batches_out = pathlib.Path("/tmp/classifier_batches.json")
-    with open(batches_out, "w") as f:
-        json.dump(batches, f, indent=2)
-    print(f"Prepared {len(batches)} batches of ~{batch_size} moves → {batches_out}")
-
-    # Format each batch as human-readable text for agent prompts
-    for batch_idx, batch in enumerate(batches):
-        lines: list[str] = []
-        for e in batch:
-            m = e.get("move") or {}
-            b = e.get("before") or {}
-            a = e.get("after") or {}
-            lines.append(
-                f'### {e["game"]} idx={e["idx"]} {m.get("label","?")} '
-                f'{m.get("san","?")} — {e["status"]} '
-                f'({e["category"]}: predicted={e["predicted"]}, '
-                f'expected={e["expected"]})'
-            )
-            prev_cls = e.get("prev_classification", "?")
-            lines.append(
-                f'wp={e["wp_before"]} epl={e["epl_lost"]} wpGain={e.get("wp_gain")} '
-                f'cpGain={e.get("cp_gain")} oppEPL={e["opp_epl"]} '
-                f'is_best={m.get("is_best","?")} sac={e.get("is_sacrifice")} '
-                f'recap={e.get("is_recapture")} prev_class={prev_cls}'
-            )
-            if b:
-                best_tag = "" if b.get("is_best") else f' (best: {b.get("best","?")})'
-                mate_tag = f' MATE={b.get("mate_in")}' if b.get("is_mate") else ""
-                lines.append(
-                    f'  BEFORE: {b["label"]} {b["san"]} '
-                    f'cp={b["cp_b"]}→{b["cp_a"]}{mate_tag}{best_tag}'
-                )
-                lines.append(f'    PV: {b.get("pv","")}')
-            mate_tag = f' MATE={m.get("mate_in")}' if m.get("is_mate") else ""
-            lines.append(
-                f'  MOVE: {m["label"]} {m["san"]} '
-                f'cp={m["cp_b"]}→{m["cp_a"]}{mate_tag}'
-            )
-            lines.append(f'    FEN: {m.get("fen","")[:60]}')
-            lines.append(f'    PV: {m.get("pv","")}')
-            if a:
-                lines.append(
-                    f'  AFTER: {a["label"]} {a["san"]} '
-                    f'cp={a["cp_b"]}→{a["cp_a"]}'
-                )
-            lines.append("")
-
-        batch_file = pathlib.Path(f"/tmp/batch_{batch_idx}.txt")
-        batch_file.write_text("\n".join(lines))
-
-    print(
-        f"Formatted {len(batches)} batch text files "
-        f"(/tmp/batch_0.txt .. /tmp/batch_{len(batches)-1}.txt)"
-    )
-
-    # === Feature statistics for rule derivation ===
+    # === Feature statistics ===
     print("\n=== FEATURE STATISTICS (TP vs FP vs FN) ===")
 
-    numeric_features = [
-        "wp_before", "wp_after", "epl_lost", "wp_gain", "cp_gain",
-        "opp_epl", "pv_len",
-    ]
-    boolean_features = [
-        "is_sacrifice", "is_recapture", "is_capture", "is_check", "in_opening",
-    ]
-    categorical_features = ["prev_classification", "piece_moved"]
+    numeric_features = ["wp_before", "wp_after", "epl_lost", "wp_gain", "cp_gain", "opp_epl", "pv_len"]
+    boolean_features = ["is_sacrifice", "is_recapture", "is_capture", "is_check", "in_opening"]
 
     for cat in ("brilliant", "great"):
         print(f"\n{'='*60}")
@@ -397,21 +226,17 @@ def main() -> None:
         for e in results[cat]:
             by_status[e["status"]].append(e)
 
-        # Numeric features: show median/mean per status
         for feat in numeric_features:
             print(f"\n  {feat}:")
             for status in ("TP", "FP", "FN"):
-                vals = [e[feat] for e in by_status[status] if e.get(feat) is not None]
+                vals = sorted([e[feat] for e in by_status[status] if e.get(feat) is not None])
                 if not vals:
                     print(f"    {status}: (no data)")
                     continue
-                vals.sort()
                 med = vals[len(vals) // 2]
                 avg = sum(vals) / len(vals)
-                lo, hi = vals[0], vals[-1]
-                print(f"    {status} (n={len(vals):>3}): med={med:>8.4f}  avg={avg:>8.4f}  [{lo:.4f} .. {hi:.4f}]")
+                print(f"    {status} (n={len(vals):>3}): med={med:>8.4f}  avg={avg:>8.4f}  [{vals[0]:.4f} .. {vals[-1]:.4f}]")
 
-        # Boolean features: show % True per status
         for feat in boolean_features:
             print(f"\n  {feat}:")
             for status in ("TP", "FP", "FN"):
@@ -422,44 +247,8 @@ def main() -> None:
                 pct = 100 * true_count / len(entries) if entries else 0
                 print(f"    {status} (n={len(entries):>3}): {true_count:>3}/{len(entries)} = {pct:>5.1f}%")
 
-        # Categorical features: show distribution per status
-        for feat in categorical_features:
-            print(f"\n  {feat}:")
-            for status in ("TP", "FP", "FN"):
-                entries = by_status[status]
-                if not entries:
-                    continue
-                counts: dict[str, int] = {}
-                for e in entries:
-                    v = str(e.get(feat, "?"))
-                    counts[v] = counts.get(v, 0) + 1
-                dist = ", ".join(
-                    f"{k}={v}" for k, v in sorted(counts.items(), key=lambda x: -x[1])
-                )
-                print(f"    {status} (n={len(entries):>3}): {dist}")
-
-        # Per-move detail for small groups (FN, FP)
-        for status in ("FN", "FP"):
-            entries = by_status[status]
-            if not entries or len(entries) > 20:
-                continue
-            print(f"\n  --- {status} {cat} detail ({len(entries)} moves) ---")
-            for e in entries:
-                m = e.get("move") or {}
-
-                def _f(v: object) -> str:
-                    return f"{v:.4f}" if isinstance(v, float) else str(v) if v is not None else "?"
-
-                print(
-                    f"    {e['game']:<30s} {m.get('label','?'):>5} {m.get('san','?'):<8s} "
-                    f"wp={_f(e.get('wp_before')):>7} epl={_f(e.get('epl_lost')):>8} "
-                    f"wpG={_f(e.get('wp_gain')):>8} sac={e.get('is_sacrifice','?')} "
-                    f"recap={e.get('is_recapture','?')} prev={e.get('prev_classification','?')}"
-                )
-
-
     # === Tactical motif analysis ===
-    print("\n\n=== TACTICAL MOTIF ANALYSIS (on-move + PV) ===")
+    print("\n\n=== TACTICAL MOTIF ANALYSIS ===")
 
     for cat in ("brilliant", "great"):
         print(f"\n{'='*60}")
@@ -470,57 +259,34 @@ def main() -> None:
         for e in results[cat]:
             by_status[e["status"]].append(e)
 
-        # Collect all motif names from the data
-        motif_names: set[str] = set()
-        for entries in by_status.values():
-            for e in entries:
-                motif_names.update(e.get("motifs_in_pv", {}).keys())
-
-        if not motif_names:
-            print("  (no motif data available)")
-            continue
-
-        # has_tactic summary
-        print(f"\n  has_tactic (any motif on-move or in PV):")
+        print(f"\n  has_tactic:")
         for status in ("TP", "FP", "FN"):
             entries = by_status[status]
             if not entries:
                 continue
             has = sum(1 for e in entries if e.get("has_tactic"))
-            pct = 100 * has / len(entries) if entries else 0
+            pct = 100 * has / len(entries)
             print(f"    {status} (n={len(entries):>3}): {has:>3}/{len(entries)} = {pct:>5.1f}%")
 
-        # best_tactic distribution
-        print(f"\n  best_tactic distribution:")
-        for status in ("TP", "FP", "FN"):
-            entries = by_status[status]
-            if not entries:
-                continue
-            tactics: dict[str, int] = {}
+        # Per-motif on-move
+        motif_names: set[str] = set()
+        for entries in by_status.values():
             for e in entries:
-                bt = e.get("best_tactic") or "none"
-                tactics[bt] = tactics.get(bt, 0) + 1
-            dist = ", ".join(f"{k}={v}" for k, v in sorted(tactics.items(), key=lambda x: -x[1]))
-            print(f"    {status} (n={len(entries):>3}): {dist}")
+                motif_names.update(e.get("motifs_on_move", {}).keys())
 
-        # Per-motif: % present in PV per status (only show motifs with >0 occurrences)
-        print(f"\n  Per-motif (in PV, % True per status):")
-        for name in sorted(motif_names):
-            counts = {}
-            for status in ("TP", "FP", "FN"):
-                entries = by_status[status]
-                if not entries:
-                    continue
-                has = sum(1 for e in entries if e.get("motifs_in_pv", {}).get(name))
-                if has > 0:
-                    counts[status] = (has, len(entries))
-            if counts:
+        if motif_names:
+            print(f"\n  Per-motif (on-move, % True):")
+            for name in sorted(motif_names):
                 parts = []
-                for s in ("TP", "FP", "FN"):
-                    if s in counts:
-                        h, n = counts[s]
-                        parts.append(f"{s}={h}/{n}({100*h/n:.0f}%)")
-                print(f"    {name:30s} {' '.join(parts)}")
+                for status in ("TP", "FP", "FN"):
+                    entries = by_status[status]
+                    if not entries:
+                        continue
+                    has = sum(1 for e in entries if e.get("motifs_on_move", {}).get(name))
+                    if has > 0:
+                        parts.append(f"{status}={has}/{len(entries)}({100*has/len(entries):.0f}%)")
+                if parts:
+                    print(f"    {name:30s} {' '.join(parts)}")
 
 
 if __name__ == "__main__":
