@@ -818,4 +818,17 @@ GAMES: list[dict] = [
             50: "Rc1 — great",
         },
     },
+    {
+        "game_id": "lindblad1234_165175761796",
+        "brilliant_indices": [],
+        "great_indices": [3, 22, 27, 56, 59, 72],  # 2.b dxe4, 12.w Qh5+, 14.b exd5, 29.w Qd7+, 30.b Qxh4, 37.w Qe6+
+        "notes": {
+            3: "dxe4 — great",
+            22: "Qh5+ — great",
+            27: "exd5 — great",
+            56: "Qd7+ — great",
+            59: "Qxh4 — great",
+            72: "Qe6+ — great",
+        },
+    },
 ]
