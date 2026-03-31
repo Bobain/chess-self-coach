@@ -710,4 +710,12 @@ GAMES: list[dict] = [
             36: "Kh1 — great",
         },
     },
+    {
+        "game_id": "Alisher_MU_125488161759",
+        "brilliant_indices": [],
+        "great_indices": [43],  # 22.b Rxe1+
+        "notes": {
+            43: "Rxe1+ — great",
+        },
+    },
 ]
