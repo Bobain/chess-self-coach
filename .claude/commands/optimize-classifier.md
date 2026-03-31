@@ -4,129 +4,101 @@ Iteratively optimize the !! and ! classifier using fast simulation + parallel wo
 
 **Macro F1**: (F1_brilliant + F1_great) / 2, computed globally (aggregate TP/FP/FN across ALL games). F1_other excluded.
 
+**Classifier location**: `src/chess_self_coach/classifier.py` → `classify_move()` function.
+**Tactics data**: `data/tactics_data.json` — 40 pre-computed tactical motifs per move (forks, pins, mate threats, etc.).
+**Scoring function**: `from chess_self_coach.classifier import score_classifier` — callable standalone, no pytest needed.
+
 **Limits**: max 20 worktree attempts (5 iterations x 4 parallel). Stop early if best score hasn't improved for 2 consecutive iterations.
 
 ---
 
 ## Step 1: Collect data + BEFORE baseline
 
-Run `/collect-classifier-data` to get `/tmp/classifier_data.json` with enriched features.
+Run `/collect-classifier-data` to get `/tmp/classifier_data.json` with enriched features + tactical motifs.
 
-Then run the regression test for the BEFORE baseline:
+Then get the BEFORE baseline score:
 ```bash
-uv run pytest tests/e2e/test_review.py::test_classification_macro_f1_regression -v -s -n0
+uv run python3 -c "from chess_self_coach.classifier import score_classifier; score_classifier()"
 ```
 
 Record in `/tmp/optimizer_state.md`:
 - BEFORE score, macro_f1, complexity breakdown
 - Feature statistics summary (key separating features between TP/FP/FN)
+- Tactical motif correlations (which motifs distinguish TP from FP)
 
 ## Step 2: Fast simulation — sweep thresholds in Python
 
-**Before generating hypotheses, sweep threshold values using the collector data.**
+Read `/tmp/classifier_data.json`. For each tunable threshold in `classify_move()`, simulate the effect across a range using the exact feature values per move. Compute simulated F1 and score for each variant.
 
-Read `/tmp/classifier_data.json`. For each tunable threshold in the current classifier, simulate the effect of changing it across a range:
-
-For **oppEpl threshold** (currently 0.15): sweep 0.10, 0.12, 0.14, ..., 0.30. For each value, count how many TP/FP/FN great moves would flip (using the exact `opp_epl` values in the data). Compute simulated F1_great and score.
-
-For **eplLost threshold** (currently 0.02): sweep 0.005, 0.01, 0.015, 0.02, 0.025, 0.03. Same method.
-
-For **brilliant eplLost** (currently -0.005): sweep -0.001, -0.003, -0.005, -0.008, -0.01.
-
-For any **new feature filter** (e.g. `is_check`, `wpBefore > X`): simulate adding it as an AND condition to the existing rules.
-
-**Output**: a table of (threshold_value, simulated_TP, simulated_FP, simulated_FN, simulated_score) for each sweep. Identify the top 5-10 promising configurations.
-
-**Important**: simulation can predict threshold effects accurately (we have exact feature values per move) but CANNOT predict complexity (the test counts complexity from the actual JS code). Assume ±2 complexity uncertainty.
+**Available features per move** (from collector + tactics_data.json):
+- **Win probability**: `wp_before`, `wp_after`, `epl_lost`, `wp_gain`, `opp_epl`
+- **Move properties**: `is_sacrifice`, `is_recapture`, `is_capture`, `is_check`, `piece_moved`, `pv_len`
+- **Tactical motifs (on-move)**: `isFork`, `createsPin`, `isSkewer`, `createsMateThreat`, `isBackRankThreat`, `isKingSafetyDegradation`, `isSeventhRankInvasion`, `isTrappedPiece`, `isDesperado`, `isHangingCapture`, etc.
+- **Tactical motifs (in PV)**: same motifs detected in the best line (3 moves deep)
+- **Context**: `prev_classification`, `in_opening`
 
 ## Step 3: Generate 4 hypotheses
 
-From the simulation results AND accumulated learnings, pick the **4 most promising configurations** to validate in worktrees. Each hypothesis must be a **single, targeted change** (not a combination) in early iterations.
+From simulation results AND accumulated learnings, pick the **4 most promising** changes to `classify_move()` in `classifier.py`.
 
 **Categories** (one from each when possible):
-1. **Threshold tune**: change an existing numeric threshold to its simulated optimum
-2. **New filter**: add a condition using existing features (is_check, wpBefore, etc.)
-3. **New helper**: create a new detection function (flat cost: 1 point)
+1. **Threshold tune**: change a numeric threshold
+2. **New tactical condition**: use a motif from tactics_data (e.g. `if tactics.get("isFork"): return great`)
+3. **New detection path**: add a rule for FN moves the classifier misses
 4. **Simplify**: remove a condition to reduce complexity
 
-For each, write in `/tmp/optimizer_state.md`:
-- The simulation prediction (TP, FP, FN, estimated score)
-- Pseudocode of the exact code change
+Each hypothesis must be a **single, targeted change** in early iterations.
 
 ## Step 4: Parallel worktree validation
 
-Launch **4 Agent calls in a single message** with `isolation: "worktree"`. Each agent receives:
+Launch **4 Agent calls in a single message** with `isolation: "worktree"`. Each agent:
 
-1. **The EXACT current code** of the `classifyMove()` function (copy-paste it from `pwa/app.js` into the prompt — do NOT ask the agent to "find" it)
-2. The specific edit to make (line numbers, old code → new code)
-3. The test command: `uv run pytest tests/e2e/test_review.py::test_classification_macro_f1_regression -v -s -n0`
-4. The expected result format:
+1. Edits `src/chess_self_coach/classifier.py` — the `classify_move()` function
+2. Runs: `uv run python3 -c "from chess_self_coach.classifier import score_classifier; r=score_classifier(); print(r)"`
+3. Reports the result in structured format
 
-```
-RESULT:
-hypothesis: {one-line description}
-score: {regularized score from test output}
-macro_f1: {macro F1}
-brilliant_tp: {N} brilliant_fp: {N} brilliant_fn: {N} brilliant_f1: {F1}
-great_tp: {N} great_fp: {N} great_fn: {N} great_f1: {F1}
-complexity: {N} (thresholds: {N}, conditions: {N}, helpers: {N})
-status: improved|regressed|error
-diff:
-{git diff pwa/app.js}
-END_RESULT
-```
-
-**Critical for reliability**: the agent prompt must include the FULL classifyMove function code and a precise SURGICAL edit instruction (e.g. "on line N, change `>= 0.15` to `>= 0.20`"). Do NOT give vague instructions like "find the great detection and modify it".
+**Agent prompt must include**: the EXACT current code of `classify_move()` + the specific edit to make.
 
 ## Step 5: Collect results + extract learnings
 
-After all 4 agents complete:
+Parse results, record in `/tmp/optimizer_state.md`, update cumulative learnings (WORKS / DOESN'T WORK / NEUTRAL).
 
-1. Parse RESULT blocks. **Verify scores against simulation predictions** — large discrepancies indicate the simulation model is wrong (e.g. complexity was different than assumed).
-2. Record results in `/tmp/optimizer_state.md`
-3. Update cumulative learnings (WORKS / DOESN'T WORK / NEUTRAL)
-4. **Clean up all worktrees and branches** immediately
+**Clean up all worktrees and branches** after each iteration.
 
 ## Step 6: Combine winners (later iterations only)
 
-After iteration 1 identifies individual winners, iteration 2+ can test **combinations** of non-conflicting improvements. Only combine changes that individually improved the score.
+Combine individually-proven improvements.
 
 ## Step 7: Iterate or stop
 
-**Stop conditions** (any of):
-- 20 total worktree attempts reached
-- Best score hasn't improved for 2 consecutive iterations
-- All 4 attempts in an iteration returned same or worse score
-- Simulation shows no remaining threshold has a better optimum
-
-If continuing: go back to Step 3 with updated learnings. The simulation (Step 2) only runs once.
+**Stop conditions**: 20 attempts reached, or best score stale for 2 iterations.
 
 ## Step 8: Apply best result
 
-Once the loop ends:
-1. Find the attempt with the highest score across ALL iterations
-2. If it improves over BEFORE baseline:
-   - Show BEFORE/AFTER comparison table
-   - Show the diff
-   - Ask the user for validation
-   - If approved: apply the diff to `pwa/app.js` on `dev`, run the full test suite (`uv run pytest tests/e2e/test_review.py -v`), commit with BEFORE/AFTER scores in message
-3. If no attempt improved: report honestly with summary of what was tried
+Apply diff to `classifier.py` on `dev`. Then regenerate:
+```bash
+uv run python3 -c "from chess_self_coach.classifier import run_classification; run_classification()"
+uv run pytest tests/test_classifier.py -v
+```
+
+Commit with BEFORE/AFTER scores.
 
 ## Complexity reference
 
-Complexity is computed by `_count_classifier_complexity()` in `tests/e2e/test_review.py`:
-- **Zone**: from start of `classifyMove()` to last `return { category: 'brilliant'` or `'great'`
-- **Thresholds**: unique numeric constants in comparisons (integers <= 2 excluded). Reusing existing threshold = 0 cost.
-- **Conditions**: `if()` with numeric comparisons, function calls, or domain keywords. Null/type guards NOT counted.
-- **Helpers**: flat cost 1 point per helper called. Internal complexity NOT counted.
+Complexity is computed by `count_complexity()` in `classifier.py`:
+- **Zone**: from start of `classify_move()` to last return of 'brilliant' or 'great'
+- **Thresholds**: unique numeric constants in comparisons (integers <= 2 excluded)
+- **Conditions**: `if` with numeric comparisons, function calls, or domain keywords. Guards excluded.
+- **Helpers**: functions called from the zone. Flat cost: 1 point per helper (internals NOT counted).
 - **Total** = thresholds + conditions + helpers
 
 ## Important rules
 
 - All testing in **disposable worktrees** — `dev` is NEVER modified until Step 8
-- **Clean up ALL worktrees** after each iteration (git worktree remove + branch delete)
-- **Verify `git diff pwa/app.js` is empty** on dev after cleanup — worktree leaks have happened before
-- NEVER use a Python proxy of the classifier — the test uses `window._classifyMove` via Playwright
+- **Clean up ALL worktrees** after each iteration
+- Use the **Python classifier** (`classifier.py`) — NOT JS
+- **Scoring**: call `score_classifier()` directly — no pytest needed for hypothesis testing
+- **Tactical motifs available**: the classifier receives `tactics` dict with 40+ pre-computed motifs from `tactics_data.json`
 - **BOTH SIDES**: all moves from both players are classified
 - **NO OVERFITTING**: every rule must be a general chess principle
-- **Single changes first**: early iterations test one change at a time; combinations only after individual effects are measured
+- **Single changes first**: early iterations test one change at a time
