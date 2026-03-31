@@ -1562,6 +1562,828 @@ function isMissedCapture(move) {
   }
 }
 
+// ===========================================================================
+// Tactical motif detection helpers (used by classifier + data collection)
+// ===========================================================================
+
+const FILES = 'abcdefgh';
+const RANKS = '12345678';
+const ALL_SQUARES = [];
+for (const f of FILES) for (const r of RANKS) ALL_SQUARES.push(f + r);
+
+/** Convert square string to {f, r} (0-indexed). */
+function _sq2c(sq) { return { f: sq.charCodeAt(0) - 97, r: sq.charCodeAt(1) - 49 }; }
+/** Convert {f, r} to square string. */
+function _c2sq(f, r) { return FILES[f] + RANKS[r]; }
+
+/** Play a move on a fresh board, return {chess, result} or null. */
+function _playMove(move) {
+  if (!move.fen_before || !move.move_uci) return null;
+  try {
+    const chess = new Chess(move.fen_before);
+    const from = move.move_uci.slice(0, 2);
+    const to = move.move_uci.slice(2, 4);
+    const promo = move.move_uci.length > 4 ? move.move_uci[4] : undefined;
+    const result = chess.move({ from, to, promotion: promo });
+    if (!result) return null;
+    return { chess, result };
+  } catch { return null; }
+}
+
+/**
+ * Get attacks from a specific square by flipping the turn.
+ * Returns array of {to, captured, piece} for all squares the piece attacks.
+ */
+function _getAttacks(fen, square) {
+  try {
+    const parts = fen.split(' ');
+    parts[1] = parts[1] === 'w' ? 'b' : 'w';
+    parts[3] = '-';
+    const test = new Chess(parts.join(' '));
+    return test.moves({ verbose: true, square });
+  } catch { return []; }
+}
+
+/** Get all pieces of a color from the board. Returns [{square, type, color}]. */
+function _getPieces(chess, color) {
+  const pieces = [];
+  for (const sq of ALL_SQUARES) {
+    const p = chess.get(sq);
+    if (p && p.color === color) pieces.push({ square: sq, type: p.type, color: p.color });
+  }
+  return pieces;
+}
+
+/** Check if a square is attacked by a given color (using turn-flip). */
+function _isAttackedBy(fen, square, byColor) {
+  try {
+    const parts = fen.split(' ');
+    parts[1] = byColor;
+    parts[3] = '-';
+    const test = new Chess(parts.join(' '));
+    const moves = test.moves({ verbose: true });
+    return moves.some(m => m.to === square);
+  } catch { return false; }
+}
+
+/** Ray directions for sliding pieces. */
+const DIAGS = [[1,1],[1,-1],[-1,1],[-1,-1]];
+const STRAIGHTS = [[0,1],[0,-1],[1,0],[-1,0]];
+
+/** Scan a ray from (f,r) in direction (df,dr). Returns squares with pieces. */
+function _scanRay(chess, f, r, df, dr) {
+  const result = [];
+  let cf = f + df, cr = r + dr;
+  while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+    const sq = _c2sq(cf, cr);
+    const p = chess.get(sq);
+    if (p) { result.push({ square: sq, ...p }); break; }
+    cf += df; cr += dr;
+  }
+  return result;
+}
+
+/** Find king square for a color. */
+function _findKing(chess, color) {
+  for (const sq of ALL_SQUARES) {
+    const p = chess.get(sq);
+    if (p && p.type === 'k' && p.color === color) return sq;
+  }
+  return null;
+}
+
+// --- Group 1: Tactical core ---
+
+/** 1. Fork: piece attacks 2+ enemy pieces worth >= 3 pawns. */
+function isFork(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const to = move.move_uci.slice(2, 4);
+  const attacks = _getAttacks(pm.chess.fen(), to);
+  const valuable = attacks.filter(a => a.captured && PIECE_VALUES[a.captured] >= 3);
+  return valuable.length >= 2;
+}
+
+/** 2. Creates an absolute or relative pin on an enemy piece. */
+function createsPin(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const oppKingSq = _findKing(pm.chess, oppColor);
+  if (!oppKingSq) return false;
+  const oppQueens = _getPieces(pm.chess, oppColor).filter(p => p.type === 'q');
+
+  // Check our sliding pieces for pins
+  const ourPieces = _getPieces(pm.chess, moverColor);
+  for (const p of ourPieces) {
+    const dirs = (p.type === 'b') ? DIAGS : (p.type === 'r') ? STRAIGHTS : (p.type === 'q') ? [...DIAGS, ...STRAIGHTS] : [];
+    if (!dirs.length) continue;
+    const { f, r } = _sq2c(p.square);
+    for (const [df, dr] of dirs) {
+      const ray = [];
+      let cf = f + df, cr = r + dr;
+      while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+        const sq = _c2sq(cf, cr);
+        const piece = pm.chess.get(sq);
+        if (piece) { ray.push({ square: sq, ...piece }); if (ray.length >= 2) break; }
+        cf += df; cr += dr;
+      }
+      if (ray.length === 2 && ray[0].color === oppColor && ray[1].color === oppColor) {
+        const behindIsKing = ray[1].type === 'k';
+        const behindIsQueen = ray[1].type === 'q';
+        if (behindIsKing || behindIsQueen) {
+          if (PIECE_VALUES[ray[0].type] > 0) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/** 3. Skewer: attack through a valuable piece to a lesser one behind. */
+function isSkewer(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const to = move.move_uci.slice(2, 4);
+  const piece = pm.chess.get(to);
+  if (!piece) return false;
+  const moverColor = piece.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const dirs = (piece.type === 'b') ? DIAGS : (piece.type === 'r') ? STRAIGHTS : (piece.type === 'q') ? [...DIAGS, ...STRAIGHTS] : [];
+  if (!dirs.length) return false;
+
+  const { f, r } = _sq2c(to);
+  for (const [df, dr] of dirs) {
+    const ray = [];
+    let cf = f + df, cr = r + dr;
+    while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+      const sq = _c2sq(cf, cr);
+      const p = pm.chess.get(sq);
+      if (p) { ray.push({ square: sq, ...p }); if (ray.length >= 2) break; }
+      cf += df; cr += dr;
+    }
+    if (ray.length === 2 && ray[0].color === oppColor && ray[1].color === oppColor) {
+      if (PIECE_VALUES[ray[0].type] > PIECE_VALUES[ray[1].type]) return true;
+    }
+  }
+  return false;
+}
+
+/** 4. Discovered attack: moving piece reveals an attack from a piece behind it. */
+function isDiscoveredAttack(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const from = move.move_uci.slice(0, 2);
+  const to = move.move_uci.slice(2, 4);
+  const before = new Chess(move.fen_before);
+  const mover = before.get(from);
+  if (!mover) return false;
+  const moverColor = mover.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+
+  const pm = _playMove(move);
+  if (!pm) return false;
+
+  // Find pieces behind the original square that now have new attacks
+  const { f: ff, r: fr } = _sq2c(from);
+  for (const [df, dr] of [...DIAGS, ...STRAIGHTS]) {
+    // Look behind the from-square (opposite direction of from→to)
+    let cf = ff - df, cr = fr - dr;
+    if (cf < 0 || cf >= 8 || cr < 0 || cr >= 8) continue;
+    const behindSq = _c2sq(cf, cr);
+
+    // Check if there was a friendly sliding piece behind
+    while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+      const sq = _c2sq(cf, cr);
+      const p = before.get(sq);
+      if (p) {
+        if (p.color === moverColor) {
+          const canSlide = (p.type === 'b' && DIAGS.some(d => d[0] === df && d[1] === dr)) ||
+                           (p.type === 'r' && STRAIGHTS.some(d => d[0] === df && d[1] === dr)) ||
+                           (p.type === 'q');
+          if (canSlide) {
+            // Check if this piece now attacks an enemy piece through the vacated square
+            const attacks = _getAttacks(pm.chess.fen(), sq);
+            const hitsEnemy = attacks.some(a => {
+              const target = pm.chess.get(a.to);
+              return target && target.color === oppColor && PIECE_VALUES[target.type] >= 3;
+            });
+            if (hitsEnemy) return true;
+          }
+        }
+        break;
+      }
+      cf -= df; cr -= dr;
+    }
+  }
+  return false;
+}
+
+/** 5. Discovered check: discovered attack that gives check. */
+function isDiscoveredCheck(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (!pm.chess.in_check()) return false;
+  // Check if the checking piece is NOT the piece that moved
+  const to = move.move_uci.slice(2, 4);
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const kingSquare = _findKing(pm.chess, oppColor);
+  if (!kingSquare) return false;
+  // If the moved piece directly attacks the king, it's a regular check
+  const attacks = _getAttacks(pm.chess.fen(), to);
+  const directCheck = attacks.some(a => a.to === kingSquare);
+  // Discovered check = in check but NOT direct check from moved piece
+  return !directCheck;
+}
+
+/** 6. Double check: both the moved piece and a revealed piece give check. */
+function isDoubleCheck(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (!pm.chess.in_check()) return false;
+  const to = move.move_uci.slice(2, 4);
+  const oppColor = pm.result.color === 'w' ? 'b' : 'w';
+  const kingSquare = _findKing(pm.chess, oppColor);
+  if (!kingSquare) return false;
+  // Count how many of our pieces attack the king
+  const ourColor = pm.result.color;
+  const ourPieces = _getPieces(pm.chess, ourColor);
+  let checkers = 0;
+  for (const p of ourPieces) {
+    const attacks = _getAttacks(pm.chess.fen(), p.square);
+    if (attacks.some(a => a.to === kingSquare)) checkers++;
+  }
+  return checkers >= 2;
+}
+
+/** 7. Creates mate threat: after the move, player has mate in 1. */
+function createsMateThreat(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  // It's opponent's turn. Check each opponent move — can we mate after any?
+  const oppMoves = pm.chess.moves({ verbose: true });
+  for (const om of oppMoves) {
+    const test = new Chess(pm.chess.fen());
+    test.move(om);
+    // Now it's our turn — is there a checkmate move?
+    const ourMoves = test.moves({ verbose: true });
+    const hasMate = ourMoves.some(m => {
+      const t2 = new Chess(test.fen());
+      t2.move(m);
+      return t2.in_checkmate();
+    });
+    if (!hasMate) return false; // Opponent can escape mate threat
+  }
+  // If ALL opponent moves leave us with a mate: it's forced. But that's
+  // too strong — we just need mate THREAT (exists in at least one line).
+  // Rewrite: check if ANY of our replies to ANY opponent move is mate.
+  const test2 = new Chess(pm.chess.fen());
+  const oppMoves2 = test2.moves({ verbose: true });
+  if (oppMoves2.length === 0) return false; // already checkmate or stalemate
+  // Check the most natural opponent moves (first 5 to limit computation)
+  for (const om of oppMoves2.slice(0, 5)) {
+    const t = new Chess(pm.chess.fen());
+    t.move(om);
+    const replies = t.moves({ verbose: true });
+    if (replies.some(m => { const t2 = new Chess(t.fen()); t2.move(m); return t2.in_checkmate(); })) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** 8. Back rank threat: move threatens mate on the back rank. */
+function isBackRankThreat(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const backRank = oppColor === 'w' ? '1' : '8';
+  const kingSquare = _findKing(pm.chess, oppColor);
+  if (!kingSquare || kingSquare[1] !== backRank) return false;
+
+  // Check if our rook/queen attacks the back rank
+  const fen = pm.chess.fen();
+  const ourPieces = _getPieces(pm.chess, moverColor).filter(p => p.type === 'r' || p.type === 'q');
+  for (const p of ourPieces) {
+    const attacks = _getAttacks(fen, p.square);
+    if (attacks.some(a => a.to[1] === backRank && a.to === kingSquare)) return true;
+  }
+  return false;
+}
+
+/** 9. Smothered mate: knight delivers mate with king boxed by own pieces. */
+function isSmotheredMate(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (!pm.chess.in_checkmate()) return false;
+  if (pm.result.piece !== 'n') return false;
+  // Verify king is surrounded by own pieces
+  const oppColor = pm.result.color === 'w' ? 'b' : 'w';
+  const kingSquare = _findKing(pm.chess, oppColor);
+  if (!kingSquare) return false;
+  const { f, r } = _sq2c(kingSquare);
+  for (let df = -1; df <= 1; df++) {
+    for (let dr = -1; dr <= 1; dr++) {
+      if (df === 0 && dr === 0) continue;
+      const nf = f + df, nr = r + dr;
+      if (nf < 0 || nf >= 8 || nr < 0 || nr >= 8) continue;
+      const p = pm.chess.get(_c2sq(nf, nr));
+      if (!p || p.color !== oppColor) return false; // Empty or enemy = not smothered
+    }
+  }
+  return true;
+}
+
+/** 10. Trapped piece: after the move, an enemy piece has no safe squares. */
+function isTrappedPiece(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const oppColor = pm.result.color === 'w' ? 'b' : 'w';
+  const moverColor = pm.result.color;
+  const fen = pm.chess.fen();
+  const oppPieces = _getPieces(pm.chess, oppColor).filter(p => PIECE_VALUES[p.type] >= 3);
+
+  for (const p of oppPieces) {
+    const moves = _getAttacks(fen, p.square);
+    const safeMoves = moves.filter(m => {
+      // A move is safe if the destination isn't attacked by the opponent
+      return !_isAttackedBy(fen, m.to, moverColor);
+    });
+    if (safeMoves.length === 0) return true;
+  }
+  return false;
+}
+
+/** 11. Removal of defender: captures a piece that was defending another. */
+function isRemovalOfDefender(move) {
+  if (!move.fen_before || !move.move_uci || !move.move_san || !move.move_san.includes('x')) return false;
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+
+  // What was the captured piece defending?
+  const capturedSquare = move.move_uci.slice(2, 4);
+  const beforeBoard = new Chess(move.fen_before);
+  const defenderAttacks = _getAttacks(move.fen_before, capturedSquare);
+  const wasDefending = defenderAttacks.filter(a => {
+    const p = beforeBoard.get(a.to);
+    return p && p.color === oppColor && PIECE_VALUES[p.type] >= 1;
+  });
+
+  if (wasDefending.length === 0) return false;
+
+  // After capture, are any of those pieces now undefended and attacked?
+  const afterFen = pm.chess.fen();
+  for (const defended of wasDefending) {
+    const stillExists = pm.chess.get(defended.to);
+    if (!stillExists) continue;
+    const isAttacked = _isAttackedBy(afterFen, defended.to, moverColor);
+    const isDefended = _isAttackedBy(afterFen, defended.to, oppColor);
+    if (isAttacked && !isDefended) return true;
+  }
+  return false;
+}
+
+/** 12. Overloaded piece exploit: targets a piece defending 2+ things. */
+function isOverloadedExploit(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const afterFen = pm.chess.fen();
+
+  // Find opponent pieces that are attacked by us
+  const attacked = _getPieces(pm.chess, oppColor).filter(p =>
+    PIECE_VALUES[p.type] >= 1 && _isAttackedBy(afterFen, p.square, moverColor)
+  );
+  if (attacked.length < 2) return false;
+
+  // Check if any single opponent piece was defending 2+ of these attacked pieces
+  const oppDefenders = _getPieces(pm.chess, oppColor);
+  for (const def of oppDefenders) {
+    const defAttacks = _getAttacks(afterFen, def.square);
+    const defends = defAttacks.filter(a => attacked.some(at => at.square === a.to));
+    if (defends.length >= 2) return true;
+  }
+  return false;
+}
+
+/** 13. Deflection: forces an enemy piece away from defending a key square. */
+function isDeflection(move) {
+  // A capture or check that forces the defender to move, leaving something undefended
+  if (!move.fen_before || !move.move_uci) return false;
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (!pm.chess.in_check()) return false; // Deflection typically involves check
+  return isRemovalOfDefender(move) || isOverloadedExploit(move);
+}
+
+/** 14. Decoy: forces an enemy piece to a bad square (checking on a fork square). */
+function isDecoy(move) {
+  // Sacrifice + the recapture lands enemy piece on a tactically bad square
+  if (!move.fen_before || !move.move_uci) return false;
+  const pm = _playMove(move);
+  if (!pm) return false;
+  // Check if this is a sacrifice that leads to a fork in the PV
+  const eb = move.eval_before;
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 3) return false;
+  // If opponent recaptures on our square, and our next PV move is a fork
+  const to = move.move_uci.slice(2, 4);
+  const oppRecap = eb.pv_uci[1];
+  if (!oppRecap || oppRecap.slice(2, 4) !== to) return false;
+  // Play the PV: our move, opponent recapture, our 3rd move
+  try {
+    const test = new Chess(move.fen_before);
+    test.move({ from: move.move_uci.slice(0, 2), to, promotion: move.move_uci[4] });
+    test.move({ from: oppRecap.slice(0, 2), to: oppRecap.slice(2, 4), promotion: oppRecap[4] });
+    const thirdMove = eb.pv_uci[2];
+    test.move({ from: thirdMove.slice(0, 2), to: thirdMove.slice(2, 4), promotion: thirdMove[4] });
+    // Check if the third move is a fork
+    return isFork({ fen_before: test.fen(), move_uci: thirdMove, move_san: '' });
+  } catch { return false; }
+}
+
+/** 15. Desperado: doomed piece captures to inflict maximum damage. */
+function isDesperado(move) {
+  if (!move.fen_before || !move.move_uci || !move.move_san) return false;
+  if (!move.move_san.includes('x')) return false;
+  const from = move.move_uci.slice(0, 2);
+  const before = new Chess(move.fen_before);
+  const mover = before.get(from);
+  if (!mover || PIECE_VALUES[mover.type] < 3) return false;
+  const moverColor = mover.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  // Was the piece attacked (doomed) before the move?
+  return _isAttackedBy(move.fen_before, from, oppColor);
+}
+
+// --- Group 2: Checks & Mates ---
+
+/** 16. Checkmate. */
+function isTacticalCheckmate(move) {
+  const pm = _playMove(move);
+  return pm ? pm.chess.in_checkmate() : false;
+}
+
+/** 17. Check. */
+function isTacticalCheck(move) {
+  const pm = _playMove(move);
+  return pm ? pm.chess.in_check() : false;
+}
+
+/** 18. Destroys opponent's castling rights. */
+function destroysCastling(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const beforeCastling = move.fen_before.split(' ')[2];
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const afterCastling = pm.chess.fen().split(' ')[2];
+  const moverColor = pm.result.color;
+  const oppChars = moverColor === 'w' ? 'kq' : 'KQ';
+  const beforeOpp = [...beforeCastling].filter(c => oppChars.includes(c)).length;
+  const afterOpp = [...afterCastling].filter(c => oppChars.includes(c)).length;
+  return afterOpp < beforeOpp;
+}
+
+/** 19. Windmill: PV shows repeated discovered checks (>= 2 in sequence). */
+function isWindmill(move) {
+  const eb = move.eval_before;
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 5) return false;
+  // Count discovered checks in the PV
+  try {
+    const chess = new Chess(move.fen_before);
+    let discChecks = 0;
+    for (let i = 0; i < Math.min(eb.pv_uci.length, 8); i++) {
+      const m = eb.pv_uci[i];
+      const from = m.slice(0, 2);
+      const beforePiece = chess.get(from);
+      const result = chess.move({ from, to: m.slice(2, 4), promotion: m[4] });
+      if (!result) break;
+      if (i % 2 === 0 && chess.in_check()) {
+        // Check if it's discovered (checking piece != moved piece)
+        discChecks++;
+      }
+    }
+    return discChecks >= 2;
+  } catch { return false; }
+}
+
+/** 20. Perpetual check: PV shows 3+ consecutive checks from our side. */
+function isPerpetualCheck(move) {
+  const eb = move.eval_before;
+  if (!eb || !eb.pv_uci || eb.pv_uci.length < 5) return false;
+  try {
+    const chess = new Chess(move.fen_before);
+    let consecutiveChecks = 0;
+    for (let i = 0; i < Math.min(eb.pv_uci.length, 10); i++) {
+      const m = eb.pv_uci[i];
+      chess.move({ from: m.slice(0, 2), to: m.slice(2, 4), promotion: m[4] });
+      if (i % 2 === 0 && chess.in_check()) {
+        consecutiveChecks++;
+      } else if (i % 2 === 0) {
+        break;
+      }
+    }
+    return consecutiveChecks >= 3;
+  } catch { return false; }
+}
+
+// --- Group 3: Pawn structure ---
+
+/** 21. Creates a passed pawn (no enemy pawns ahead on same or adjacent files). */
+function createsPassedPawn(move) {
+  const pm = _playMove(move);
+  if (!pm || pm.result.piece !== 'p') return false;
+  const to = move.move_uci.slice(2, 4);
+  const { f, r } = _sq2c(to);
+  const moverColor = pm.result.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const dir = moverColor === 'w' ? 1 : -1;
+
+  // Check ranks ahead for enemy pawns on same or adjacent files
+  for (let checkF = Math.max(0, f - 1); checkF <= Math.min(7, f + 1); checkF++) {
+    let checkR = r + dir;
+    while (checkR >= 0 && checkR < 8) {
+      const p = pm.chess.get(_c2sq(checkF, checkR));
+      if (p && p.type === 'p' && p.color === oppColor) return false;
+      checkR += dir;
+    }
+  }
+  return true;
+}
+
+/** 22. Promotion. */
+function isTacticalPromotion(move) {
+  return move.move_san ? move.move_san.includes('=') : false;
+}
+
+/** 23. Underpromotion (promotes to non-queen). */
+function isUnderpromotion(move) {
+  if (!move.move_san || !move.move_san.includes('=')) return false;
+  return !move.move_san.includes('=Q');
+}
+
+/** 24. Pawn break: pawn captures into opponent's pawn chain. */
+function isPawnBreak(move) {
+  const pm = _playMove(move);
+  if (!pm || pm.result.piece !== 'p' || !pm.result.captured) return false;
+  return pm.result.captured === 'p';
+}
+
+/** 25. En passant capture. */
+function isEnPassant(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  return pm.result.flags.includes('e');
+}
+
+// --- Group 4: Positional ---
+
+/** 26. Outpost: piece on square not attackable by enemy pawns. */
+function isOutpost(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const to = move.move_uci.slice(2, 4);
+  const piece = pm.chess.get(to);
+  if (!piece || piece.type === 'p' || piece.type === 'k') return false;
+  const { f, r } = _sq2c(to);
+  const moverColor = piece.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const dir = oppColor === 'w' ? 1 : -1; // direction enemy pawns advance
+
+  // Check if enemy pawns can ever attack this square
+  for (const adjF of [f - 1, f + 1]) {
+    if (adjF < 0 || adjF >= 8) continue;
+    let checkR = r + dir;
+    while (checkR >= 0 && checkR < 8) {
+      const p = pm.chess.get(_c2sq(adjF, checkR));
+      if (p && p.type === 'p' && p.color === oppColor) return false;
+      checkR += dir;
+    }
+  }
+  // Must be in opponent's half
+  const inOppHalf = moverColor === 'w' ? r >= 4 : r <= 3;
+  return inOppHalf;
+}
+
+/** 27. Centralization: piece moves to d4/d5/e4/e5. */
+function isCentralization(move) {
+  const to = move.move_uci ? move.move_uci.slice(2, 4) : '';
+  return ['d4', 'd5', 'e4', 'e5'].includes(to);
+}
+
+/** 28. Seventh rank invasion: rook or queen reaches 7th/2nd rank. */
+function isSeventhRankInvasion(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (pm.result.piece !== 'r' && pm.result.piece !== 'q') return false;
+  const to = move.move_uci.slice(2, 4);
+  const seventhRank = pm.result.color === 'w' ? '7' : '2';
+  return to[1] === seventhRank;
+}
+
+/** 29. Open file control: rook/queen on file with no own pawns. */
+function isOpenFileControl(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (pm.result.piece !== 'r' && pm.result.piece !== 'q') return false;
+  const to = move.move_uci.slice(2, 4);
+  const file = to[0];
+  const moverColor = pm.result.color;
+  // Check if file has no own pawns
+  for (const rank of RANKS) {
+    const p = pm.chess.get(file + rank);
+    if (p && p.type === 'p' && p.color === moverColor) return false;
+  }
+  return true;
+}
+
+/** 30. King safety degradation: move weakens opponent's king shelter. */
+function isKingSafetyDegradation(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const oppColor = pm.result.color === 'w' ? 'b' : 'w';
+  const kingSquare = _findKing(pm.chess, oppColor);
+  if (!kingSquare) return false;
+  const { f: kf, r: kr } = _sq2c(kingSquare);
+
+  // Count pawns near king before and after
+  const beforeBoard = new Chess(move.fen_before);
+  let pawnsBefore = 0, pawnsAfter = 0;
+  for (let df = -1; df <= 1; df++) {
+    const shieldRank = oppColor === 'w' ? kr + 1 : kr - 1;
+    if (shieldRank < 0 || shieldRank >= 8) continue;
+    const nf = kf + df;
+    if (nf < 0 || nf >= 8) continue;
+    const sq = _c2sq(nf, shieldRank);
+    const pb = beforeBoard.get(sq);
+    if (pb && pb.type === 'p' && pb.color === oppColor) pawnsBefore++;
+    const pa = pm.chess.get(sq);
+    if (pa && pa.type === 'p' && pa.color === oppColor) pawnsAfter++;
+  }
+  return pawnsAfter < pawnsBefore;
+}
+
+// --- Group 5: Material & Sacrifice ---
+
+// 31. isSacrifice — already exists
+
+/** 32. Exchange sacrifice: rook given for minor piece. */
+function isExchangeSacrifice(move) {
+  if (!move.move_san || !move.move_san.includes('x')) return false;
+  const pm = _playMove(move);
+  if (!pm) return false;
+  return pm.result.piece === 'r' && (pm.result.captured === 'n' || pm.result.captured === 'b');
+}
+
+/** 33. Queen sacrifice: queen is captured or given up. */
+function isQueenSacrifice(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  if (pm.result.piece !== 'q') return false;
+  // Queen moves to a square attacked by opponent = sacrifice
+  const to = move.move_uci.slice(2, 4);
+  const oppColor = pm.result.color === 'w' ? 'b' : 'w';
+  return _isAttackedBy(pm.chess.fen(), to, oppColor);
+}
+
+/** 34. Hanging piece capture: captures an undefended piece. */
+function isHangingCapture(move) {
+  if (!move.move_san || !move.move_san.includes('x')) return false;
+  if (!move.fen_before) return false;
+  const capturedSquare = move.move_uci.slice(2, 4);
+  const before = new Chess(move.fen_before);
+  const captured = before.get(capturedSquare);
+  if (!captured || PIECE_VALUES[captured.type] < 1) return false;
+  // Was the piece defended?
+  return !_isAttackedBy(move.fen_before, capturedSquare, captured.color);
+}
+
+// --- Group 6: Defensive & Special ---
+
+/** 35. Stalemate trap: creates stalemate from a losing position. */
+function isStalemateTrap(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  return pm.chess.in_stalemate();
+}
+
+/** 36. Quiet move: non-check, non-capture that is the engine's best. */
+function isQuietMove(move) {
+  if (!move.move_san || !move.move_uci) return false;
+  const san = move.move_san;
+  if (san.includes('x') || san.includes('+') || san.includes('#')) return false;
+  const eb = move.eval_before;
+  return eb && eb.best_move_uci === move.move_uci;
+}
+
+/** 37. Clearance: moves a piece to open a line for another piece. */
+function isClearance(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const from = move.move_uci.slice(0, 2);
+  const before = new Chess(move.fen_before);
+  const mover = before.get(from);
+  if (!mover) return false;
+  const moverColor = mover.color;
+
+  const pm = _playMove(move);
+  if (!pm) return false;
+
+  // Check if a friendly sliding piece now has more attacks through the vacated square
+  const { f, r } = _sq2c(from);
+  for (const [df, dr] of [...DIAGS, ...STRAIGHTS]) {
+    // Look for friendly piece behind the from-square
+    let cf = f - df, cr = r - dr;
+    while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+      const sq = _c2sq(cf, cr);
+      const p = before.get(sq);
+      if (p) {
+        if (p.color === moverColor && (p.type === 'r' || p.type === 'b' || p.type === 'q')) {
+          // This piece might benefit from the cleared line
+          const beforeAttacks = _getAttacks(move.fen_before, sq).length;
+          const afterAttacks = _getAttacks(pm.chess.fen(), sq).length;
+          if (afterAttacks > beforeAttacks) return true;
+        }
+        break;
+      }
+      cf -= df; cr -= dr;
+    }
+  }
+  return false;
+}
+
+/** 38. X-ray attack: attacks through an intervening piece. */
+function isXrayAttack(move) {
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const to = move.move_uci.slice(2, 4);
+  const piece = pm.chess.get(to);
+  if (!piece) return false;
+  const dirs = (piece.type === 'b') ? DIAGS : (piece.type === 'r') ? STRAIGHTS : (piece.type === 'q') ? [...DIAGS, ...STRAIGHTS] : [];
+  if (!dirs.length) return false;
+
+  const moverColor = piece.color;
+  const oppColor = moverColor === 'w' ? 'b' : 'w';
+  const { f, r } = _sq2c(to);
+
+  for (const [df, dr] of dirs) {
+    const ray = [];
+    let cf = f + df, cr = r + dr;
+    while (cf >= 0 && cf < 8 && cr >= 0 && cr < 8) {
+      const sq = _c2sq(cf, cr);
+      const p = pm.chess.get(sq);
+      if (p) ray.push({ ...p, square: sq });
+      if (ray.length >= 2) break;
+      cf += df; cr += dr;
+    }
+    // X-ray: attacks through a friendly piece to an enemy piece behind
+    if (ray.length === 2 && ray[0].color === moverColor && ray[1].color === oppColor) {
+      if (PIECE_VALUES[ray[1].type] >= 3) return true;
+    }
+  }
+  return false;
+}
+
+/** 39. Piece activity: moves piece from passive to active (gains attacks). */
+function isPieceActivity(move) {
+  if (!move.fen_before || !move.move_uci) return false;
+  const from = move.move_uci.slice(0, 2);
+  const to = move.move_uci.slice(2, 4);
+  const before = new Chess(move.fen_before);
+  const mover = before.get(from);
+  if (!mover || mover.type === 'p' || mover.type === 'k') return false;
+
+  const pm = _playMove(move);
+  if (!pm) return false;
+  const beforeAttacks = _getAttacks(move.fen_before, from).length;
+  const afterAttacks = _getAttacks(pm.chess.fen(), to).length;
+  return afterAttacks >= beforeAttacks + 3; // Significant mobility gain
+}
+
+/** 40. Castling. */
+function isCastling(move) {
+  return move.move_san === 'O-O' || move.move_san === 'O-O-O';
+}
+
+// Expose all tactical helpers on window for E2E testing and data collection
+window._tacticalHelpers = {
+  isFork, createsPin, isSkewer, isDiscoveredAttack, isDiscoveredCheck,
+  isDoubleCheck, createsMateThreat, isBackRankThreat, isSmotheredMate,
+  isTrappedPiece, isRemovalOfDefender, isOverloadedExploit, isDeflection,
+  isDecoy, isDesperado, isTacticalCheckmate, isTacticalCheck, destroysCastling,
+  isWindmill, isPerpetualCheck, createsPassedPawn, isTacticalPromotion,
+  isUnderpromotion, isPawnBreak, isEnPassant, isOutpost, isCentralization,
+  isSeventhRankInvasion, isOpenFileControl, isKingSafetyDegradation,
+  isExchangeSacrifice, isQueenSacrifice, isHangingCapture, isStalemateTrap,
+  isQuietMove, isClearance, isXrayAttack, isPieceActivity, isCastling,
+};
+
+// ===========================================================================
+
 /**
  * Classify a move based on expected points lost.
  * @param {Object} move - Move data from analysis_data.json.
