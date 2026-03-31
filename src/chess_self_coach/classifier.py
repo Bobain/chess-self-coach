@@ -14,6 +14,9 @@ import math
 import multiprocessing
 from pathlib import Path
 
+import re
+import textwrap
+
 from chess_self_coach import worker_count
 from chess_self_coach.config import (
     analysis_data_path,
@@ -255,3 +258,225 @@ def run_classification(
 
     elapsed = time.monotonic() - t0
     print(f"  Done in {elapsed:.1f}s → {output_path} ({output_path.stat().st_size / 1024:.0f} KB)")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Scoring: evaluate classifier quality against ground truth
+# ══════════════════════════════════════════════════════════════════════════════
+
+COMPLEXITY_LAMBDA = 0.10
+COMPLEXITY_BUDGET = 50
+MIN_SCORE = 0.38
+
+
+def _compute_f1(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
+    """Compute precision, recall, F1."""
+    if tp == 0:
+        return 0.0, 0.0, 0.0
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f1 = 2 * precision * recall / (precision + recall)
+    return precision, recall, f1
+
+
+def count_complexity() -> tuple[int, int, int, int]:
+    """Count complexity of the Python classify_move() function.
+
+    Parses the source code of classify_move() to count thresholds,
+    rule conditions, and helper function calls — same methodology as
+    the JS counter but applied to Python source.
+
+    Returns:
+        (n_thresholds, n_conditions, n_helpers, total).
+    """
+    import inspect
+    source = inspect.getsource(classify_move)
+
+    # Find the brilliant/great zone: from start to last "brilliant" or "great" return
+    lines = source.split("\n")
+    last_bg_line = 0
+    for i, line in enumerate(lines):
+        if '"brilliant"' in line or '"great"' in line:
+            last_bg_line = i
+    bg_zone = "\n".join(lines[: last_bg_line + 1])
+
+    # Count thresholds: numeric literals in comparisons
+    thresholds: set[str] = set()
+    for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", bg_zone):
+        thresholds.add(t)
+    for t in re.findall(r"[<>=!]=?\s*(-?\d+)(?!\.\d)", bg_zone):
+        if abs(int(t)) > 2:
+            thresholds.add(t)
+
+    # Count rule conditions: if statements with numeric comparisons or function calls
+    conditions = 0
+    for m in re.finditer(r"\bif\b\s", bg_zone):
+        # Extract the condition line
+        line_start = bg_zone.rfind("\n", 0, m.start()) + 1
+        line_end = bg_zone.find(":", m.end())
+        if line_end < 0:
+            continue
+        cond = bg_zone[m.end():line_end]
+        has_numeric = bool(re.search(r"[<>=!]=?\s*-?\d", cond))
+        has_call = bool(re.search(r"\b[a-z_]\w+\(", cond))
+        has_domain = bool(re.search(r"is_mate|is_opening|is_book|is_sacrifice|is_missed", cond))
+        # Exclude pure null/None guards
+        is_guard = bool(re.search(r"is None|is not None|\.get\(", cond)) and not has_numeric and not has_call
+        if (has_numeric or has_call or has_domain) and not is_guard:
+            conditions += 1
+
+    # Count helper functions called (functions defined in this module, called in zone)
+    defined_funcs = set(re.findall(r"^def\s+([a-z_]\w+)", source, re.MULTILINE))
+    called_funcs = set(re.findall(r"\b([a-z_]\w+)\s*\(", bg_zone))
+    helpers = called_funcs & defined_funcs - {"classify_move"}
+    n_helpers = len(helpers)
+
+    total = len(thresholds) + conditions + n_helpers
+    return len(thresholds), conditions, n_helpers, total
+
+
+def score_classifier(
+    ground_truth_path: Path | None = None,
+    classifications_path: Path | None = None,
+    verbose: bool = True,
+) -> dict:
+    """Score the classifier against ground truth.
+
+    Computes per-class TP/FP/FN, macro F1, complexity, and regularized score.
+    Can be called standalone (by /optimize-classifier) or from tests.
+
+    Args:
+        ground_truth_path: Path to classification_ground_truth.json.
+        classifications_path: Path to classifications_data.json.
+        verbose: Print detailed results.
+
+    Returns:
+        Dict with keys: brilliant, great, macro_f1, complexity, penalty, score.
+    """
+    import importlib.util
+
+    # Load ground truth cases
+    cases_path = Path(__file__).parent.parent.parent / "tests" / "e2e" / "classification_cases.py"
+    spec = importlib.util.spec_from_file_location("cases", str(cases_path))
+    assert spec and spec.loader
+    cases_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cases_mod)
+    games_gt = cases_mod.GAMES  # type: ignore[attr-defined]
+
+    # Load ground truth moves
+    if ground_truth_path is None:
+        ground_truth_path = Path(__file__).parent.parent.parent / "tests" / "e2e" / "fixtures" / "classification_ground_truth.json"
+    with open(ground_truth_path) as f:
+        gt_data = json.load(f)
+    gt_by_id = {g["game_id"]: g for g in gt_data["games"]}
+
+    # Load pre-computed classifications OR classify on the fly
+    if classifications_path is None:
+        classifications_path = classifications_data_path()
+
+    # Load tactics for on-the-fly classification
+    tactics_by_game: dict[str, list[dict]] = {}
+    tp = tactics_data_path()
+    if tp.exists():
+        with open(tp) as f:
+            tactics_by_game = json.load(f).get("games", {})
+
+    # Use pre-computed if available, otherwise classify on the fly
+    pre_computed: dict[str, list[dict | None]] = {}
+    if classifications_path.exists():
+        with open(classifications_path) as f:
+            pre_computed = json.load(f).get("games", {})
+
+    total_brilliant = {"tp": 0, "fp": 0, "fn": 0}
+    total_great = {"tp": 0, "fp": 0, "fn": 0}
+    total_moves = 0
+
+    for game_gt in games_gt:
+        gid = game_gt["game_id"]
+        gt_game = gt_by_id.get(gid)
+        if not gt_game:
+            continue
+        moves = gt_game["moves"]
+        brilliant_set = set(game_gt.get("brilliant_indices", []))
+        great_set = set(game_gt.get("great_indices", []))
+        total_moves += len(moves)
+
+        # Get classifications for this game
+        game_url = None
+        for url in pre_computed:
+            # Match by numeric ID in the URL
+            num_id = gid.split("_")[-1]
+            if num_id in url:
+                game_url = url
+                break
+
+        if game_url and game_url in pre_computed:
+            classifications = pre_computed[game_url]
+        else:
+            # Classify on the fly
+            game_tactics = tactics_by_game.get(gid) or [None] * len(moves)
+            classifications = []
+            for i, m in enumerate(moves):
+                side = m.get("side", "white" if i % 2 == 0 else "black")
+                prev = moves[i - 1] if i > 0 else None
+                tact = game_tactics[i] if i < len(game_tactics) else None
+                classifications.append(classify_move(m, side, prev, tact))
+
+        # Compare to ground truth
+        for i, cls in enumerate(classifications):
+            predicted = cls["c"] if cls else "other"
+            if predicted not in ("brilliant", "great"):
+                predicted = "other"
+            expected = (
+                "brilliant" if i in brilliant_set
+                else "great" if i in great_set
+                else "other"
+            )
+
+            for cat, expected_cat, stats in [
+                ("brilliant", "brilliant", total_brilliant),
+                ("great", "great", total_great),
+            ]:
+                if expected == expected_cat and predicted == expected_cat:
+                    stats["tp"] += 1
+                elif predicted == expected_cat and expected != expected_cat:
+                    stats["fp"] += 1
+                elif expected == expected_cat and predicted != expected_cat:
+                    stats["fn"] += 1
+
+    # Compute F1
+    _, _, brilliant_f1 = _compute_f1(total_brilliant["tp"], total_brilliant["fp"], total_brilliant["fn"])
+    _, _, great_f1 = _compute_f1(total_great["tp"], total_great["fp"], total_great["fn"])
+    macro_f1 = (brilliant_f1 + great_f1) / 2
+
+    # Complexity
+    n_thresholds, n_conditions, n_helpers, complexity = count_complexity()
+    penalty = COMPLEXITY_LAMBDA * complexity / COMPLEXITY_BUDGET
+    score = macro_f1 - penalty
+
+    result = {
+        "brilliant": {**total_brilliant, "f1": brilliant_f1},
+        "great": {**total_great, "f1": great_f1},
+        "macro_f1": macro_f1,
+        "complexity": complexity,
+        "n_thresholds": n_thresholds,
+        "n_conditions": n_conditions,
+        "n_helpers": n_helpers,
+        "penalty": penalty,
+        "score": score,
+        "total_moves": total_moves,
+        "n_games": len(games_gt),
+    }
+
+    if verbose:
+        print(f"\n{'='*60}")
+        print(f"CLASSIFICATION SCORE ({result['n_games']} games, {total_moves} moves)")
+        print(f"  Brilliant: TP={total_brilliant['tp']} FP={total_brilliant['fp']} FN={total_brilliant['fn']} F1={brilliant_f1:.3f}")
+        print(f"  Great:     TP={total_great['tp']} FP={total_great['fp']} FN={total_great['fn']} F1={great_f1:.3f}")
+        print(f"  Macro F1={macro_f1:.3f}")
+        print(f"  Complexity: {complexity} ({n_thresholds} thresholds + {n_conditions} conditions + {n_helpers} helpers)")
+        print(f"  Penalty: -{penalty:.3f} (lambda={COMPLEXITY_LAMBDA}, budget={COMPLEXITY_BUDGET})")
+        print(f"  Regularized score={score:.3f} (threshold={MIN_SCORE})")
+        print(f"{'='*60}")
+
+    return result

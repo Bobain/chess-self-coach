@@ -578,6 +578,91 @@ def is_castling(board_before: chess.Board, move: chess.Move) -> bool:
     return board_before.is_castling(move)
 
 
+def is_sacrifice(board_before: chess.Board, move: chess.Move, pv_uci: list[str]) -> bool:
+    """Sacrifice: piece given up for non-obvious compensation.
+
+    Simulates the PV recapture chain on the destination square.
+    Returns True if: full chain loses material (genuine sacrifice) OR
+    first move appears to sacrifice but chain gains more (tactical trap).
+    Pawn sacrifices excluded (piece value must be > 2).
+    """
+    if not pv_uci or len(pv_uci) < 3:
+        return False
+    # Must be the engine's best move
+    piece = board_before.piece_at(move.from_square)
+    if not piece or PIECE_VALUES.get(piece.piece_type, 0) <= 2:
+        return False
+    # Opponent must recapture on same square in PV
+    our_dest = move.to_square
+    if len(pv_uci) < 2:
+        return False
+    try:
+        opp_move = chess.Move.from_uci(pv_uci[1])
+    except ValueError:
+        return False
+    if opp_move.to_square != our_dest:
+        return False
+    # Simulate full recapture chain
+    board = board_before.copy()
+    material_balance = 0
+    first_captured_value = 0
+    first_piece_value = PIECE_VALUES.get(piece.piece_type, 0)
+    for k, uci_str in enumerate(pv_uci):
+        try:
+            pv_move = chess.Move.from_uci(uci_str)
+        except ValueError:
+            break
+        if k > 0 and pv_move.to_square != our_dest:
+            break
+        if pv_move not in board.legal_moves:
+            break
+        captured = board.piece_at(pv_move.to_square)
+        if captured:
+            sign = 1 if k % 2 == 0 else -1
+            material_balance += sign * PIECE_VALUES.get(captured.piece_type, 0)
+        if k == 0 and captured:
+            first_captured_value = PIECE_VALUES.get(captured.piece_type, 0)
+        board.push(pv_move)
+
+    first_move_net = first_captured_value - first_piece_value
+    # Genuine sacrifice: full chain loses material
+    if material_balance < -0.5:
+        return True
+    # Tactical trap: first move appears to sacrifice but chain gains
+    if first_move_net < -0.5 and material_balance > abs(first_move_net):
+        return True
+    return False
+
+
+def is_missed_capture(board_before: chess.Board, move: chess.Move, pv_uci: list[str], best_uci: str | None) -> bool:
+    """Best move was a capture winning material but player didn't play it.
+
+    Follows the PV up to 8 plies, tracking net material from captures.
+    """
+    if not best_uci or move.uci() == best_uci:
+        return False
+    if not pv_uci:
+        return False
+    board = board_before.copy()
+    material_balance = 0
+    first_is_capture = False
+    for k, uci_str in enumerate(pv_uci[:8]):
+        try:
+            pv_move = chess.Move.from_uci(uci_str)
+        except ValueError:
+            break
+        if pv_move not in board.legal_moves:
+            break
+        captured = board.piece_at(pv_move.to_square)
+        if captured:
+            sign = 1 if k % 2 == 0 else -1
+            material_balance += sign * PIECE_VALUES.get(captured.piece_type, 0)
+            if k == 0:
+                first_is_capture = True
+        board.push(pv_move)
+    return first_is_capture and material_balance >= 1
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Main analysis: analyze all moves of one game
 # ══════════════════════════════════════════════════════════════════════════════
@@ -637,6 +722,8 @@ def analyze_move(move_data: dict) -> dict:
         motifs["isXrayAttack"] = is_xray_attack(board_after, move)
         motifs["isPieceActivity"] = is_piece_activity(board_before, board_after, move)
         motifs["isCastling"] = is_castling(board_before, move)
+        motifs["isSacrifice"] = is_sacrifice(board_before, move, pv_uci)
+        motifs["isMissedCapture"] = is_missed_capture(board_before, move, pv_uci, best_uci)
     except Exception as e:
         _log.debug("Motif analysis error for %s %s: %s", fen[:20], uci, e)
 
