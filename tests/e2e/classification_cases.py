@@ -1017,4 +1017,14 @@ GAMES: list[dict] = [
             49: "Rh8 — great",
         },
     },
+    {
+        "game_id": "shantanutanajijadhav_121719505484",
+        "brilliant_indices": [],
+        "great_indices": [12, 32, 38],  # 7.w f4, 17.w axb4, 20.w Kxc2
+        "notes": {
+            12: "f4 — great",
+            32: "axb4 — great",
+            38: "Kxc2 — great",
+        },
+    },
 ]
