@@ -23,8 +23,9 @@ if tp.exists():
 existing = {g['game_id'] for g in GAMES}
 candidates = []
 for url, gd in analysis['games'].items():
-    nid = url.rstrip('/').split('/')[-1]
     h = gd['headers']
+    if h.get('source') != 'chess.com': continue
+    nid = url.rstrip('/').split('/')[-1]
     opp = h['black'] if h['white'] == PLAYER else h['white']
     gtid = f'{opp}_{nid}'
     if gtid in existing: continue
