@@ -654,4 +654,10 @@ GAMES: list[dict] = [
             24: "a3 — great",
         },
     },
+    {
+        "game_id": "uncleben2047_125149797899",
+        "brilliant_indices": [],
+        "great_indices": [],
+        "notes": {},
+    },
 ]
