@@ -13,6 +13,7 @@ import logging
 import math
 import multiprocessing
 from pathlib import Path
+from typing import Any
 
 import re
 import textwrap
@@ -46,7 +47,7 @@ CATEGORIES = {
 # ── Tunable parameters for classify_move() ──
 # All thresholds and motif lists in one place, enabling parametric sweep.
 
-DEFAULT_CONFIG: dict[str, object] = {
+DEFAULT_CONFIG: dict[str, Any] = {
     # Brilliant detection
     "brilliant_epl_max": -0.005,        # epl_lost < this → candidate
     "brilliant_wp_min": 0.20,           # wp_before > this
@@ -74,7 +75,7 @@ def classify_move(
     player_color: str,
     prev_move: dict | None,
     tactics: dict | None = None,
-    config: dict[str, object] | None = None,
+    config: dict[str, Any] | None = None,
 ) -> dict | None:
     """Classify a single move.
 
@@ -394,7 +395,7 @@ def count_complexity() -> tuple[int, int, int, int]:
     return len(thresholds), conditions, n_helpers, total
 
 
-def count_config_complexity(config: dict[str, object] | None = None) -> tuple[int, int, int, int]:
+def count_config_complexity(config: dict[str, Any] | None = None) -> tuple[int, int, int, int]:
     """Count complexity analytically from a config dict.
 
     Faster than count_complexity() (no source parsing) and works with
@@ -445,7 +446,7 @@ def score_classifier(
     ground_truth_path: Path | None = None,
     classifications_path: Path | None = None,
     verbose: bool = True,
-    config: dict[str, object] | None = None,
+    config: dict[str, Any] | None = None,
 ) -> dict:
     """Score the classifier against ground truth.
 

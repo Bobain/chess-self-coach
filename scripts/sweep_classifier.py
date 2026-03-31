@@ -18,6 +18,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+from typing import Any
 import pathlib
 import time
 from dataclasses import dataclass, field
@@ -43,10 +44,10 @@ class GameData:
     """Pre-loaded data for one ground truth game."""
 
     game_id: str
-    moves: list[dict]
+    moves: list[dict[str, Any]]
     brilliant_indices: set[int]
     great_indices: set[int]
-    tactics: list[dict | None]
+    tactics: list[dict[str, Any] | None]
 
 
 @dataclass
@@ -91,12 +92,12 @@ def preload_data() -> PreloadedData:
     assert spec and spec.loader
     cases_mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cases_mod)
-    games_gt: list[dict] = cases_mod.GAMES  # type: ignore[attr-defined]
+    games_gt: list[dict[str, Any]] = cases_mod.GAMES  # type: ignore[attr-defined]
 
     gt_by_id = {g["game_id"]: g for g in gt_data["games"]}
 
     # Load tactics
-    tactics_by_game: dict[str, list[dict]] = {}
+    tactics_by_game: dict[str, list[dict[str, Any]]] = {}
     tp = tactics_data_path()
     if tp.exists():
         with open(tp) as f:
@@ -116,13 +117,13 @@ def preload_data() -> PreloadedData:
 
         # Find tactics by numeric ID
         num_id = gid.split("_")[-1]
-        game_tactics_list: list[dict] | None = None
+        game_tactics_list: list[dict[str, Any]] | None = None
         for url, tac in tactics_by_game.items():
             if num_id in url:
                 game_tactics_list = tac
                 break
 
-        tactics: list[dict | None] = []
+        tactics: list[dict[str, Any] | None] = []
         for i in range(len(moves)):
             t = game_tactics_list[i] if game_tactics_list and i < len(game_tactics_list) else None
             tactics.append(t)
@@ -151,7 +152,7 @@ def preload_data() -> PreloadedData:
 
 
 def evaluate_config(
-    config: dict[str, object],
+    config: dict[str, Any],
     data: PreloadedData,
     exclude_game: str | None = None,
 ) -> ScoreResult:
@@ -169,7 +170,7 @@ def evaluate_config(
         if exclude_game and game.game_id == exclude_game:
             continue
 
-        classifications: list[dict | None] = []
+        classifications: list[dict[str, Any] | None] = []
         for i, m in enumerate(game.moves):
             side = m.get("side", "white" if i % 2 == 0 else "black")
             prev = game.moves[i - 1] if i > 0 else None
@@ -274,7 +275,7 @@ def create_objective(
     """
 
     def objective(trial: optuna.Trial) -> float:
-        config: dict[str, object] = {
+        config: dict[str, Any] = {
             "brilliant_epl_max": trial.suggest_float("brilliant_epl_max", -0.03, 0.0),
             "brilliant_wp_min": trial.suggest_float("brilliant_wp_min", 0.05, 0.50),
             "brilliant_wp_max": trial.suggest_float("brilliant_wp_max", 0.80, 1.0),
@@ -309,7 +310,7 @@ def create_objective(
 
 def logo_validate(
     data: PreloadedData,
-    candidates: list[tuple[str, dict[str, object]]],
+    candidates: list[tuple[str, dict[str, Any]]],
 ) -> list[tuple[str, float, float, float]]:
     """Leave-One-Game-Out cross-validation on candidate configs.
 
@@ -340,7 +341,7 @@ def _trial_to_config(
     trial: optuna.trial.FrozenTrial,
     selected_brilliant: list[str],
     selected_great: list[str],
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Reconstruct a config dict from a completed Optuna trial."""
     params = trial.params
 
@@ -385,7 +386,7 @@ def print_report(
     selected_brilliant: list[str],
     selected_great: list[str],
     study: optuna.Study,
-    best_config: dict[str, object],
+    best_config: dict[str, Any],
     best_score: ScoreResult,
     logo_results: list[tuple[str, float, float, float]],
     elapsed: float,
@@ -528,7 +529,7 @@ def main() -> None:
     )
 
     # Seed with DEFAULT_CONFIG as the first trial
-    default_params: dict[str, object] = {
+    default_params: dict[str, Any] = {
         "brilliant_epl_max": float(DEFAULT_CONFIG["brilliant_epl_max"]),  # type: ignore[arg-type]
         "brilliant_wp_min": float(DEFAULT_CONFIG["brilliant_wp_min"]),  # type: ignore[arg-type]
         "brilliant_wp_max": float(DEFAULT_CONFIG["brilliant_wp_max"]),  # type: ignore[arg-type]
@@ -560,7 +561,7 @@ def main() -> None:
     # Phase 3: LOGO cross-validation
     print(f"\nPhase 3: LOGO cross-validation...")
     t_logo = time.monotonic()
-    candidates: list[tuple[str, dict[str, object]]] = [
+    candidates: list[tuple[str, dict[str, Any]]] = [
         ("baseline", copy.deepcopy(DEFAULT_CONFIG)),
         ("best_found", copy.deepcopy(best_config)),
     ]
