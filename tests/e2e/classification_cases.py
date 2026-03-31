@@ -776,4 +776,12 @@ GAMES: list[dict] = [
             28: "Nxe5 — great",
         },
     },
+    {
+        "game_id": "Appolon74_129806993755",
+        "brilliant_indices": [],
+        "great_indices": [31],  # 16.b Nxd3
+        "notes": {
+            31: "Nxd3 — great",
+        },
+    },
 ]
