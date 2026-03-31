@@ -957,4 +957,14 @@ GAMES: list[dict] = [
             38: "Rd2 — great",
         },
     },
+    {
+        "game_id": "July27_1914_129728360695",
+        "brilliant_indices": [24],  # 13.w Nxg5
+        "great_indices": [32, 39],  # 17.w Qxg4+, 20.b Nxd4
+        "notes": {
+            24: "Nxg5 — brilliant",
+            32: "Qxg4+ — great",
+            39: "Nxd4 — great",
+        },
+    },
 ]
