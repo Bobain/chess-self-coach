@@ -1037,4 +1037,15 @@ GAMES: list[dict] = [
             36: "Re5+ — great",
         },
     },
+    {
+        "game_id": "brewok007_166269757202",
+        "brilliant_indices": [],
+        "great_indices": [16, 58, 68, 86],  # 9.w Ne5, 30.w b6, 35.w a6, 44.w Rxf7
+        "notes": {
+            16: "Ne5 — great",
+            58: "b6 — great",
+            68: "a6 — great",
+            86: "Rxf7 — great",
+        },
+    },
 ]
