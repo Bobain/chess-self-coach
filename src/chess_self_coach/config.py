@@ -168,7 +168,7 @@ def save_config(config: dict[str, Any]) -> None:
 
     cfg = config_path()
     cfg.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write_json(cfg, config)
+    atomic_write_json(cfg, config, pretty=True)
     print(f"  Config saved to {cfg}")
 
 

@@ -725,7 +725,7 @@ def run_tactical_analysis(analysis_path: Path | None = None, output_path: Path |
         tactic_data[game_id] = motifs_list
 
     output = {"version": "1.0", "games": tactic_data}
-    atomic_write_json(output_path, output, compact=True)
+    atomic_write_json(output_path, output)
 
     elapsed = time.monotonic() - t0
     print(f"  Done in {elapsed:.1f}s → {output_path} ({output_path.stat().st_size / 1024:.0f} KB)")
