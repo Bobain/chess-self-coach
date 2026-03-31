@@ -79,7 +79,7 @@ The PWA provides a game-list-centric workflow:
 The move classifier (`src/chess_self_coach/classifier.py`) assigns categories (brilliant `!!`, great `!`, best, etc.) to each move. It's parametric: all tunable thresholds and motif lists live in `DEFAULT_CONFIG`, enabling automated optimization.
 
 **Optimization workflow** (`/optimize-classifier` skill):
-- **Tier 1 — Automated sweep** (`scripts/sweep_classifier.py`): sweeps ~500 parameter combinations in ~15s. Phases: single-parameter sensitivity, greedy combination, random perturbation, Leave-One-Game-Out cross-validation.
+- **Tier 1 — Automated sweep** (`scripts/sweep_classifier.py`): Optuna TPE Bayesian optimization over 1000 trials in ~2 min. Phases: motif screening (one-by-one), TPE on numeric thresholds, Leave-One-Game-Out cross-validation.
 - **Tier 2 — Structural changes** (optional): LLM agents in worktrees for logic restructuring that can't be expressed as parameter configs. Only if Tier 1 plateaus.
 
 **Related skills**: `/collect-classifier-data` (extract features/motifs for analysis), `/data-for-classifier` (label new games for ground truth).
