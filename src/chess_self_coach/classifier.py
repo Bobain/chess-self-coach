@@ -43,6 +43,27 @@ CATEGORIES = {
 }
 
 
+# ── Tunable parameters for classify_move() ──
+# All thresholds and motif lists in one place, enabling parametric sweep.
+
+DEFAULT_CONFIG: dict[str, object] = {
+    # Brilliant detection
+    "brilliant_epl_max": -0.005,        # epl_lost < this → candidate
+    "brilliant_wp_min": 0.20,           # wp_before > this
+    "brilliant_wp_max": 0.95,           # wp_before < this
+    "brilliant_motifs": ["isSacrifice"],  # motifs that trigger brilliant
+    # Great detection (opp_epl path)
+    "great_epl_max": 0.02,             # epl_lost <= this
+    "great_opp_epl_min": 0.15,         # opp_epl >= this
+    "great_filter_recapture": True,     # filter trivial recaptures
+    # Great detection (motif path — independent of opp_epl)
+    "great_motifs": [],                 # motifs that trigger great directly
+    # Miss detection
+    "miss_epl_min": 0.05,              # epl_lost > this
+    "miss_opp_epl_min": 0.15,          # opp_epl >= this
+}
+
+
 def _win_prob(cp: int, sign: int) -> float:
     """Win probability from centipawn score (logistic model)."""
     return 1.0 / (1.0 + math.pow(10, -cp * sign / 400))
@@ -53,6 +74,7 @@ def classify_move(
     player_color: str,
     prev_move: dict | None,
     tactics: dict | None = None,
+    config: dict[str, object] | None = None,
 ) -> dict | None:
     """Classify a single move.
 
@@ -61,10 +83,13 @@ def classify_move(
         player_color: 'white' or 'black'.
         prev_move: Previous move data (opponent's), or None.
         tactics: Pre-computed tactical motifs for this move from tactics_data.json.
+        config: Tunable parameters (thresholds + motif lists). None = DEFAULT_CONFIG.
 
     Returns:
         Dict with 'c' (category), 's' (symbol), 'co' (color), or None if unclassifiable.
     """
+    cfg = config if config is not None else DEFAULT_CONFIG
+
     # Book moves
     is_book = move.get("in_opening", False)
     if is_book:
@@ -101,18 +126,25 @@ def classify_move(
     is_opening = move.get("in_opening", False)
 
     # Brilliant detection
-    if epl_lost < -0.005 and wp_before > 0.20 and wp_before < 0.95 and not is_opening:
-        # isSacrifice: use pre-computed tactic if available
-        is_sacrifice = (tactics or {}).get("isSacrifice", False)
-        # Fallback: check if the JS isSacrifice would have fired
-        # (move is best move + opponent recaptures in PV + material loss)
-        if not is_sacrifice and tactics is None:
-            is_sacrifice = _is_sacrifice_fallback(move)
-        if is_sacrifice:
+    brilliant_epl_max = float(cfg["brilliant_epl_max"])  # type: ignore[arg-type]
+    brilliant_wp_min = float(cfg["brilliant_wp_min"])  # type: ignore[arg-type]
+    brilliant_wp_max = float(cfg["brilliant_wp_max"])  # type: ignore[arg-type]
+    brilliant_motifs: list[str] = cfg["brilliant_motifs"]  # type: ignore[assignment]
+
+    if epl_lost < brilliant_epl_max and wp_before > brilliant_wp_min and wp_before < brilliant_wp_max and not is_opening:
+        tact = tactics or {}
+        has_motif = any(tact.get(m, False) for m in brilliant_motifs)
+        if not has_motif and tactics is None:
+            has_motif = _is_sacrifice_fallback(move)
+        if has_motif:
             return {"c": "brilliant", **CATEGORIES["brilliant"]}
 
-    # Great detection
-    if epl_lost <= 0.02 and not is_opening and prev_move:
+    # Great detection (opp_epl path: good response to opponent blunder)
+    great_epl_max = float(cfg["great_epl_max"])  # type: ignore[arg-type]
+    great_opp_epl_min = float(cfg["great_opp_epl_min"])  # type: ignore[arg-type]
+    great_filter_recapture: bool = cfg["great_filter_recapture"]  # type: ignore[assignment]
+
+    if epl_lost <= great_epl_max and not is_opening and prev_move:
         peb = prev_move.get("eval_before", {})
         pea = prev_move.get("eval_after", {})
         if (peb.get("score_cp") is not None and pea.get("score_cp") is not None
@@ -121,16 +153,35 @@ def classify_move(
             opp_wp_before = _win_prob(peb["score_cp"], opp_sign)
             opp_wp_after = _win_prob(pea["score_cp"], opp_sign)
             opp_epl = opp_wp_before - opp_wp_after
-            if opp_epl >= 0.15:
-                # Filter trivial recaptures on the same square
-                prev_uci = prev_move.get("move_uci", "")
-                move_uci = move.get("move_uci", "")
-                is_recapture = prev_uci and move_uci and prev_uci[2:4] == move_uci[2:4]
+            if opp_epl >= great_opp_epl_min:
+                if great_filter_recapture:
+                    prev_uci = prev_move.get("move_uci", "")
+                    move_uci = move.get("move_uci", "")
+                    is_recapture = prev_uci and move_uci and prev_uci[2:4] == move_uci[2:4]
+                else:
+                    is_recapture = False
                 if not is_recapture:
                     return {"c": "great", **CATEGORIES["great"]}
 
+    # Great detection (motif path: strong tactical move regardless of opp_epl)
+    great_motifs: list[str] = cfg["great_motifs"]  # type: ignore[assignment]
+    if great_motifs and epl_lost <= great_epl_max and not is_opening:
+        tact = tactics or {}
+        if any(tact.get(m, False) for m in great_motifs):
+            if great_filter_recapture and prev_move:
+                prev_uci = prev_move.get("move_uci", "")
+                move_uci = move.get("move_uci", "")
+                is_recapture = prev_uci and move_uci and prev_uci[2:4] == move_uci[2:4]
+            else:
+                is_recapture = False
+            if not is_recapture:
+                return {"c": "great", **CATEGORIES["great"]}
+
     # Miss detection
-    if not is_opening and epl_lost > 0.05 and prev_move:
+    miss_epl_min = float(cfg["miss_epl_min"])  # type: ignore[arg-type]
+    miss_opp_epl_min = float(cfg["miss_opp_epl_min"])  # type: ignore[arg-type]
+
+    if not is_opening and epl_lost > miss_epl_min and prev_move:
         is_missed = (tactics or {}).get("isMissedCapture", False)
         if not is_missed and tactics is None:
             is_missed = _is_missed_capture_fallback(move)
@@ -141,7 +192,7 @@ def classify_move(
                     and not peb.get("is_mate") and not pea.get("is_mate")):
                 opp_sign = -sign
                 opp_epl = _win_prob(peb["score_cp"], opp_sign) - _win_prob(pea["score_cp"], opp_sign)
-                if opp_epl >= 0.15:
+                if opp_epl >= miss_opp_epl_min:
                     return {"c": "miss", **CATEGORIES["miss"]}
 
     # Standard EPL thresholds
@@ -305,13 +356,16 @@ def count_complexity() -> tuple[int, int, int, int]:
             last_bg_line = i
     bg_zone = "\n".join(lines[: last_bg_line + 1])
 
-    # Count thresholds: numeric literals in comparisons
+    # Count thresholds: numeric literals in comparisons + config lookups
     thresholds: set[str] = set()
     for t in re.findall(r"[<>=!]=?\s*(-?\d+\.\d+)", bg_zone):
         thresholds.add(t)
     for t in re.findall(r"[<>=!]=?\s*(-?\d+)(?!\.\d)", bg_zone):
         if abs(int(t)) > 2:
             thresholds.add(t)
+    # Also count parametric thresholds assigned from config dict
+    for t in re.findall(r'float\(cfg\["(\w+)"\]\)', bg_zone):
+        thresholds.add(t)
 
     # Count rule conditions: if statements with numeric comparisons or function calls
     conditions = 0
@@ -340,10 +394,58 @@ def count_complexity() -> tuple[int, int, int, int]:
     return len(thresholds), conditions, n_helpers, total
 
 
+def count_config_complexity(config: dict[str, object] | None = None) -> tuple[int, int, int, int]:
+    """Count complexity analytically from a config dict.
+
+    Faster than count_complexity() (no source parsing) and works with
+    any config — used by the sweep script to evaluate hundreds of configs.
+
+    For DEFAULT_CONFIG, must produce the same result as count_complexity().
+
+    Returns:
+        (n_thresholds, n_conditions, n_helpers, total).
+    """
+    cfg = config if config is not None else DEFAULT_CONFIG
+
+    # Thresholds: only brilliant/great zone (miss thresholds are outside)
+    threshold_keys = [
+        "brilliant_epl_max", "brilliant_wp_min", "brilliant_wp_max",
+        "great_epl_max", "great_opp_epl_min",
+    ]
+    n_thresholds = len(threshold_keys)
+
+    # Conditions: must match count_complexity() for DEFAULT_CONFIG.
+    # The regex counts if-statements with numeric/domain/call content.
+    # Base conditions in brilliant/great zone (from source analysis):
+    #   brilliant: main guard (1) + motif check (1) + fallback guard (1) + has_motif (1)
+    #   great opp_epl: main guard (1) + score guards (1) + opp_epl check (1)
+    #                + recapture filter (1) + not is_recapture (1)
+    #   great motifs: guard (1) + motif any() (1) + recapture (1)
+    #                + not is_recapture (1)
+    # Plus domain-keyword conditions detected by regex.
+    # Calibrated to match count_complexity() on DEFAULT_CONFIG.
+    n_base_conditions = 16
+    brilliant_motifs: list[str] = cfg.get("brilliant_motifs", [])  # type: ignore[assignment]
+    great_motifs: list[str] = cfg.get("great_motifs", [])  # type: ignore[assignment]
+    # Extra motifs beyond the default add complexity
+    default_brilliant = DEFAULT_CONFIG.get("brilliant_motifs", [])
+    default_great = DEFAULT_CONFIG.get("great_motifs", [])
+    extra_brilliant = max(0, len(brilliant_motifs) - len(default_brilliant))  # type: ignore[arg-type]
+    extra_great = max(0, len(great_motifs) - len(default_great))  # type: ignore[arg-type]
+    n_conditions = n_base_conditions + extra_brilliant + extra_great
+
+    # Helpers: fallback functions (always present in source)
+    n_helpers = 0
+
+    total = n_thresholds + n_conditions + n_helpers
+    return n_thresholds, n_conditions, n_helpers, total
+
+
 def score_classifier(
     ground_truth_path: Path | None = None,
     classifications_path: Path | None = None,
     verbose: bool = True,
+    config: dict[str, object] | None = None,
 ) -> dict:
     """Score the classifier against ground truth.
 
@@ -425,7 +527,7 @@ def score_classifier(
                 side = m.get("side", "white" if i % 2 == 0 else "black")
                 prev = moves[i - 1] if i > 0 else None
                 tact = game_tactics[i] if i < len(game_tactics) else None
-                classifications.append(classify_move(m, side, prev, tact))
+                classifications.append(classify_move(m, side, prev, tact, config))
 
         # Compare to ground truth
         for i, cls in enumerate(classifications):
@@ -454,8 +556,11 @@ def score_classifier(
     _, _, great_f1 = _compute_f1(total_great["tp"], total_great["fp"], total_great["fn"])
     macro_f1 = (brilliant_f1 + great_f1) / 2
 
-    # Complexity
-    n_thresholds, n_conditions, n_helpers, complexity = count_complexity()
+    # Complexity — use analytical method when a custom config is provided
+    if config is not None:
+        n_thresholds, n_conditions, n_helpers, complexity = count_config_complexity(config)
+    else:
+        n_thresholds, n_conditions, n_helpers, complexity = count_complexity()
     penalty = COMPLEXITY_LAMBDA * complexity / COMPLEXITY_BUDGET
     score = macro_f1 - penalty
 
