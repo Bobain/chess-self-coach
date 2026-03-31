@@ -985,4 +985,12 @@ GAMES: list[dict] = [
             112: "Bd3+ — great",
         },
     },
+    {
+        "game_id": "T1602T_166267448056",
+        "brilliant_indices": [],
+        "great_indices": [38],  # 20.w Qxb7
+        "notes": {
+            38: "Qxb7 — great",
+        },
+    },
 ]
