@@ -72,32 +72,65 @@ print(f'idx {IDX}: {(IDX//2)+1}.{\"w\" if m[\"side\"]==\"white\" else \"b\"} {m[
 ```
 5. Any move not mentioned = "other"
 
-## Step 3: Update fixtures
+## Step 3: Update ground truth JSON
 
-After user labels a game, run (replace URL, GTID, BRILLIANT_INDICES, GREAT_INDICES):
+Run this command (replace `{URL}`, `{GTID}`, and the comma-separated indices):
 ```bash
-uv run python /tmp/add_game.py "{URL}" "{GTID}" "{BRILLIANT_COMMA_SEP}" "{GREAT_COMMA_SEP}"
+uv run python scripts/add_ground_truth_game.py "{URL}" "{GTID}" "{BRILLIANT_COMMA_SEP}" "{GREAT_COMMA_SEP}"
 ```
 
-Then add entry to `tests/e2e/classification_cases.py` GAMES list:
+Example for a game with no brilliant and great at indices 19,31:
+```bash
+uv run python scripts/add_ground_truth_game.py "https://www.chess.com/game/live/125080133625" "shivauttangi_125080133625" "" "19,31"
+```
+
+Example for "aucun coup !! ni !" (all other):
+```bash
+uv run python scripts/add_ground_truth_game.py "https://www.chess.com/game/live/125083720203" "Has101010_125083720203" "" ""
+```
+
+## Step 4: Update classification_cases.py
+
+Open `tests/e2e/classification_cases.py` and add an entry BEFORE the closing `]` of the GAMES list. Use the Edit tool, replacing the last `]` with the new entry + `]`:
+
 ```python
-{
-    "game_id": "{GTID}",
-    "brilliant_indices": [{BRILLIANT}],
-    "great_indices": [{GREAT}],
-    "notes": { idx: "SAN — great/brilliant" },
-},
+    {
+        "game_id": "{GTID}",
+        "brilliant_indices": [{BRILLIANT_INDICES}],  # comment with move numbers
+        "great_indices": [{GREAT_INDICES}],  # comment with move numbers
+        "notes": {
+            {idx}: "{SAN} — great",  # one line per labeled move
+        },
+    },
+]
 ```
 
-## Step 4: Test and commit
+For "aucun coup !! ni !":
+```python
+    {
+        "game_id": "{GTID}",
+        "brilliant_indices": [],
+        "great_indices": [],
+        "notes": {},
+    },
+]
+```
 
+## Step 5: Test and commit
+
+Run the test:
 ```bash
 uv run pytest tests/test_classifier.py::test_classifier_score_regression -v
 ```
 
-If passes: `git add tests/e2e/fixtures/classification_ground_truth.json tests/e2e/classification_cases.py && git commit -m "Add {opponent} game to classification ground truth ({N} total)"`
+If PASSED, commit:
+```bash
+git add tests/e2e/fixtures/classification_ground_truth.json tests/e2e/classification_cases.py && git commit -m "Add {opponent} game to classification ground truth ({N} total)"
+```
 
-If fails: report error, do NOT commit.
+Where `{N}` is the total number printed by the add script.
+
+If FAILED: report the error to the user, do NOT commit.
 
 ## Rules
 
