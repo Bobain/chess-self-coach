@@ -727,4 +727,12 @@ GAMES: list[dict] = [
             44: "Bxg5 — great",
         },
     },
+    {
+        "game_id": "Alexey_Yazykov_121658696144",
+        "brilliant_indices": [],
+        "great_indices": [36],  # 19.w Bxf4
+        "notes": {
+            36: "Bxf4 — great",
+        },
+    },
 ]
