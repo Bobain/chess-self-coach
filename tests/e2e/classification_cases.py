@@ -1008,4 +1008,13 @@ GAMES: list[dict] = [
             12: "Bg6+ — great, bishop sacrifice forcing Kxg6 then Qxd8",
         },
     },
+    {
+        "game_id": "BijayGorkhali_125300372607",
+        "brilliant_indices": [],
+        "great_indices": [24, 49],  # 13.w Qc3, 25.b Rh8
+        "notes": {
+            24: "Qc3 — great",
+            49: "Rh8 — great",
+        },
+    },
 ]
