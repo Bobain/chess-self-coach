@@ -806,4 +806,16 @@ GAMES: list[dict] = [
             43: "Nd5 — great",
         },
     },
+    {
+        "game_id": "haritjokro_165148151382",
+        "brilliant_indices": [],
+        "great_indices": [11, 29, 46, 48, 50],  # 6.b Nd5, 15.b a6, 24.w Bc5, 25.w Be4, 26.w Rc1
+        "notes": {
+            11: "Nd5 — great",
+            29: "a6 — great",
+            46: "Bc5 — great",
+            48: "Be4 — great",
+            50: "Rc1 — great",
+        },
+    },
 ]
