@@ -948,4 +948,13 @@ GAMES: list[dict] = [
             45: "Bb4+ — great",
         },
     },
+    {
+        "game_id": "KrzychuBogus123_129310364027",
+        "brilliant_indices": [],
+        "great_indices": [24, 38],  # 13.w Bxe7, 20.w Rd2
+        "notes": {
+            24: "Bxe7 — great",
+            38: "Rd2 — great",
+        },
+    },
 ]
