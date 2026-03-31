@@ -17,7 +17,7 @@ from pathlib import Path
 import chess
 
 from chess_self_coach import worker_count
-from chess_self_coach.config import analysis_data_path, tactic_data_path
+from chess_self_coach.config import analysis_data_path, tactics_data_path
 from chess_self_coach.io import atomic_write_json
 
 _log = logging.getLogger(__name__)
@@ -699,7 +699,7 @@ def run_tactical_analysis(analysis_path: Path | None = None, output_path: Path |
     if analysis_path is None:
         analysis_path = analysis_data_path()
     if output_path is None:
-        output_path = tactic_data_path()
+        output_path = tactics_data_path()
 
     if not analysis_path.exists():
         print(f"  No analysis data at {analysis_path}")

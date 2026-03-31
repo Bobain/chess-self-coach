@@ -28,7 +28,7 @@ CONFIG_EXAMPLE_FILE = "config.example.json"
 ANALYSIS_DATA_FILE = "analysis_data.json"
 TRAINING_DATA_FILE = "training_data.json"
 FETCHED_GAMES_FILE = "fetched_games.json"
-TACTIC_DATA_FILE = "tactic_data.json"
+TACTICS_DATA_FILE = "tactics_data.json"
 
 ENV_FILE = ".env"
 
@@ -94,13 +94,13 @@ def fetched_games_path() -> Path:
     return data_dir() / FETCHED_GAMES_FILE
 
 
-def tactic_data_path() -> Path:
-    """Return the path to tactic_data.json.
+def tactics_data_path() -> Path:
+    """Return the path to tactics_data.json.
 
     Returns:
-        Path to data/tactic_data.json.
+        Path to data/tactics_data.json.
     """
-    return data_dir() / TACTIC_DATA_FILE
+    return data_dir() / TACTICS_DATA_FILE
 
 
 def error_exit(message: str, hint: str | None = None, debug_cmd: str | None = None) -> NoReturn:
