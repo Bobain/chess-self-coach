@@ -282,6 +282,7 @@ def create_objective(
             "brilliant_exchange_sac_epl_max": trial.suggest_float("brilliant_exchange_sac_epl_max", -0.02, 0.0),
             "great_epl_max": trial.suggest_float("great_epl_max", 0.0, 0.05),
             "great_opp_epl_min": trial.suggest_float("great_opp_epl_min", 0.05, 0.30),
+            "great_check_opp_epl_min": trial.suggest_float("great_check_opp_epl_min", 0.02, 0.20),
             "great_filter_recapture": True,
             "miss_epl_min": trial.suggest_float("miss_epl_min", 0.02, 0.10),
             "miss_opp_epl_min": trial.suggest_float("miss_opp_epl_min", 0.05, 0.25),
@@ -363,6 +364,7 @@ def _trial_to_config(
         "brilliant_exchange_sac_epl_max": params["brilliant_exchange_sac_epl_max"],
         "great_epl_max": params["great_epl_max"],
         "great_opp_epl_min": params["great_opp_epl_min"],
+        "great_check_opp_epl_min": params["great_check_opp_epl_min"],
         "great_filter_recapture": True,
         "great_motifs": great_motifs,
         "miss_epl_min": params["miss_epl_min"],
@@ -538,6 +540,7 @@ def main() -> None:
         "brilliant_exchange_sac_epl_max": float(DEFAULT_CONFIG["brilliant_exchange_sac_epl_max"]),  # type: ignore[arg-type]
         "great_epl_max": float(DEFAULT_CONFIG["great_epl_max"]),  # type: ignore[arg-type]
         "great_opp_epl_min": float(DEFAULT_CONFIG["great_opp_epl_min"]),  # type: ignore[arg-type]
+        "great_check_opp_epl_min": float(DEFAULT_CONFIG["great_check_opp_epl_min"]),  # type: ignore[arg-type]
         "miss_epl_min": float(DEFAULT_CONFIG["miss_epl_min"]),  # type: ignore[arg-type]
         "miss_opp_epl_min": float(DEFAULT_CONFIG["miss_opp_epl_min"]),  # type: ignore[arg-type]
     }

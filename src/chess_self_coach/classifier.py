@@ -58,7 +58,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
     # Great detection (opp_epl path)
     "great_epl_max": 0.012,            # epl_lost <= this
     "great_opp_epl_min": 0.15,         # opp_epl >= this
-    "great_filter_recapture": True,     # filter trivial recaptures
+    "great_check_opp_epl_min": 0.10,   # lower opp_epl for checks (forcing moves)
+    "great_filter_recapture": True,     # filter trivial recaptures (checks exempt)
     # Great detection (motif path — independent of opp_epl)
     "great_motifs": [],                 # motifs that trigger great directly
     # Miss detection
@@ -148,6 +149,7 @@ def classify_move(
     # Great detection (opp_epl path: good response to opponent blunder)
     great_epl_max = float(cfg["great_epl_max"])  # type: ignore[arg-type]
     great_opp_epl_min = float(cfg["great_opp_epl_min"])  # type: ignore[arg-type]
+    great_check_opp_epl_min = float(cfg["great_check_opp_epl_min"])  # type: ignore[arg-type]
     great_filter_recapture: bool = cfg["great_filter_recapture"]  # type: ignore[assignment]
 
     if epl_lost <= great_epl_max and not is_opening and prev_move:
@@ -159,12 +161,16 @@ def classify_move(
             opp_wp_before = _win_prob(peb["score_cp"], opp_sign)
             opp_wp_after = _win_prob(pea["score_cp"], opp_sign)
             opp_epl = opp_wp_before - opp_wp_after
-            if opp_epl >= great_opp_epl_min:
+            is_check = (tactics or {}).get("isCheck", False) or move.get("move_san", "").endswith(("+", "#"))
+            opp_threshold = great_check_opp_epl_min if is_check else great_opp_epl_min
+            if opp_epl >= opp_threshold:
                 if great_filter_recapture:
                     prev_uci = prev_move.get("move_uci", "")
                     move_uci = move.get("move_uci", "")
                     is_recapture = prev_uci and move_uci and prev_uci[2:4] == move_uci[2:4]
                 else:
+                    is_recapture = False
+                if is_recapture and is_check:
                     is_recapture = False
                 if not is_recapture:
                     return {"c": "great", **CATEGORIES["great"]}
