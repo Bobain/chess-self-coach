@@ -39,6 +39,7 @@ from sse_starlette.sse import EventSourceResponse
 from chess_self_coach import __version__
 from chess_self_coach.config import (
     ANALYSIS_DATA_FILE,
+    CLASSIFICATIONS_DATA_FILE,
     CONFIG_FILE,
     DATA_DIR,
     TRAINING_DATA_FILE,
@@ -560,6 +561,15 @@ async def analysis_data():
     path = _project_root / DATA_DIR / ANALYSIS_DATA_FILE
     if not path.exists():
         raise HTTPException(status_code=404, detail="No analysis data. Run: chess-self-coach train --analyze")
+    return FileResponse(path, media_type="application/json")
+
+
+@app.get("/classifications_data.json")
+async def classifications_data():
+    """Serve pre-computed move classifications (always fresh)."""
+    path = _project_root / DATA_DIR / CLASSIFICATIONS_DATA_FILE
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="No classifications data")
     return FileResponse(path, media_type="application/json")
 
 
