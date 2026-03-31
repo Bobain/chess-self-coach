@@ -1,16 +1,16 @@
 """Automated parameter sweep for the !! and ! classifier.
 
-Replaces manual worktree-based hypothesis testing with a fast in-process
-evaluation loop. Preloads all data once, then evaluates hundreds of
-config variations in seconds.
+Uses domain-informed search: screen motifs first (one-by-one), then
+run Optuna TPE (Bayesian optimization) on the reduced space of numeric
+thresholds + selected motifs. Much faster convergence than naive TPE
+over the full 71-dimensional space.
 
 Phases:
-  A — Single-parameter sensitivity analysis
-  B — Greedy combination of best single-parameter improvements
-  C — Random perturbation search around the best config
-  D — Leave-One-Game-Out cross-validation on top candidates
+  1 — Motif screening (evaluate each motif independently)
+  2 — Bayesian optimization with TPE on thresholds + selected motifs
+  3 — Leave-One-Game-Out cross-validation on top candidates
 
-Usage: uv run python3 scripts/sweep_classifier.py [--perturbations N]
+Usage: uv run python3 scripts/sweep_classifier.py [--trials N]
 """
 
 from __future__ import annotations
@@ -18,21 +18,19 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
-import math
 import pathlib
-import random
 import time
 from dataclasses import dataclass, field
+
+import optuna
 
 from chess_self_coach.classifier import (
     DEFAULT_CONFIG,
     COMPLEXITY_BUDGET,
     COMPLEXITY_LAMBDA,
-    MIN_SCORE,
     classify_move,
     count_config_complexity,
     _compute_f1,
-    _win_prob,
 )
 from chess_self_coach.config import tactics_data_path
 
@@ -57,7 +55,7 @@ class PreloadedData:
 
     games: list[GameData]
     total_moves: int = 0
-    all_motif_names: set[str] = field(default_factory=set)
+    all_motif_names: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -141,7 +139,12 @@ def preload_data() -> PreloadedData:
             tactics=tactics,
         ))
 
-    return PreloadedData(games=games, total_moves=total_moves, all_motif_names=all_motifs)
+    # Sorted for deterministic Optuna parameter ordering
+    return PreloadedData(
+        games=games,
+        total_moves=total_moves,
+        all_motif_names=sorted(all_motifs - {"isSacrifice", "isMissedCapture"}),
+    )
 
 
 # ── Evaluation ───────────────────────────────────────────────────────────────
@@ -217,170 +220,98 @@ def evaluate_config(
     )
 
 
-# ── Sweep phases ─────────────────────────────────────────────────────────────
-
-
-def _make_config(**overrides: object) -> dict[str, object]:
-    """Create a config with specific overrides applied to DEFAULT_CONFIG."""
-    cfg = copy.deepcopy(DEFAULT_CONFIG)
-    cfg.update(overrides)
-    return cfg
+# ── Motif screening ──────────────────────────────────────────────────────────
 
 
 @dataclass
-class SweepResult:
-    """One sweep candidate with its config and score."""
+class MotifResult:
+    """Result of testing one motif as brilliant or great trigger."""
 
-    label: str
-    config: dict[str, object]
+    motif: str
+    role: str  # "brilliant" or "great"
+    delta: float
     result: ScoreResult
-    delta: float  # score - baseline score
 
 
-def phase_a_sensitivity(data: PreloadedData, baseline: ScoreResult) -> list[SweepResult]:
-    """Phase A: Single-parameter sensitivity analysis.
+def screen_motifs(data: PreloadedData, baseline: ScoreResult) -> list[MotifResult]:
+    """Screen each motif independently as brilliant or great trigger.
 
-    Sweep each numeric threshold across a range, and test each tactical
-    motif as a brilliant or great trigger.
+    Fast one-by-one evaluation: 32 motifs x 2 roles = 64 evaluations.
+    Returns sorted by delta (best first).
     """
-    results: list[SweepResult] = []
+    results: list[MotifResult] = []
 
-    # Numeric threshold sweeps
-    sweep_ranges: dict[str, list[float]] = {
-        "brilliant_epl_max": [-0.020, -0.015, -0.010, -0.008, -0.006, -0.005, -0.004, -0.003, -0.002, -0.001, 0.0],
-        "brilliant_wp_min": [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40],
-        "brilliant_wp_max": [0.80, 0.85, 0.90, 0.95, 0.98, 1.0],
-        "great_epl_max": [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.04, 0.05],
-        "great_opp_epl_min": [0.05, 0.08, 0.10, 0.12, 0.15, 0.18, 0.20, 0.25, 0.30],
-        "miss_epl_min": [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10],
-        "miss_opp_epl_min": [0.05, 0.08, 0.10, 0.12, 0.15, 0.18, 0.20, 0.25],
-    }
-
-    for param, values in sweep_ranges.items():
-        current_val = DEFAULT_CONFIG[param]
-        for val in values:
-            if val == current_val:
-                continue
-            cfg = _make_config(**{param: val})
-            r = evaluate_config(cfg, data)
-            results.append(SweepResult(
-                label=f"{param}={val}",
-                config=cfg,
-                result=r,
-                delta=r.score - baseline.score,
-            ))
-
-    # Motif sweeps: test each motif as brilliant or great trigger
-    for motif in sorted(data.all_motif_names):
-        if motif in ("isSacrifice", "isMissedCapture"):
-            continue  # already used
-
+    for motif in data.all_motif_names:
         # Test as brilliant motif
-        cfg = _make_config(brilliant_motifs=["isSacrifice", motif])
+        cfg = copy.deepcopy(DEFAULT_CONFIG)
+        cfg["brilliant_motifs"] = ["isSacrifice", motif]
         r = evaluate_config(cfg, data)
-        results.append(SweepResult(
-            label=f"brilliant_motif+{motif}",
-            config=cfg,
-            result=r,
-            delta=r.score - baseline.score,
-        ))
+        results.append(MotifResult(motif=motif, role="brilliant", delta=r.score - baseline.score, result=r))
 
         # Test as great motif
-        cfg = _make_config(great_motifs=[motif])
+        cfg = copy.deepcopy(DEFAULT_CONFIG)
+        cfg["great_motifs"] = [motif]
         r = evaluate_config(cfg, data)
-        results.append(SweepResult(
-            label=f"great_motif+{motif}",
-            config=cfg,
-            result=r,
-            delta=r.score - baseline.score,
-        ))
+        results.append(MotifResult(motif=motif, role="great", delta=r.score - baseline.score, result=r))
 
     results.sort(key=lambda x: x.delta, reverse=True)
     return results
 
 
-def phase_b_greedy(
+# ── Optuna objective ─────────────────────────────────────────────────────────
+
+
+def create_objective(
     data: PreloadedData,
-    baseline: ScoreResult,
-    phase_a_results: list[SweepResult],
-) -> tuple[dict[str, object], ScoreResult, list[str]]:
-    """Phase B: Greedy combination of best single-parameter improvements.
+    selected_brilliant_motifs: list[str],
+    selected_great_motifs: list[str],
+):
+    """Create an Optuna objective over thresholds + pre-screened motifs.
 
-    Start from the best Phase A change, greedily add the next-best
-    improvement until no further addition helps.
+    The search space is reduced: only 7 numeric thresholds + a few
+    binary motif toggles (those that passed screening). TPE converges
+    fast on this small space.
     """
-    improvements = [r for r in phase_a_results if r.delta > 0]
-    if not improvements:
-        return copy.deepcopy(DEFAULT_CONFIG), baseline, []
 
-    best_config = copy.deepcopy(improvements[0].config)
-    best_score = improvements[0].result
-    applied = [improvements[0].label]
+    def objective(trial: optuna.Trial) -> float:
+        config: dict[str, object] = {
+            "brilliant_epl_max": trial.suggest_float("brilliant_epl_max", -0.03, 0.0),
+            "brilliant_wp_min": trial.suggest_float("brilliant_wp_min", 0.05, 0.50),
+            "brilliant_wp_max": trial.suggest_float("brilliant_wp_max", 0.80, 1.0),
+            "great_epl_max": trial.suggest_float("great_epl_max", 0.0, 0.05),
+            "great_opp_epl_min": trial.suggest_float("great_opp_epl_min", 0.05, 0.30),
+            "great_filter_recapture": True,
+            "miss_epl_min": trial.suggest_float("miss_epl_min", 0.02, 0.10),
+            "miss_opp_epl_min": trial.suggest_float("miss_opp_epl_min", 0.05, 0.25),
+        }
 
-    for candidate in improvements[1:]:
-        # Merge candidate's overrides into best_config
-        trial = copy.deepcopy(best_config)
-        for k, v in candidate.config.items():
-            if v != DEFAULT_CONFIG.get(k):
-                trial[k] = v
+        # Only toggle motifs that passed screening
+        brilliant_motifs = ["isSacrifice"]
+        for motif in selected_brilliant_motifs:
+            if trial.suggest_categorical(f"brilliant_{motif}", [False, True]):
+                brilliant_motifs.append(motif)
 
-        r = evaluate_config(trial, data)
-        if r.score > best_score.score:
-            best_config = trial
-            best_score = r
-            applied.append(candidate.label)
+        great_motifs: list[str] = []
+        for motif in selected_great_motifs:
+            if trial.suggest_categorical(f"great_{motif}", [False, True]):
+                great_motifs.append(motif)
 
-    return best_config, best_score, applied
+        config["brilliant_motifs"] = brilliant_motifs
+        config["great_motifs"] = great_motifs
 
+        return evaluate_config(config, data).score
 
-def phase_c_random(
-    data: PreloadedData,
-    base_config: dict[str, object],
-    base_score: ScoreResult,
-    n_perturbations: int = 200,
-) -> tuple[dict[str, object], ScoreResult]:
-    """Phase C: Random perturbation search around the best config.
-
-    Randomly perturb numeric thresholds by +/- 20% to explore
-    non-linear interactions.
-    """
-    numeric_keys = [
-        "brilliant_epl_max", "brilliant_wp_min", "brilliant_wp_max",
-        "great_epl_max", "great_opp_epl_min",
-        "miss_epl_min", "miss_opp_epl_min",
-    ]
-
-    best_config = copy.deepcopy(base_config)
-    best_score = base_score
-
-    for _ in range(n_perturbations):
-        trial = copy.deepcopy(base_config)
-        # Perturb 1-3 random numeric params
-        n_params = random.randint(1, 3)
-        for key in random.sample(numeric_keys, min(n_params, len(numeric_keys))):
-            current = float(trial[key])  # type: ignore[arg-type]
-            if current == 0:
-                delta = random.uniform(-0.01, 0.01)
-            else:
-                delta = current * random.uniform(-0.20, 0.20)
-            trial[key] = round(current + delta, 4)
-
-        r = evaluate_config(trial, data)
-        if r.score > best_score.score:
-            best_config = trial
-            best_score = r
-
-    return best_config, best_score
+    return objective
 
 
-def phase_d_logo(
+# ── LOGO cross-validation ────────────────────────────────────────────────────
+
+
+def logo_validate(
     data: PreloadedData,
     candidates: list[tuple[str, dict[str, object]]],
 ) -> list[tuple[str, float, float, float]]:
-    """Phase D: Leave-One-Game-Out cross-validation.
-
-    For each candidate config, compute the average score when
-    each game is excluded one at a time.
+    """Leave-One-Game-Out cross-validation on candidate configs.
 
     Returns:
         List of (label, full_score, logo_score, divergence) tuples.
@@ -402,7 +333,38 @@ def phase_d_logo(
     return results
 
 
-# ── Report ───────────────────────────────────────────────────────────────────
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+
+def _trial_to_config(
+    trial: optuna.trial.FrozenTrial,
+    selected_brilliant: list[str],
+    selected_great: list[str],
+) -> dict[str, object]:
+    """Reconstruct a config dict from a completed Optuna trial."""
+    params = trial.params
+
+    brilliant_motifs = ["isSacrifice"]
+    great_motifs: list[str] = []
+    for motif in selected_brilliant:
+        if params.get(f"brilliant_{motif}", False):
+            brilliant_motifs.append(motif)
+    for motif in selected_great:
+        if params.get(f"great_{motif}", False):
+            great_motifs.append(motif)
+
+    return {
+        "brilliant_epl_max": params["brilliant_epl_max"],
+        "brilliant_wp_min": params["brilliant_wp_min"],
+        "brilliant_wp_max": params["brilliant_wp_max"],
+        "brilliant_motifs": brilliant_motifs,
+        "great_epl_max": params["great_epl_max"],
+        "great_opp_epl_min": params["great_opp_epl_min"],
+        "great_filter_recapture": True,
+        "great_motifs": great_motifs,
+        "miss_epl_min": params["miss_epl_min"],
+        "miss_opp_epl_min": params["miss_opp_epl_min"],
+    }
 
 
 def _fmt_score(r: ScoreResult) -> str:
@@ -414,71 +376,87 @@ def _fmt_score(r: ScoreResult) -> str:
     )
 
 
+# ── Report ───────────────────────────────────────────────────────────────────
+
+
 def print_report(
     baseline: ScoreResult,
-    phase_a: list[SweepResult],
+    motif_results: list[MotifResult],
+    selected_brilliant: list[str],
+    selected_great: list[str],
+    study: optuna.Study,
     best_config: dict[str, object],
     best_score: ScoreResult,
-    greedy_applied: list[str],
-    random_config: dict[str, object],
-    random_score: ScoreResult,
     logo_results: list[tuple[str, float, float, float]],
     elapsed: float,
 ) -> None:
     """Print the full sweep report to stdout."""
     print(f"\n{'='*70}")
-    print("CLASSIFIER SWEEP REPORT")
+    print("CLASSIFIER SWEEP REPORT (Screening + Optuna TPE)")
     print(f"{'='*70}")
 
     print(f"\nBASELINE: {_fmt_score(baseline)}")
 
-    # Phase A top results
-    print(f"\n--- Phase A: Single-parameter sensitivity ({len(phase_a)} evaluations) ---")
-    improvements = [r for r in phase_a if r.delta > 0]
-    degradations = [r for r in phase_a if r.delta < 0]
-    print(f"  {len(improvements)} improvements, {len(degradations)} degradations")
+    # Motif screening results
+    print(f"\n--- Phase 1: Motif screening ({len(motif_results)} evaluations) ---")
+    brilliant_motifs = [r for r in motif_results if r.role == "brilliant"]
+    great_motifs = [r for r in motif_results if r.role == "great"]
 
-    print("\n  Top 10 improvements:")
-    for r in phase_a[:10]:
+    print("  BRILLIANT motifs (top 5):")
+    for r in sorted(brilliant_motifs, key=lambda x: x.delta, reverse=True)[:5]:
         sign = "+" if r.delta >= 0 else ""
-        print(f"    {sign}{r.delta:.4f}  {r.label:40s}  {_fmt_score(r.result)}")
+        print(f"    {sign}{r.delta:.4f}  {r.motif}")
+    print("  GREAT motifs (top 5):")
+    for r in sorted(great_motifs, key=lambda x: x.delta, reverse=True)[:5]:
+        sign = "+" if r.delta >= 0 else ""
+        print(f"    {sign}{r.delta:.4f}  {r.motif}")
 
-    # Motif analysis
-    print("\n  Motif analysis:")
-    motif_results = [r for r in phase_a if "motif+" in r.label]
-    brilliant_motifs = sorted(
-        [r for r in motif_results if r.label.startswith("brilliant_")],
-        key=lambda x: x.delta, reverse=True,
-    )
-    great_motifs = sorted(
-        [r for r in motif_results if r.label.startswith("great_")],
-        key=lambda x: x.delta, reverse=True,
-    )
+    n_selected = len(selected_brilliant) + len(selected_great)
+    if n_selected > 0:
+        print(f"  Selected for TPE: {n_selected} motifs "
+              f"(brilliant: {selected_brilliant}, great: {selected_great})")
+    else:
+        print("  No motifs improved the score — TPE will optimize thresholds only")
 
-    if brilliant_motifs:
-        print("    BRILLIANT motifs (top 5):")
-        for r in brilliant_motifs[:5]:
-            sign = "+" if r.delta >= 0 else ""
-            print(f"      {sign}{r.delta:.4f}  {r.label}")
-    if great_motifs:
-        print("    GREAT motifs (top 5):")
-        for r in great_motifs[:5]:
-            sign = "+" if r.delta >= 0 else ""
-            print(f"      {sign}{r.delta:.4f}  {r.label}")
+    # Optimization history
+    n_dims = 7 + len(selected_brilliant) + len(selected_great)
+    print(f"\n--- Phase 2: Bayesian optimization ({len(study.trials)} trials, {n_dims} dimensions) ---")
+    print(f"  Best trial: #{study.best_trial.number}")
+    print(f"  Best score: {study.best_value:.4f} (delta: {study.best_value - baseline.score:+.4f})")
 
-    # Phase B
-    print(f"\n--- Phase B: Greedy combination ---")
-    print(f"  Applied: {', '.join(greedy_applied) if greedy_applied else '(none)'}")
+    print(f"\n  Score progression (every 10 trials):")
+    best_so_far = float("-inf")
+    for i, trial in enumerate(study.trials):
+        if trial.value is not None and trial.value > best_so_far:
+            best_so_far = trial.value
+        if (i + 1) % 10 == 0 or i == len(study.trials) - 1:
+            print(f"    Trial {i+1:>4d}: best_so_far={best_so_far:.4f}")
+
+    # Config diff
+    print(f"\n--- Best config found ---")
     print(f"  Result: {_fmt_score(best_score)}")
 
-    # Phase C
-    print(f"\n--- Phase C: Random perturbation ---")
-    print(f"  Result: {_fmt_score(random_score)}")
-    if random_score.score > best_score.score:
-        print("  Random search found a BETTER config!")
+    print("\n  Changes vs DEFAULT:")
+    for k in sorted(DEFAULT_CONFIG.keys()):
+        default_val = DEFAULT_CONFIG[k]
+        new_val = best_config.get(k, default_val)
+        if new_val != default_val:
+            if isinstance(default_val, float) and isinstance(new_val, float):
+                print(f"    {k}: {default_val} -> {new_val:.4f}")
+            else:
+                print(f"    {k}: {default_val} -> {new_val}")
 
-    # Phase D
-    print(f"\n--- Phase D: Leave-One-Game-Out validation ---")
+    if best_config == DEFAULT_CONFIG:
+        print("    (no changes — DEFAULT_CONFIG is already optimal)")
+
+    # Top 5 trials
+    print(f"\n  Top 5 trials:")
+    sorted_trials = sorted(study.trials, key=lambda t: t.value or float("-inf"), reverse=True)
+    for trial in sorted_trials[:5]:
+        print(f"    #{trial.number:>3d}: score={trial.value:.4f}")
+
+    # LOGO validation
+    print(f"\n--- Leave-One-Game-Out validation ---")
     for label, full, logo, div in logo_results:
         flag = " *** OVERFITTING RISK ***" if abs(div) > 0.03 else ""
         print(f"  {label:20s}  full={full:.3f}  LOGO={logo:.3f}  div={div:+.3f}{flag}")
@@ -488,29 +466,14 @@ def print_report(
     if total_brilliant_labels < 10:
         print(f"\n  WARNING: Only {total_brilliant_labels} brilliant labels — F1 is inherently unstable")
 
-    # Best config
-    final_config = random_config if random_score.score > best_score.score else best_config
-    final_score = random_score if random_score.score > best_score.score else best_score
-
+    # Full config
     print(f"\n{'='*70}")
-    print("BEST CONFIG FOUND:")
+    print("BEST CONFIG:")
     print(f"{'='*70}")
-    print(f"  Score: {final_score.score:.3f} (baseline: {baseline.score:.3f}, delta: {final_score.score - baseline.score:+.3f})")
-
-    # Show config diff vs DEFAULT
-    print("\n  Config changes vs DEFAULT:")
-    for k in sorted(DEFAULT_CONFIG.keys()):
-        default_val = DEFAULT_CONFIG[k]
-        new_val = final_config[k]
-        if new_val != default_val:
-            print(f"    {k}: {default_val} -> {new_val}")
-
-    if final_config == DEFAULT_CONFIG:
-        print("    (no changes — DEFAULT_CONFIG is already optimal)")
-
-    print(f"\n  Full config dict:")
-    for k in sorted(final_config.keys()):
-        print(f"    {k!r}: {final_config[k]!r},")
+    print(f"  Score: {best_score.score:.3f} (baseline: {baseline.score:.3f}, delta: {best_score.score - baseline.score:+.3f})")
+    print(f"\n  Config dict:")
+    for k in sorted(best_config.keys()):
+        print(f"    {k!r}: {best_config[k]!r},")
 
     print(f"\nTotal sweep time: {elapsed:.1f}s")
     print(f"{'='*70}")
@@ -523,9 +486,9 @@ def main() -> None:
     """Run the full sweep pipeline."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Sweep classifier parameters")
-    parser.add_argument("--perturbations", type=int, default=200,
-                        help="Number of random perturbations in Phase C (default: 200)")
+    parser = argparse.ArgumentParser(description="Optimize classifier with Bayesian search (Optuna TPE)")
+    parser.add_argument("--trials", type=int, default=2000,
+                        help="Number of Optuna trials (default: 2000)")
     args = parser.parse_args()
 
     t0 = time.monotonic()
@@ -540,48 +503,78 @@ def main() -> None:
     baseline = evaluate_config(DEFAULT_CONFIG, data)
     print(f"  {_fmt_score(baseline)}")
 
-    print(f"\nPhase A: Sensitivity analysis...")
-    t_a = time.monotonic()
-    phase_a = phase_a_sensitivity(data, baseline)
-    print(f"  {len(phase_a)} evaluations ({time.monotonic() - t_a:.1f}s)")
+    # Phase 1: Motif screening
+    print(f"\nPhase 1: Motif screening...")
+    t_screen = time.monotonic()
+    motif_results = screen_motifs(data, baseline)
+    n_motifs = len(motif_results)
+    print(f"  {n_motifs} evaluations ({time.monotonic() - t_screen:.1f}s)")
 
-    print(f"\nPhase B: Greedy combination...")
-    t_b = time.monotonic()
-    best_config, best_score, greedy_applied = phase_b_greedy(data, baseline, phase_a)
-    print(f"  {len(greedy_applied)} changes applied ({time.monotonic() - t_b:.1f}s)")
+    # Select motifs that improved score (delta > 0)
+    selected_brilliant = [r.motif for r in motif_results if r.role == "brilliant" and r.delta > 0]
+    selected_great = [r.motif for r in motif_results if r.role == "great" and r.delta > 0]
+    n_selected = len(selected_brilliant) + len(selected_great)
+    n_dims = 7 + n_selected
+    print(f"  {n_selected} motifs selected → {n_dims}-dimensional search space")
 
-    print(f"\nPhase C: Random perturbation ({args.perturbations} trials)...")
-    t_c = time.monotonic()
-    random_config, random_score = phase_c_random(data, best_config, best_score, args.perturbations)
-    print(f"  ({time.monotonic() - t_c:.1f}s)")
+    # Phase 2: Bayesian optimization with TPE
+    print(f"\nPhase 2: Optuna TPE ({args.trials} trials, {n_dims} dims)...")
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    study = optuna.create_study(
+        direction="maximize",
+        sampler=optuna.samplers.TPESampler(seed=42),
+    )
 
-    print(f"\nPhase D: LOGO cross-validation...")
-    t_d = time.monotonic()
-    # Validate top candidates
-    final_config = random_config if random_score.score > best_score.score else best_config
-    final_score = random_score if random_score.score > best_score.score else best_score
+    # Seed with DEFAULT_CONFIG as the first trial
+    default_params: dict[str, object] = {
+        "brilliant_epl_max": float(DEFAULT_CONFIG["brilliant_epl_max"]),  # type: ignore[arg-type]
+        "brilliant_wp_min": float(DEFAULT_CONFIG["brilliant_wp_min"]),  # type: ignore[arg-type]
+        "brilliant_wp_max": float(DEFAULT_CONFIG["brilliant_wp_max"]),  # type: ignore[arg-type]
+        "great_epl_max": float(DEFAULT_CONFIG["great_epl_max"]),  # type: ignore[arg-type]
+        "great_opp_epl_min": float(DEFAULT_CONFIG["great_opp_epl_min"]),  # type: ignore[arg-type]
+        "miss_epl_min": float(DEFAULT_CONFIG["miss_epl_min"]),  # type: ignore[arg-type]
+        "miss_opp_epl_min": float(DEFAULT_CONFIG["miss_opp_epl_min"]),  # type: ignore[arg-type]
+    }
+    for motif in selected_brilliant:
+        default_params[f"brilliant_{motif}"] = False
+    for motif in selected_great:
+        default_params[f"great_{motif}"] = False
+    study.enqueue_trial(default_params)
+
+    t_opt = time.monotonic()
+    study.optimize(
+        create_objective(data, selected_brilliant, selected_great),
+        n_trials=args.trials,
+        show_progress_bar=True,
+    )
+    t_opt_elapsed = time.monotonic() - t_opt
+    print(f"  {len(study.trials)} trials in {t_opt_elapsed:.1f}s "
+          f"({t_opt_elapsed / len(study.trials) * 1000:.0f}ms/trial)")
+
+    # Reconstruct best config
+    best_config = _trial_to_config(study.best_trial, selected_brilliant, selected_great)
+    best_score = evaluate_config(best_config, data)
+
+    # Phase 3: LOGO cross-validation
+    print(f"\nPhase 3: LOGO cross-validation...")
+    t_logo = time.monotonic()
     candidates: list[tuple[str, dict[str, object]]] = [
         ("baseline", copy.deepcopy(DEFAULT_CONFIG)),
-        ("best_found", copy.deepcopy(final_config)),
+        ("best_found", copy.deepcopy(best_config)),
     ]
-    # Add top-3 Phase A results if they're different
-    for r in phase_a[:3]:
-        if r.delta > 0:
-            candidates.append((r.label[:20], copy.deepcopy(r.config)))
-
-    logo_results = phase_d_logo(data, candidates)
-    print(f"  {len(candidates)} candidates x {len(data.games)} folds ({time.monotonic() - t_d:.1f}s)")
+    logo_results = logo_validate(data, candidates)
+    print(f"  {len(candidates)} candidates x {len(data.games)} folds ({time.monotonic() - t_logo:.1f}s)")
 
     elapsed = time.monotonic() - t0
 
     print_report(
         baseline=baseline,
-        phase_a=phase_a,
+        motif_results=motif_results,
+        selected_brilliant=selected_brilliant,
+        selected_great=selected_great,
+        study=study,
         best_config=best_config,
         best_score=best_score,
-        greedy_applied=greedy_applied,
-        random_config=random_config,
-        random_score=random_score,
         logo_results=logo_results,
         elapsed=elapsed,
     )
@@ -594,18 +587,21 @@ def main() -> None:
             "brilliant": {"tp": baseline.brilliant_tp, "fp": baseline.brilliant_fp, "fn": baseline.brilliant_fn},
             "great": {"tp": baseline.great_tp, "fp": baseline.great_fp, "fn": baseline.great_fn},
         },
-        "best_config": final_config,
-        "best_score": final_score.score,
-        "best_macro_f1": final_score.macro_f1,
-        "delta": final_score.score - baseline.score,
+        "best_config": best_config,
+        "best_score": best_score.score,
+        "best_macro_f1": best_score.macro_f1,
+        "delta": best_score.score - baseline.score,
         "logo_results": [
             {"label": label, "full": full, "logo": logo, "divergence": div}
             for label, full, logo, div in logo_results
         ],
-        "phase_a_top10": [
-            {"label": r.label, "delta": r.delta, "score": r.result.score}
-            for r in phase_a[:10]
+        "motif_screening": [
+            {"motif": r.motif, "role": r.role, "delta": r.delta}
+            for r in motif_results if r.delta > -0.01  # only interesting ones
         ],
+        "selected_motifs": {"brilliant": selected_brilliant, "great": selected_great},
+        "n_trials": len(study.trials),
+        "best_trial": study.best_trial.number,
         "elapsed_seconds": elapsed,
     }
 
