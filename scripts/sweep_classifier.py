@@ -487,8 +487,8 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Optimize classifier with Bayesian search (Optuna TPE)")
-    parser.add_argument("--trials", type=int, default=2000,
-                        help="Number of Optuna trials (default: 2000)")
+    parser.add_argument("--trials", type=int, default=5000,
+                        help="Number of Optuna trials (default: 5000)")
     args = parser.parse_args()
 
     t0 = time.monotonic()
@@ -545,7 +545,7 @@ def main() -> None:
     study.optimize(
         create_objective(data, selected_brilliant, selected_great),
         n_trials=args.trials,
-        show_progress_bar=True,
+        show_progress_bar=False,
     )
     t_opt_elapsed = time.monotonic() - t_opt
     print(f"  {len(study.trials)} trials in {t_opt_elapsed:.1f}s "
