@@ -29,6 +29,7 @@ ANALYSIS_DATA_FILE = "analysis_data.json"
 TRAINING_DATA_FILE = "training_data.json"
 FETCHED_GAMES_FILE = "fetched_games.json"
 TACTICS_DATA_FILE = "tactics_data.json"
+CLASSIFICATIONS_DATA_FILE = "classifications_data.json"
 
 ENV_FILE = ".env"
 
@@ -101,6 +102,15 @@ def tactics_data_path() -> Path:
         Path to data/tactics_data.json.
     """
     return data_dir() / TACTICS_DATA_FILE
+
+
+def classifications_data_path() -> Path:
+    """Return the path to classifications_data.json.
+
+    Returns:
+        Path to data/classifications_data.json.
+    """
+    return data_dir() / CLASSIFICATIONS_DATA_FILE
 
 
 def error_exit(message: str, hint: str | None = None, debug_cmd: str | None = None) -> NoReturn:
