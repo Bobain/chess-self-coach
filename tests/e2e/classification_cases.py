@@ -1027,4 +1027,14 @@ GAMES: list[dict] = [
             38: "Kxc2 — great",
         },
     },
+    {
+        "game_id": "Buffalloman_166048620794",
+        "brilliant_indices": [],
+        "great_indices": [11, 34, 36],  # 6.b Bxf3, 18.w exd6, 19.w Re5+
+        "notes": {
+            11: "Bxf3 — great",
+            34: "exd6 — great",
+            36: "Re5+ — great",
+        },
+    },
 ]
