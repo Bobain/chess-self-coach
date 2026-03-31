@@ -901,4 +901,14 @@ GAMES: list[dict] = [
             56: "Qxf2 — great",
         },
     },
+    {
+        "game_id": "LordCalcifur_166552416748",
+        "brilliant_indices": [],
+        "great_indices": [15, 29, 67],  # 8.b hxg5, 15.b Ne4, 34.b Kf8
+        "notes": {
+            15: "hxg5 — great",
+            29: "Ne4 — great",
+            67: "Kf8 — great",
+        },
+    },
 ]
