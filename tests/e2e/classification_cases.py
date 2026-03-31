@@ -796,4 +796,14 @@ GAMES: list[dict] = [
             95: "g3 — great",
         },
     },
+    {
+        "game_id": "Hamigway_165149396424",
+        "brilliant_indices": [],
+        "great_indices": [28, 41, 43],  # 15.w Qxc8, 21.b Bxg2, 22.b Nd5
+        "notes": {
+            28: "Qxc8 — great",
+            41: "Bxg2 — great",
+            43: "Nd5 — great",
+        },
+    },
 ]
