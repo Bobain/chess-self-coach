@@ -426,10 +426,12 @@ def print_report(
 
     print(f"\n  Score progression (every 10 trials):")
     best_so_far = float("-inf")
-    for i, trial in enumerate(study.trials):
+    trials = study.trials  # Cache to avoid O(n²) re-creation
+    n_trials = len(trials)
+    for i, trial in enumerate(trials):
         if trial.value is not None and trial.value > best_so_far:
             best_so_far = trial.value
-        if (i + 1) % 10 == 0 or i == len(study.trials) - 1:
+        if (i + 1) % 10 == 0 or i == n_trials - 1:
             print(f"    Trial {i+1:>4d}: best_so_far={best_so_far:.4f}")
 
     # Config diff
@@ -451,7 +453,7 @@ def print_report(
 
     # Top 5 trials
     print(f"\n  Top 5 trials:")
-    sorted_trials = sorted(study.trials, key=lambda t: t.value or float("-inf"), reverse=True)
+    sorted_trials = sorted(trials, key=lambda t: t.value or float("-inf"), reverse=True)
     for trial in sorted_trials[:5]:
         print(f"    #{trial.number:>3d}: score={trial.value:.4f}")
 
