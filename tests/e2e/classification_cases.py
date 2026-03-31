@@ -702,4 +702,12 @@ GAMES: list[dict] = [
             23: "Nc2+ — great",
         },
     },
+    {
+        "game_id": "darnelb18_120923590182",
+        "brilliant_indices": [],
+        "great_indices": [36],  # 19.w Kh1
+        "notes": {
+            36: "Kh1 — great",
+        },
+    },
 ]
