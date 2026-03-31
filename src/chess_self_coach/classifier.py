@@ -49,19 +49,19 @@ CATEGORIES = {
 
 DEFAULT_CONFIG: dict[str, Any] = {
     # Brilliant detection
-    "brilliant_epl_max": -0.005,        # epl_lost < this → candidate
-    "brilliant_wp_min": 0.20,           # wp_before > this
+    "brilliant_epl_max": -0.012,        # epl_lost < this → candidate
+    "brilliant_wp_min": 0.17,           # wp_before > this
     "brilliant_wp_max": 0.95,           # wp_before < this
     "brilliant_motifs": ["isSacrifice"],  # motifs that trigger brilliant
     # Great detection (opp_epl path)
-    "great_epl_max": 0.02,             # epl_lost <= this
+    "great_epl_max": 0.012,            # epl_lost <= this
     "great_opp_epl_min": 0.15,         # opp_epl >= this
     "great_filter_recapture": True,     # filter trivial recaptures
     # Great detection (motif path — independent of opp_epl)
     "great_motifs": [],                 # motifs that trigger great directly
     # Miss detection
-    "miss_epl_min": 0.05,              # epl_lost > this
-    "miss_opp_epl_min": 0.15,          # opp_epl >= this
+    "miss_epl_min": 0.04,              # epl_lost > this
+    "miss_opp_epl_min": 0.16,          # opp_epl >= this
 }
 
 
