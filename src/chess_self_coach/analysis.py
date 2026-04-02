@@ -854,7 +854,7 @@ def analyze_games(
     settings: AnalysisSettings | None = None,
     engine_path: str | None = None,
     on_progress: Callable[[dict], None] | None = None,
-    on_game_done: Callable[[str], None] | None = None,
+    on_game_done: Callable[[str, dict], None] | None = None,
     cancel: threading.Event | None = None,
 ) -> None:
     """Fetch games, analyze with Stockfish + APIs, write analysis_data.json.
@@ -1138,9 +1138,9 @@ def analyze_games(
             # Atomic write after each game (crash-safe)
             save_analysis_data(existing_data, analysis_path)
 
-            # Derive training data immediately so the game is usable in the UI
+            # Run downstream phases so the game is usable in the UI
             if on_game_done:
-                on_game_done(store_id)
+                on_game_done(store_id, game_data)
 
             # Progress
             move_count = len(game_data["moves"])

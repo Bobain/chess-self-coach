@@ -457,10 +457,21 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
     """
     global _current_job
 
-    from chess_self_coach.analysis import AnalysisInterrupted, analyze_games
-    from chess_self_coach.classifier import run_classification
-    from chess_self_coach.training_data import generate_training_data
-    from chess_self_coach.tactics import run_tactical_analysis
+    from chess_self_coach.analysis import (
+        AnalysisInterrupted,
+        analyze_games,
+        load_analysis_data,
+    )
+    from chess_self_coach.classifier import classify_game_single
+    from chess_self_coach.pipeline_status import (
+        get_incomplete_games,
+        load_pipeline_status,
+        mark_analyzed,
+        mark_phase_done,
+        save_pipeline_status,
+    )
+    from chess_self_coach.tactics import analyze_game_tactics
+    from chess_self_coach.training_data import generate_training_data_single
 
     assert _current_job is not None
     job = _current_job
@@ -481,12 +492,75 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
         raw_ids = params.get("game_ids")
         game_ids = cast(list[str] | None, raw_ids) if raw_ids else None
 
-        def _on_game_done(game_id: str) -> None:
-            _push({"phase": "derive", "message": "Deriving training data...", "game_id": game_id})
+        status = load_pipeline_status()
+
+        def _run_downstream(game_id: str, game_data: dict) -> None:  # type: ignore[type-arg]
+            """Run tactics → classification → training for one game."""
+            # Tactics
+            _push({"phase": "tactics", "message": "Tactical analysis...", "game_id": game_id})
+            tactics = None
             try:
-                generate_training_data()
+                tactics = analyze_game_tactics(game_id, game_data)
+                mark_phase_done(status, game_id, "tactics")
             except Exception as e:
-                _log.error("generate_training_data failed for %s: %s", game_id, e)
+                _log.error("tactics failed for %s: %s", game_id, e)
+
+            # Classification
+            _push({"phase": "classification", "message": "Classifying moves...", "game_id": game_id})
+            try:
+                classify_game_single(game_id, game_data, tactics)
+                mark_phase_done(status, game_id, "classification")
+            except Exception as e:
+                _log.error("classification failed for %s: %s", game_id, e)
+
+            # Training data
+            _push({"phase": "training", "message": "Generating training data...", "game_id": game_id})
+            try:
+                generate_training_data_single(game_id, game_data)
+                mark_phase_done(status, game_id, "training")
+            except Exception as e:
+                _log.error("generate_training_data_single failed for %s: %s", game_id, e)
+
+            save_pipeline_status(status)
+
+        # --- Repair incomplete games from prior interrupted runs ---
+        incomplete = get_incomplete_games(status)
+        if incomplete:
+            _push({"phase": "repair", "message": f"Repairing {len(incomplete)} incomplete games..."})
+            analysis = load_analysis_data()
+            for gid, gstatus in incomplete:
+                gdata = analysis.get("games", {}).get(gid)
+                if not gdata:
+                    continue
+                _push({"phase": "repair", "message": f"Repairing {gid}...", "game_id": gid})
+                if not gstatus.get("tactics"):
+                    try:
+                        tactics = analyze_game_tactics(gid, gdata)
+                        mark_phase_done(status, gid, "tactics")
+                    except Exception as e:
+                        _log.error("repair tactics failed for %s: %s", gid, e)
+                        tactics = None
+                else:
+                    tactics = None
+                if not gstatus.get("classification"):
+                    try:
+                        classify_game_single(gid, gdata, tactics)
+                        mark_phase_done(status, gid, "classification")
+                    except Exception as e:
+                        _log.error("repair classification failed for %s: %s", gid, e)
+                if not gstatus.get("training"):
+                    try:
+                        generate_training_data_single(gid, gdata)
+                        mark_phase_done(status, gid, "training")
+                    except Exception as e:
+                        _log.error("repair training failed for %s: %s", gid, e)
+            save_pipeline_status(status)
+
+        # --- Per-game callback: analysis + all downstream phases ---
+        def _on_game_done(game_id: str, game_data: dict) -> None:  # type: ignore[type-arg]
+            mark_analyzed(status, game_id, game_data.get("analyzed_at", ""))
+            save_pipeline_status(status)
+            _run_downstream(game_id, game_data)
 
         analyze_games(
             game_ids=game_ids,
@@ -496,12 +570,6 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
             on_game_done=_on_game_done,
             cancel=cancel,
         )
-
-        _push({"phase": "tactics", "message": "Running tactical analysis..."})
-        run_tactical_analysis()
-
-        _push({"phase": "classification", "message": "Classifying moves..."})
-        run_classification()
 
         job["status"] = "done"
     except AnalysisInterrupted as exc:
