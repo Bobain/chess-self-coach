@@ -1315,7 +1315,13 @@ function showAnalysisProgress(jobId) {
       loadAnalysisData();
       loadTrainingData();
     } else if (event.phase === 'analyze') {
-      el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
+      if (event.waiting && event.message) {
+        el.textContent = event.message;
+      } else if (event.error && event.message) {
+        el.textContent = `⚠ ${event.message}`;
+      } else {
+        el.textContent = `Analyzing ${analysisOffset}/${analysisTotalAll}`;
+      }
     }
 
     if (event.phase === 'done' || event.phase === 'error' || event.phase === 'interrupted') {
