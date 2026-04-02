@@ -145,9 +145,10 @@ def _fetch_tablebase(
                     msg = f"Tablebase rate limit exhausted after {attempt + 1} retries (fen={fen[:40]})"
                     _log.error("    %s", msg)
                     raise RateLimitExhaustedError(msg)
+            retry_after = resp.headers.get("Retry-After", "?")
             _log.warning(
-                "    tablebase %s → HTTP %d, retrying in %.0fs (attempt %d)",
-                fen[:40], resp.status_code, delay, attempt + 1,
+                "    tablebase %s → HTTP %d (Retry-After: %s), retrying in %.0fs (attempt %d)",
+                fen[:40], resp.status_code, retry_after, delay, attempt + 1,
             )
             if on_wait:
                 on_wait(attempt + 1, delay)
