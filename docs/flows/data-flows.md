@@ -20,7 +20,7 @@ flowchart LR
         SF[Stockfish 18<br/>N-1 threads, 1GB hash]
         TB[Lichess Tablebase<br/>≤7 pieces]
         OE[Lichess Masters Explorer]
-        CE[Lichess Cloud Eval<br/>all positions post-masters]
+        CE[Lichess Cloud Eval<br/>local DB → API fallback]
     end
 
     subgraph Storage
