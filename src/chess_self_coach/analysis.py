@@ -905,8 +905,6 @@ def analyze_games(
     # Load settings
     if settings is None:
         settings = AnalysisSettings.from_config(config)
-    settings_dict = settings.to_dict()
-
     # Find Stockfish
     if engine_path:
         sf_path = Path(engine_path)
@@ -1004,10 +1002,6 @@ def analyze_games(
                 if not reanalyze_all:
                     skipped += 1
                     continue
-                stored_settings = existing_games[game_id].get("settings", {})
-                if settings_match(stored_settings, settings_dict):
-                    skipped += 1
-                    continue
                 is_reanalysis = True
 
             new_games.append((game, game_id, player_color))
@@ -1073,6 +1067,11 @@ def analyze_games(
             black = game.headers.get("Black", "?")
             label = f"{white} vs {black}"
 
+            # Re-analysis: pass existing move data to preserve API results
+            prev_moves = None
+            if reanalyze_all and game_id and game_id in existing_games:
+                prev_moves = existing_games[game_id].get("moves")
+
             start = _time.time()
             try:
                 game_data = collect_game_data(
@@ -1082,6 +1081,7 @@ def analyze_games(
                     settings,
                     lichess_token,
                     game_id=game_id,
+                    existing_moves=prev_moves,
                 )
             except Exception as exc:
                 print(f"  [{done_count}/{total_tasks}] Error analyzing {label}: {exc}")
