@@ -459,7 +459,7 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
 
     from chess_self_coach.analysis import AnalysisInterrupted, analyze_games
     from chess_self_coach.classifier import run_classification
-    from chess_self_coach.training_data import annotate_and_derive
+    from chess_self_coach.training_data import generate_training_data
     from chess_self_coach.tactics import run_tactical_analysis
 
     assert _current_job is not None
@@ -484,9 +484,9 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
         def _on_game_done(game_id: str) -> None:
             _push({"phase": "derive", "message": "Deriving training data...", "game_id": game_id})
             try:
-                annotate_and_derive()
+                generate_training_data()
             except Exception as e:
-                _log.error("annotate_and_derive failed for %s: %s", game_id, e)
+                _log.error("generate_training_data failed for %s: %s", game_id, e)
 
         analyze_games(
             game_ids=game_ids,

@@ -860,7 +860,7 @@ def analyze_games(
     """Fetch games, analyze with Stockfish + APIs, write analysis_data.json.
 
     Phase 1 orchestrator: sequential analysis with one multi-threaded Stockfish.
-    Caller is responsible for invoking annotate_and_derive() (Phase 2) afterwards.
+    Caller is responsible for invoking generate_training_data() (Phase 2) afterwards.
 
     Args:
         game_ids: Specific game IDs to analyze from the cache. When set,

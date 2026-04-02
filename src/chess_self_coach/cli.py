@@ -164,10 +164,10 @@ def main(argv: list[str] | None = None) -> None:
 
     elif args.command == "train":
         if args.derive:
-            from chess_self_coach.training_data import annotate_and_derive
+            from chess_self_coach.training_data import generate_training_data
 
             try:
-                annotate_and_derive()
+                generate_training_data()
             except (FileNotFoundError, RuntimeError) as e:
                 print(f"  {e}", file=sys.stderr)
                 sys.exit(1)
