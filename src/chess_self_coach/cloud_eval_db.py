@@ -29,7 +29,7 @@ _log = logging.getLogger(__name__)
 
 _DOWNLOAD_URL = "https://database.lichess.org/lichess_db_eval.jsonl.zst"
 
-_DEFAULT_DIR = Path("/media/bobain/DATA/chess-self-coach")
+_DEFAULT_DIR = Path.home() / ".local" / "share" / "chess-self-coach"
 _DEFAULT_DB = _DEFAULT_DIR / "cloud_eval.db"
 
 _BATCH_SIZE = 50_000
@@ -37,7 +37,6 @@ _BATCH_SIZE = 50_000
 # Search paths, checked in order
 _SEARCH_PATHS = [
     _DEFAULT_DB,
-    Path.home() / ".local" / "share" / "chess-self-coach" / "cloud_eval.db",
 ]
 
 _SCHEMA = """\
