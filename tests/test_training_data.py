@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from chess_self_coach.derive import annotate_and_derive
+from chess_self_coach.training_data import annotate_and_derive
 
 
 def _make_analysis_data(
@@ -103,7 +103,7 @@ def _make_analysis_data(
     }
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_produces_training_data(mock_config, tmp_path: Path):
     """Derives training_data.json with correct schema from analysis_data."""
     analysis_path = tmp_path / "analysis_data.json"
@@ -131,7 +131,7 @@ def test_derive_produces_training_data(mock_config, tmp_path: Path):
     assert pos["game"]["id"] == "https://lichess.org/test123"
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_filters_below_threshold(mock_config, tmp_path: Path):
     """Moves with cp_loss below threshold are excluded."""
     analysis_path = tmp_path / "analysis_data.json"
@@ -145,7 +145,7 @@ def test_derive_filters_below_threshold(mock_config, tmp_path: Path):
     assert len(td["positions"]) == 0
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_skips_opponent_moves(mock_config, tmp_path: Path):
     """Only the player's moves are considered for mistakes."""
     analysis_path = tmp_path / "analysis_data.json"
@@ -162,7 +162,7 @@ def test_derive_skips_opponent_moves(mock_config, tmp_path: Path):
     assert len(td["positions"]) == 0
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_preserves_srs_state(mock_config, tmp_path: Path):
     """SRS state from existing training_data.json is preserved."""
     analysis_path = tmp_path / "analysis_data.json"
@@ -201,7 +201,7 @@ def test_derive_preserves_srs_state(mock_config, tmp_path: Path):
     assert len(srs["history"]) == 1
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_skips_already_lost(mock_config, tmp_path: Path):
     """Positions where player is already badly losing are skipped."""
     analysis_path = tmp_path / "analysis_data.json"
@@ -218,7 +218,7 @@ def test_derive_skips_already_lost(mock_config, tmp_path: Path):
     assert len(td["positions"]) == 0
 
 
-@patch("chess_self_coach.derive.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
+@patch("chess_self_coach.training_data.load_config", return_value={"players": {"lichess": "testplayer", "chesscom": ""}})
 def test_derive_classifies_correctly(mock_config, tmp_path: Path):
     """Move classification thresholds work correctly."""
     analysis_path = tmp_path / "analysis_data.json"

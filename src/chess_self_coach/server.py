@@ -459,7 +459,7 @@ def _run_analysis_job(job_id: str, loop: asyncio.AbstractEventLoop) -> None:
 
     from chess_self_coach.analysis import AnalysisInterrupted, analyze_games
     from chess_self_coach.classifier import run_classification
-    from chess_self_coach.derive import annotate_and_derive
+    from chess_self_coach.training_data import annotate_and_derive
     from chess_self_coach.tactics import run_tactical_analysis
 
     assert _current_job is not None

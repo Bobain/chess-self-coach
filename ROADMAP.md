@@ -37,7 +37,7 @@ Exploration branch: `explore` worktree. Results validated with LOGO cross-valida
 - [ ] 7d. Integrate MultiPV=3 into production pipeline (`analysis.py`) — already done in explore worktree, merge to dev
 - [ ] 7e. Train final XGBoost model on full dataset, serialize it (joblib or xgboost native format)
 - [ ] 7f. Implement hybrid classifier: rules for brilliant → XGBoost for great → standard classification
-- [ ] 7g. Update `derive.py` / `training_data.json` to use hybrid classifier output
+- [ ] 7g. Update `training_data.py` / `training_data.json` to use hybrid classifier output
 - [ ] 7h. Update tests: add MultiPV-aware classification test cases
 
 ## Existing but undocumented features

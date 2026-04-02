@@ -1,7 +1,7 @@
 """Phase 1: collect raw per-move data from Stockfish, tablebase, and opening explorer.
 
 Stores all evaluation data in analysis_data.json with maximum granularity.
-Phase 2 (derive.py) annotates and filters this data into training_data.json.
+Phase 2 (training_data.py) annotates and filters this data into training_data.json.
 """
 
 from __future__ import annotations

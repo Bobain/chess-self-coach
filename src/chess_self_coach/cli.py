@@ -164,7 +164,7 @@ def main(argv: list[str] | None = None) -> None:
 
     elif args.command == "train":
         if args.derive:
-            from chess_self_coach.derive import annotate_and_derive
+            from chess_self_coach.training_data import annotate_and_derive
 
             try:
                 annotate_and_derive()
