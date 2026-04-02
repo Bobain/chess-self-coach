@@ -13,6 +13,7 @@ import json
 import logging
 import multiprocessing
 from pathlib import Path
+from typing import Any
 
 import chess
 
@@ -777,6 +778,42 @@ def _analyze_game(game_item: tuple[str, dict]) -> tuple[str, list[dict]]:
     game_id, game_data = game_item
     moves = game_data.get("moves", [])
     return game_id, [analyze_move(m) for m in moves]
+
+
+def analyze_game_tactics(
+    game_id: str,
+    game_data: dict[str, Any],
+    output_path: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Run tactical motif analysis on a single game and update tactics_data.json.
+
+    Calls ``_analyze_game`` directly (no multiprocessing pool), then merges
+    the result into the existing tactics data file.
+
+    Args:
+        game_id: Game identifier (key in tactics_data.json).
+        game_data: Full game dict from analysis_data.json.
+        output_path: Path to tactics_data.json. Defaults to config.
+
+    Returns:
+        List of motif dicts (one per move), also written to disk.
+    """
+    if output_path is None:
+        output_path = tactics_data_path()
+
+    _, motifs = _analyze_game((game_id, game_data))
+
+    # Read existing, update single game, write back
+    if output_path.exists():
+        with open(output_path) as f:
+            existing = json.load(f)
+    else:
+        existing = {"version": "1.0", "games": {}}
+
+    existing["games"][game_id] = motifs
+    atomic_write_json(output_path, existing)
+
+    return motifs
 
 
 def run_tactical_analysis(analysis_path: Path | None = None, output_path: Path | None = None) -> None:
