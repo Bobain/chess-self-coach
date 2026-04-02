@@ -40,7 +40,7 @@ flowchart LR
     end
 
     subgraph "Phase 2 — Derivation"
-        DER[annotate_and_derive<br/>filter + explain]
+        DER[generate_training_data<br/>filter + explain]
     end
 
     subgraph "PWA — Training mode"

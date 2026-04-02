@@ -142,26 +142,28 @@ sequenceDiagram
         end
 
         API->>API: Atomic write analysis_data.json
+
+        Note over API: Per-game downstream (no Stockfish)
+        API->>API: analyze_game_tactics()
+        API->>API: classify_game_single()
+        API->>API: generate_training_data_single()
         API-->>PWA: SSE: analyze phase (X/Y, percent)
     end
-
-    Note over API: Phase 2 — Derivation (no Stockfish)
-    API->>API: annotate_and_derive()<br/>Filter mistakes → training_data.json
 
     API-->>PWA: SSE: done (summary)
     PWA->>PWA: Reload training_data.json
     PWA->>PWA: Restart session
-    Note over PWA: analysis_data.json also updated<br/>(available for Analysis mode)
+    Note over PWA: All data files updated per-game<br/>(available for Analysis mode)
 ```
 
 ### Key details
 
 - **Settings modal**: unified modal with Training, Accounts, Analysis (presets: Quick/Balanced/Deep + Advanced toggle), and Danger zone sections.
-- **Two-phase pipeline, per-game**: Phase 1 collects raw data (expensive), Phase 2 derives training data (cheap). Phase 2 runs after **each game** (not at end of batch), so accuracy badges, review, and training are available immediately.
+- **Full per-game pipeline (server)**: After each game's Stockfish analysis, tactics → classification → training data run immediately (no batch). Results available in UI after each game. CLI `--prepare` uses batch for tactics/classification (more efficient).
 - **Engine model**: one Stockfish with N-1 threads + 1GB hash (configurable), sequential game-by-game.
 - **4-tier evaluation**: Tablebase (≤7 pieces, priority) → Masters + cloud eval (`in_opening=True`, cp_loss=0) → Cloud eval (all positions post-masters, cp_loss computed) → Stockfish (fallback, cp_loss computed).
 - **Incremental**: only unanalyzed games are processed. `reanalyze_all` preserves API data (masters, cloud eval, tablebase), re-tests breakpoints, and always re-runs Stockfish.
-- **Crash safety**: atomic write of `analysis_data.json` after each game. Resumable on interruption.
+- **Crash safety**: atomic write of `analysis_data.json` after each game. `pipeline_status.json` tracks per-game phase completion; incomplete games are repaired on next run.
 - **Thresholds**: blunder ≥ 200cp, mistake ≥ 100cp, inaccuracy ≥ 50cp.
 - **Interrupt**: user can click interrupt → `POST /api/jobs/{id}/cancel` → saves progress so far.
 - **Batch queuing**: selecting more games while a job runs queues them for the next batch. On 409 (job running), PWA reconnects to SSE via `GET /api/jobs/current`.

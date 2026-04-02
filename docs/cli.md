@@ -55,9 +55,11 @@ chess-self-coach train --stats
 `--prepare` runs four phases:
 
 1. **Phase 1 (collection)**: 4-tier evaluation per move — Tablebase (≤7 pieces, priority) → Masters opening theory + cloud eval → Cloud eval (all positions) → Stockfish. Masters-confirmed moves are marked `in_opening=True` (cp_loss=0). Cloud eval covers all positions after masters departure; Stockfish is the final fallback. Re-analysis preserves API data (masters, cloud eval, tablebase) and re-tests breakpoints; Stockfish always re-runs. Results stored in `data/analysis_data.json` (atomic write after each game, crash-safe).
-2. **Phase 2 (derivation)**: Filter player mistakes, generate explanations, write `data/training_data.json`. Runs after each game for live updates.
-3. **Phase 3 (tactical analysis)**: Detect 40 tactical motifs (forks, pins, sacrifices...) per move using python-chess. Parallel processing. Results stored in `data/tactics_data.json`.
-4. **Phase 4 (classification)**: Classify every move (brilliant, great, best, book, inaccuracy, mistake, blunder, miss) using evals + tactical motifs. Results stored in `data/classifications_data.json`.
+2. **Phase 2 (tactical analysis)**: Detect 40 tactical motifs (forks, pins, sacrifices...) per move using python-chess. Batch parallel processing. Results stored in `data/tactics_data.json`.
+3. **Phase 3 (classification)**: Classify every move (brilliant, great, best, book, inaccuracy, mistake, blunder, miss) using evals + tactical motifs. Batch parallel processing. Results stored in `data/classifications_data.json`.
+4. **Phase 4 (derivation)**: Filter player mistakes, generate explanations, write `data/training_data.json`.
+
+**Server mode** runs phases 2-4 per-game (immediately after each game's analysis) for live updates. `pipeline_status.json` tracks phase completion for crash recovery.
 
 `--derive` runs Phase 2 only — useful to iterate on thresholds or explanations without re-running Stockfish.
 
