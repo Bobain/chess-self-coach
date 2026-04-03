@@ -816,9 +816,16 @@ def collect_game_data(
                 else:
                     cp_loss = max(0, after_cp - before_cp)
 
+        _source_tag = (
+            "[book] " if in_opening
+            else "[cloud] " if eval_source == "cloud_eval"
+            else "[tb] " if eval_source == "tablebase"
+            else ""
+        )
         _log.info(
-            "  ply %d %s: %s — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s) cp_loss=%d",
+            "  ply %d %s%s: %s — before=%s(%.0fms cp=%s) after=%s(%.0fms cp=%s) cp_loss=%d",
             ply + 1,
+            _source_tag,
             board.san(actual_move),
             eval_source,
             _eb_src,
