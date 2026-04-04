@@ -45,6 +45,7 @@ def query_cloud_eval(
     fen: str,
     multi_pv: int = 1,
     on_wait: Callable[[int, float], None] | None = None,
+    log_label: str = "",
 ) -> dict[str, Any] | None:
     """Query the Lichess Cloud database for a position.
 
@@ -57,6 +58,8 @@ def query_cloud_eval(
         multi_pv: Number of principal variations to request.
         on_wait: Optional callback(attempt, delay_seconds) called before
             each retry sleep, so callers can surface the wait to the UI.
+        log_label: Optional prefix for log messages (e.g. "[ply 12 after] ")
+            to identify which step triggered the query.
 
     Returns:
         API response dict with {fen, knodes, depth, pvs[]} or None if
@@ -65,14 +68,6 @@ def query_cloud_eval(
     Raises:
         RateLimitExhaustedError: If rate limit persists after max backoff.
     """
-    # Try local DB first (no network, no rate limit)
-    from chess_self_coach.cloud_eval_db import lookup_cloud_eval as _db_lookup
-
-    local = _db_lookup(fen, multi_pv=multi_pv)
-    if local is not None:
-        _log.info("    cloud %s → local DB hit (depth=%s)", fen[:40], local.get("depth"))
-        return local
-
     global _last_request_time
     params = {"fen": fen, "multiPv": multi_pv}
     attempt = 0
@@ -92,15 +87,16 @@ def query_cloud_eval(
             if resp.status_code == 200:
                 result = resp.json()
                 _log.info(
-                    "    cloud %s → hit (%.0fms, depth=%s)",
-                    fen[:40], (time.time() - t0) * 1000, result.get("depth"),
+                    "    cloud %s%s → hit (%.0fms, depth=%s)",
+                    log_label, fen[:40], (time.time() - t0) * 1000,
+                    result.get("depth"),
                 )
                 return result
 
             if resp.status_code == 404:
                 _log.info(
-                    "    cloud %s → miss/404 (%.0fms)",
-                    fen[:40], (time.time() - t0) * 1000,
+                    "    cloud %s%s → miss/404 (%.0fms)",
+                    log_label, fen[:40], (time.time() - t0) * 1000,
                 )
                 return None
 
@@ -114,8 +110,9 @@ def query_cloud_eval(
                     raise RateLimitExhaustedError(msg)
             retry_after = resp.headers.get("Retry-After", "?")
             _log.warning(
-                "    cloud %s → HTTP %d (Retry-After: %s), retrying in %.0fs (attempt %d)",
-                fen[:40], resp.status_code, retry_after, delay, attempt + 1,
+                "    cloud %s%s → HTTP %d (Retry-After: %s), retrying in %.0fs (attempt %d)",
+                log_label, fen[:40], resp.status_code, retry_after, delay,
+                attempt + 1,
             )
             if on_wait:
                 on_wait(attempt + 1, delay)
@@ -131,8 +128,8 @@ def query_cloud_eval(
                     _log.error("    %s", msg)
                     raise RateLimitExhaustedError(msg) from exc
             _log.warning(
-                "    cloud %s → %s, retrying in %.0fs (attempt %d)",
-                fen[:40], exc, delay, attempt + 1,
+                "    cloud %s%s → %s, retrying in %.0fs (attempt %d)",
+                log_label, fen[:40], exc, delay, attempt + 1,
             )
             if on_wait:
                 on_wait(attempt + 1, delay)

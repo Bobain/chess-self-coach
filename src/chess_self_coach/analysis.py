@@ -656,7 +656,9 @@ def collect_game_data(
                     mpv_before = cached_mpv
                     _eb_src = "cache"
                 else:
-                    cloud = query_cloud_eval(board.fen(), on_wait=on_wait)
+                    _lbl = f"[ply {ply+1} before] "
+                    cloud = query_cloud_eval(
+                        board.fen(), on_wait=on_wait, log_label=_lbl)
                     if cloud:
                         score_before = _cloud_eval_to_eval(cloud, board)
                         _eb_src = "cloud_eval"
@@ -672,7 +674,9 @@ def collect_game_data(
                 score_before_ms = (_time.time() - t0) * 1000
 
                 t0 = _time.time()
-                cloud_after = query_cloud_eval(board_after_fen, on_wait=on_wait)
+                _lbl = f"[ply {ply+1} after] "
+                cloud_after = query_cloud_eval(
+                    board_after_fen, on_wait=on_wait, log_label=_lbl)
                 if cloud_after:
                     score_after = _cloud_eval_to_eval(cloud_after, board_after)
                     _ea_src = "cloud_eval"
@@ -724,7 +728,9 @@ def collect_game_data(
                     mpv_before = cached_mpv
                     _eb_src = "cache"
                 else:
-                    cloud = query_cloud_eval(board.fen(), on_wait=on_wait)
+                    _lbl = f"[ply {ply+1} before] "
+                    cloud = query_cloud_eval(
+                        board.fen(), on_wait=on_wait, log_label=_lbl)
                     if cloud:
                         score_before = _cloud_eval_to_eval(cloud, board)
                         _eb_src = "cloud_eval"
@@ -740,7 +746,9 @@ def collect_game_data(
                 score_before_ms = (_time.time() - t0) * 1000
 
                 t0 = _time.time()
-                cloud_after = query_cloud_eval(board_after_fen, on_wait=on_wait)
+                _lbl = f"[ply {ply+1} after] "
+                cloud_after = query_cloud_eval(
+                    board_after_fen, on_wait=on_wait, log_label=_lbl)
                 if cloud_after:
                     score_after = _cloud_eval_to_eval(cloud_after, board_after)
                     _ea_src = "cloud_eval"
