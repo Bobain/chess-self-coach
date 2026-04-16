@@ -1109,4 +1109,12 @@ GAMES: list[dict] = [
             35: "Rad8 — great",
         },
     },
+    {
+        "game_id": "Soldier_XVII_166160698244",
+        "brilliant_indices": [],
+        "great_indices": [21],  # 11.b Nf2
+        "notes": {
+            21: "Nf2 — great",
+        },
+    },
 ]
