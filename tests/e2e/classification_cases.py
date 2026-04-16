@@ -1328,4 +1328,12 @@ GAMES: list[dict] = [
             44: "Qxa6 — great",
         },
     },
+    {
+        "game_id": "No1Walker95_121718121304",
+        "brilliant_indices": [],
+        "great_indices": [29],  # 15.b Bb3+
+        "notes": {
+            29: "Bb3+ — great",
+        },
+    },
 ]
