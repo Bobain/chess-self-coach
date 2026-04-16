@@ -1418,4 +1418,12 @@ GAMES: list[dict] = [
             31: "Bxc3 — great",
         },
     },
+    {
+        "game_id": "JoaoVCatalano_130097953907",
+        "brilliant_indices": [],
+        "great_indices": [36],  # 19.w Nd7
+        "notes": {
+            36: "Nd7 — great",
+        },
+    },
 ]
