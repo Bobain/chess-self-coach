@@ -1426,4 +1426,12 @@ GAMES: list[dict] = [
             36: "Nd7 — great",
         },
     },
+    {
+        "game_id": "QQMisterlee_130069152169",
+        "brilliant_indices": [],
+        "great_indices": [28],  # 15.w Qxh5
+        "notes": {
+            28: "Qxh5 — great",
+        },
+    },
 ]
