@@ -1383,4 +1383,14 @@ GAMES: list[dict] = [
             41: "Nh3# — great",
         },
     },
+    {
+        "game_id": "NoobItSeems_129307391239",
+        "brilliant_indices": [12],  # 7.w Nxb5
+        "great_indices": [14, 22],  # 8.w Nc3, 12.w Qa4+
+        "notes": {
+            12: "Nxb5 — brilliant",
+            14: "Nc3 — great",
+            22: "Qa4+ — great",
+        },
+    },
 ]
