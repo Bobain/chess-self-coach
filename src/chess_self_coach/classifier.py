@@ -205,7 +205,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "brilliant_wp_max": 0.95,           # wp_before < this
     "brilliant_motifs": ["isSacrifice"],  # motifs that trigger brilliant
     # Brilliant detection (exchange sacrifice path — relaxed threshold)
-    "brilliant_exchange_sac_epl_max": -0.005,  # relaxed epl for exchange sacrifice
+    "brilliant_exchange_sac_epl_max": -0.0067,  # relaxed epl for exchange sacrifice
     # Great detection (opp_epl path)
     "great_epl_max": 0.012,            # epl_lost <= this
     "great_opp_epl_min": 0.15,         # opp_epl >= this

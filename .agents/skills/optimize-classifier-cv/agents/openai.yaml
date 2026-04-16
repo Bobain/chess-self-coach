@@ -1,0 +1,7 @@
+interface:
+  display_name: "Optimize Classifier CV"
+  short_description: "Improve move labels with honest game-level CV"
+  default_prompt: "Use $optimize-classifier-cv to improve the move classifier with the existing regularized score and honest game-level cross-validation."
+
+policy:
+  allow_implicit_invocation: true

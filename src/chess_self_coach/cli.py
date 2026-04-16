@@ -1,6 +1,6 @@
 """Command-line interface for chess-self-coach.
 
-Entry point for the CLI. Dispatches to subcommands: setup, train, update, syzygy, cloud-eval.
+Entry point for the CLI. Dispatches to subcommands: setup, train, update, syzygy.
 """
 
 from __future__ import annotations
@@ -49,17 +49,6 @@ def main(argv: list[str] | None = None) -> None:
         "action",
         choices=["download", "status"],
         help="download: fetch 3-5 piece tables (~1 GB). status: show installed tables.",
-    )
-
-    # --- cloud-eval ---
-    p_cloud = subparsers.add_parser(
-        "cloud-eval",
-        help="Manage local Lichess cloud evaluation database",
-    )
-    p_cloud.add_argument(
-        "action",
-        choices=["download", "status"],
-        help="download: fetch Lichess cloud eval DB (~20 GB). status: show DB info.",
     )
 
     # --- train ---
@@ -185,48 +174,6 @@ def main(argv: list[str] | None = None) -> None:
                 print("  No Syzygy tables found.")
                 print("  Download with: chess-self-coach syzygy download")
 
-    elif args.command == "cloud-eval":
-        from chess_self_coach.cloud_eval_db import (
-            _DEFAULT_DIR as _CLOUD_DEFAULT,
-            cloud_eval_db_status,
-            download_cloud_eval_db,
-        )
-
-        if args.action == "download":
-            default = str(_CLOUD_DEFAULT)
-            custom = input(f"  Installation directory [{default}]: ").strip()
-            target = Path(custom) if custom else _CLOUD_DEFAULT
-
-            def _on_progress(row_count: int, elapsed: float) -> None:
-                rate = row_count / elapsed if elapsed > 0 else 0
-                print(
-                    f"\r  {row_count:,} positions imported "
-                    f"({elapsed:.0f}s, {rate:,.0f} pos/s)",
-                    end="", flush=True,
-                )
-
-            try:
-                path = download_cloud_eval_db(target_dir=target, on_progress=_on_progress)
-                print(f"\n  ✓ Cloud eval DB imported to {path}")
-            except Exception as e:
-                print(f"\n  ❌ {e}", file=sys.stderr)
-                sys.exit(1)
-        elif args.action == "status":
-            from chess_self_coach.config import ConfigError, error_exit, load_config
-
-            try:
-                config = load_config()
-            except ConfigError as e:
-                error_exit(str(e), hint=e.hint)
-            status = cloud_eval_db_status(config)
-            if status["found"]:
-                print(f"  Path: {status['path']}")
-                print(f"  Positions: {status['row_count']:,}")
-                print(f"  Size: {status['size_mb']} MB")
-            else:
-                print("  No cloud eval database found.")
-                print("  Download with: chess-self-coach cloud-eval download")
-
     elif args.command == "train":
         if args.derive:
             from chess_self_coach.training_data import generate_training_data
@@ -288,7 +235,7 @@ def main(argv: list[str] | None = None) -> None:
 
 
 def _setup() -> None:
-    """Interactive setup: Stockfish, Syzygy, cloud eval DB, game platforms."""
+    """Interactive setup: Stockfish, Syzygy, game platforms."""
     from chess_self_coach.config import (
         ConfigError,
         check_stockfish_version,
@@ -336,48 +283,8 @@ def _setup() -> None:
         else:
             print("  Skipped. You can download later with: chess-self-coach syzygy download\n")
 
-    # Step 3: Cloud eval database
-    cloud_eval_config_path: str | None = None
-    print("  Step 3: Lichess cloud evaluation database")
-    from chess_self_coach.cloud_eval_db import (
-        _DEFAULT_DIR as _CLOUD_EVAL_DEFAULT,
-        cloud_eval_db_status,
-        find_cloud_eval_db,
-    )
-
-    existing_cloud = find_cloud_eval_db()
-    if existing_cloud is not None:
-        status = cloud_eval_db_status()
-        print(f"  ✓ Found: {status['path']} ({status['row_count']:,} positions)\n")
-        cloud_eval_config_path = str(existing_cloud)
-    else:
-        answer = input("  Cloud eval DB not found. Download (~20 GB)? [y/N] ")
-        if answer.strip().lower() == "y":
-            from chess_self_coach.cloud_eval_db import download_cloud_eval_db
-
-            default = str(_CLOUD_EVAL_DEFAULT)
-            custom = input(f"  Installation directory [{default}]: ").strip()
-            target = Path(custom) if custom else _CLOUD_EVAL_DEFAULT
-
-            def _on_progress(row_count: int, elapsed: float) -> None:
-                rate = row_count / elapsed if elapsed > 0 else 0
-                print(
-                    f"\r  {row_count:,} positions imported "
-                    f"({elapsed:.0f}s, {rate:,.0f} pos/s)",
-                    end="", flush=True,
-                )
-
-            try:
-                path = download_cloud_eval_db(target_dir=target, on_progress=_on_progress)
-                cloud_eval_config_path = str(path)
-                print(f"\n  ✓ Imported to {path}\n")
-            except Exception as e:
-                print(f"\n  ⚠ Download failed: {e}. You can retry later.\n")
-        else:
-            print("  Skipped. You can download later with: chess-self-coach cloud-eval download\n")
-
-    # Step 4: Game platforms
-    print("  Step 4: Game platforms (at least one required)\n")
+    # Step 3: Game platforms
+    print("  Step 3: Game platforms (at least one required)\n")
 
     lichess_user = input("  Lichess username (leave empty to skip): ").strip()
     lichess_token = None
@@ -412,8 +319,6 @@ def _setup() -> None:
 
     if syzygy_config_path:
         config["syzygy"] = {"path": syzygy_config_path}
-    if cloud_eval_config_path:
-        config["cloud_eval_db"] = {"path": cloud_eval_config_path}
 
     # Remove legacy studies section if present
     config.pop("studies", None)
