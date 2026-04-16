@@ -1262,4 +1262,12 @@ GAMES: list[dict] = [
             6: "Qa4+ — great",
         },
     },
+    {
+        "game_id": "KirorOwO_120856516390",
+        "brilliant_indices": [],
+        "great_indices": [12],  # 7.w Nc7+
+        "notes": {
+            12: "Nc7+ — great",
+        },
+    },
 ]
