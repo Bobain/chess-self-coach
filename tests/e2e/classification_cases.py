@@ -1353,4 +1353,14 @@ GAMES: list[dict] = [
             17: "Nxb4 — great",
         },
     },
+    {
+        "game_id": "Xtra_Hot_129140674067",
+        "brilliant_indices": [],
+        "great_indices": [25, 29, 37],  # 13.b Nxg4, 15.b fxg5, 19.b Nxf7
+        "notes": {
+            25: "Nxg4 — great",
+            29: "fxg5 — great",
+            37: "Nxf7 — great",
+        },
+    },
 ]
