@@ -1057,4 +1057,12 @@ GAMES: list[dict] = [
             83: "Rxf2+ — great",
         },
     },
+    {
+        "game_id": "m_reza_68_166706303302",
+        "brilliant_indices": [],
+        "great_indices": [45],  # 23.b Bxe5+
+        "notes": {
+            45: "Bxe5+ — great",
+        },
+    },
 ]
