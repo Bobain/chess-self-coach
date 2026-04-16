@@ -14,6 +14,41 @@ from __future__ import annotations
 
 import json
 import sys
+from typing import Any
+
+
+def simplify_move(m: dict[str, Any]) -> dict[str, Any]:
+    """Extract only the fields from a raw analysis move that the classifier reads.
+
+    Must stay in sync with classifier.classify_move and classifier._predict_great
+    (XGBoost feature extraction). Missing a field here silently degrades the
+    sweep score relative to production.
+    """
+    eb = m.get("eval_before", {})
+    ea = m.get("eval_after", {})
+    return {
+        "fen_before": m.get("fen_before", ""),
+        "move_san": m.get("move_san", ""),
+        "move_uci": m.get("move_uci", ""),
+        "side": m.get("side", ""),
+        "in_opening": m.get("in_opening", False),
+        "multipv_before": m.get("multipv_before"),
+        "eval_before": {
+            "score_cp": eb.get("score_cp"),
+            "is_mate": eb.get("is_mate", False),
+            "mate_in": eb.get("mate_in"),
+            "best_move_uci": eb.get("best_move_uci"),
+            "best_move_san": eb.get("best_move_san"),
+            "pv_uci": eb.get("pv_uci", []),
+            "pv_san": eb.get("pv_san", []),
+            "depth": eb.get("depth"),
+        },
+        "eval_after": {
+            "score_cp": ea.get("score_cp"),
+            "is_mate": ea.get("is_mate", False),
+            "mate_in": ea.get("mate_in"),
+        },
+    }
 
 
 def main() -> None:
@@ -36,30 +71,7 @@ def main() -> None:
     game_data = analysis["games"][url]
     moves = game_data["moves"]
 
-    simplified_moves = []
-    for m in moves:
-        eb = m.get("eval_before", {})
-        ea = m.get("eval_after", {})
-        simplified_moves.append({
-            "fen_before": m.get("fen_before", ""),
-            "move_san": m.get("move_san", ""),
-            "move_uci": m.get("move_uci", ""),
-            "side": m.get("side", ""),
-            "in_opening": m.get("in_opening", False),
-            "eval_before": {
-                "score_cp": eb.get("score_cp"),
-                "is_mate": eb.get("is_mate", False),
-                "mate_in": eb.get("mate_in"),
-                "best_move_uci": eb.get("best_move_uci"),
-                "pv_uci": eb.get("pv_uci", []),
-                "pv_san": eb.get("pv_san", []),
-            },
-            "eval_after": {
-                "score_cp": ea.get("score_cp"),
-                "is_mate": ea.get("is_mate", False),
-                "mate_in": ea.get("mate_in"),
-            },
-        })
+    simplified_moves = [simplify_move(m) for m in moves]
 
     headers = game_data["headers"]
     player = "Tonigor1982"
