@@ -1320,4 +1320,12 @@ GAMES: list[dict] = [
             63: "Qe1+ — brilliant",
         },
     },
+    {
+        "game_id": "Raj14178083_121380196354",
+        "brilliant_indices": [],
+        "great_indices": [44],  # 23.w Qxa6
+        "notes": {
+            44: "Qxa6 — great",
+        },
+    },
 ]
