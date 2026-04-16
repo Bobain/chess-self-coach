@@ -1161,4 +1161,13 @@ GAMES: list[dict] = [
             27: "Nxf3+ — great",
         },
     },
+    {
+        "game_id": "Moonstaars_121681793850",
+        "brilliant_indices": [],
+        "great_indices": [19, 23],  # 10.b Qe7, 12.b Nb4
+        "notes": {
+            19: "Qe7 — great",
+            23: "Nb4 — great",
+        },
+    },
 ]
