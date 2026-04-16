@@ -1270,4 +1270,13 @@ GAMES: list[dict] = [
             12: "Nc7+ — great",
         },
     },
+    {
+        "game_id": "harinp786_125303343959",
+        "brilliant_indices": [],
+        "great_indices": [22, 26],  # 12.w Ng5, 14.w Bxf5
+        "notes": {
+            22: "Ng5 — great",
+            26: "Bxf5 — great",
+        },
+    },
 ]
