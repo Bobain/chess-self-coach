@@ -1478,4 +1478,10 @@ GAMES: list[dict] = [
             33: "Qxe4 — great",
         },
     },
+    {
+        "game_id": "kokoalking_165700928564",
+        "brilliant_indices": [],
+        "great_indices": [],
+        "notes": {},
+    },
 ]
