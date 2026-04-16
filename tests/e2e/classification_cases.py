@@ -1279,4 +1279,12 @@ GAMES: list[dict] = [
             26: "Bxf5 — great",
         },
     },
+    {
+        "game_id": "Rata_Rata_125302721043",
+        "brilliant_indices": [],
+        "great_indices": [19],  # 10.b g4
+        "notes": {
+            19: "g4 — great",
+        },
+    },
 ]
