@@ -1117,4 +1117,13 @@ GAMES: list[dict] = [
             21: "Nf2 — great",
         },
     },
+    {
+        "game_id": "Muhammad_Salah_85_166712719180",
+        "brilliant_indices": [],
+        "great_indices": [25, 57],  # 13.b f5, 29.b dxe6
+        "notes": {
+            25: "f5 — great",
+            57: "dxe6 — great",
+        },
+    },
 ]
