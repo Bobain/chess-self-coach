@@ -1293,4 +1293,12 @@ GAMES: list[dict] = [
         "great_indices": [],
         "notes": {},
     },
+    {
+        "game_id": "Vallabh_GM_120916238648",
+        "brilliant_indices": [],
+        "great_indices": [41],  # 21.b Nc2
+        "notes": {
+            41: "Nc2 — great",
+        },
+    },
 ]
