@@ -1451,4 +1451,12 @@ GAMES: list[dict] = [
             48: "Qxd4 — great",
         },
     },
+    {
+        "game_id": "ted99677_131097590645",
+        "brilliant_indices": [],
+        "great_indices": [89],  # 45.b Ne5
+        "notes": {
+            89: "Ne5 — great",
+        },
+    },
 ]
