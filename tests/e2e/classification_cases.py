@@ -1459,4 +1459,14 @@ GAMES: list[dict] = [
             89: "Ne5 — great",
         },
     },
+    {
+        "game_id": "emil2356D_165156271418",
+        "brilliant_indices": [],
+        "great_indices": [30, 40, 46],  # 16.w O-O, 21.w Qe3+, 24.w Qxf8
+        "notes": {
+            30: "O-O — great",
+            40: "Qe3+ — great",
+            46: "Qxf8 — great",
+        },
+    },
 ]
